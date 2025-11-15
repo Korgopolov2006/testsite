@@ -219,7 +219,6 @@ def perform_backup(
         operation='backup',
         status='in_progress',
         file_path=str(backup_path),
-        created_by=created_by,
         comment=comment or f"Резервная копия {label or 'автоматическая'}",
     )
     backup_record.save()
@@ -1008,7 +1007,6 @@ def perform_backup(
         operation='backup',
         status='in_progress',
         file_path=str(backup_path),
-        created_by=created_by,
         comment=comment or f"Резервная копия {label or 'автоматическая'}",
     )
     backup_record.save()

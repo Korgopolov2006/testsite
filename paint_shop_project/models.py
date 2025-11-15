@@ -1473,3 +1473,74 @@ class PickerActionLog(models.Model):
     
     def __str__(self):
         return f"{self.picker.username} - {self.get_action_type_display()} - Заказ #{self.order.id}"
+
+
+class DatabaseBackup(models.Model):
+    """Резервные копии базы данных"""
+    OPERATION_CHOICES = [
+        ('backup', 'Создание резервной копии'),
+        ('restore', 'Восстановление из резервной копии'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('success', 'Успешно'),
+        ('failed', 'Ошибка'),
+        ('in_progress', 'В процессе'),
+    ]
+    
+    operation = models.CharField(
+        max_length=20,
+        choices=OPERATION_CHOICES,
+        verbose_name="Операция"
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='in_progress',
+        verbose_name="Статус"
+    )
+    file_path = models.TextField(
+        verbose_name="Путь к файлу",
+        help_text="Абсолютный путь к файлу резервной копии"
+    )
+    file_size = models.BigIntegerField(
+        null=True,
+        blank=True,
+        verbose_name="Размер файла (байты)"
+    )
+    comment = models.TextField(
+        blank=True,
+        verbose_name="Комментарий"
+    )
+    error_message = models.TextField(
+        blank=True,
+        verbose_name="Сообщение об ошибке"
+    )
+    started_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Начало операции"
+    )
+    completed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Окончание операции"
+    )
+    
+    class Meta:
+        verbose_name = "Резервная копия БД"
+        verbose_name_plural = "Резервные копии БД"
+        ordering = ['-started_at']
+        indexes = [
+            models.Index(fields=['-started_at']),
+            models.Index(fields=['operation', 'status']),
+        ]
+    
+    def __str__(self):
+        return f"{self.get_operation_display()} - {self.get_status_display()} - {self.started_at.strftime('%Y-%m-%d %H:%M')}"
+    
+    @property
+    def duration(self):
+        """Длительность операции в секундах"""
+        if self.completed_at and self.started_at:
+            return (self.completed_at - self.started_at).total_seconds()
+        return None

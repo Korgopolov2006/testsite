@@ -653,18 +653,18 @@ class UserSpecialSectionAdmin(admin.ModelAdmin):
     readonly_fields = ['created_at']
     ordering = ['-created_at']
 
-# @admin.register(DatabaseBackup)  # Модель DatabaseBackup не существует
+@admin.register(DatabaseBackup)
 class DatabaseBackupAdmin(admin.ModelAdmin):
-    list_display = ['operation', 'status', 'created_by', 'file_size_display', 'started_at', 'completed_at', 'duration_display']
+    list_display = ['operation', 'status', 'file_size_display', 'started_at', 'completed_at', 'duration_display']
     list_filter = ['operation', 'status', 'started_at']
-    search_fields = ['file_path', 'comment', 'error_message', 'created_by__username']
+    search_fields = ['file_path', 'comment', 'error_message']
     readonly_fields = ['started_at', 'completed_at', 'duration_display', 'file_size_display']
     ordering = ['-started_at']
     date_hierarchy = 'started_at'
     
     fieldsets = (
         ('Операция', {
-            'fields': ('operation', 'status', 'created_by')
+            'fields': ('operation', 'status')
         }),
         ('Файл', {
             'fields': ('file_path', 'file_size', 'file_size_display')
@@ -679,13 +679,20 @@ class DatabaseBackupAdmin(admin.ModelAdmin):
     )
     
     def file_size_display(self, obj):
-        return obj.format_file_size()
+        if obj.file_size:
+            size = obj.file_size
+            for unit in ['Б', 'КБ', 'МБ', 'ГБ']:
+                if size < 1024.0:
+                    return f"{size:.2f} {unit}"
+                size /= 1024.0
+            return f"{size:.2f} ТБ"
+        return "—"
     file_size_display.short_description = "Размер файла"
     
     def duration_display(self, obj):
-        duration = obj.duration()
+        duration = obj.duration
         if duration:
-            total_seconds = int(duration.total_seconds())
+            total_seconds = int(duration)
             hours, remainder = divmod(total_seconds, 3600)
             minutes, seconds = divmod(remainder, 60)
             if hours:

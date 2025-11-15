@@ -315,50 +315,60 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('[CHART] Orders chart updated');
     }
 
-    // СНАЧАЛА инициализируем графики
-    initCharts();
-
     // Инициализация графика статусов
-    const statusLabels = {
-        'created': 'Создан',
-        'confirmed': 'Подтверждён',
-        'ready': 'Готов',
-        'in_transit': 'В пути',
-        'delivered': 'Доставлен',
-        'cancelled': 'Отменён'
-    };
+    function updateStatusChart() {
+        const statusLabels = {
+            'created': 'Создан',
+            'confirmed': 'Подтверждён',
+            'ready': 'Готов',
+            'in_transit': 'В пути',
+            'delivered': 'Доставлен',
+            'cancelled': 'Отменён'
+        };
 
-    const statusData = [
-        {% for status in orders_by_status %}
-        {status: '{{ status.status }}', count: {{ status.count }}},
-        {% endfor %}
-    ];
-    if (statusData.length > 0 && statusChart) {
-        statusChart.data.labels = statusData.map(s => statusLabels[s.status] || s.status);
-        statusChart.data.datasets = [{
-            data: statusData.map(s => s.count),
-            backgroundColor: [
-                '#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'
-            ]
-        }];
-        statusChart.update();
+        const statusData = [
+            {% for status in orders_by_status %}
+            {status: '{{ status.status }}', count: {{ status.count }}},
+            {% endfor %}
+        ];
+        if (statusData.length > 0 && statusChart) {
+            statusChart.data.labels = statusData.map(s => statusLabels[s.status] || s.status);
+            statusChart.data.datasets = [{
+                data: statusData.map(s => s.count),
+                backgroundColor: [
+                    '#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'
+                ]
+            }];
+            statusChart.update();
+        }
     }
 
     // Инициализация графика товаров
-    const productsData = [
-        {% for product in top_products %}
-        {name: '{{ product.product__name|default:"—"|escapejs }}', revenue: {{ product.revenue|default:0 }}},
-        {% endfor %}
-    ];
-    if (productsData.length > 0 && productsChart) {
-        productsChart.data.labels = productsData.slice(0, 10).map(p => p.name);
-        productsChart.data.datasets = [{
-            label: '{% trans "Выручка" %}',
-            data: productsData.slice(0, 10).map(p => parseFloat(p.revenue || 0)),
-            backgroundColor: '#4f63d8'
-        }];
-        productsChart.update();
+    function updateProductsChart() {
+        const productsData = [
+            {% for product in top_products %}
+            {name: '{{ product.product__name|default:"—"|escapejs }}', revenue: {{ product.revenue|default:0 }}},
+            {% endfor %}
+        ];
+        if (productsData.length > 0 && productsChart) {
+            productsChart.data.labels = productsData.slice(0, 10).map(p => p.name);
+            productsChart.data.datasets = [{
+                label: '{% trans "Выручка" %}',
+                data: productsData.slice(0, 10).map(p => parseFloat(p.revenue || 0)),
+                backgroundColor: '#4f63d8'
+            }];
+            productsChart.update();
+        }
     }
+
+    // СНАЧАЛА инициализируем графики
+    initCharts();
+    
+    // Затем обновляем статические графики
+    setTimeout(() => {
+        updateStatusChart();
+        updateProductsChart();
+    }, 100);
 
     // Обработчики периода
     document.querySelectorAll('.period-selector button').forEach(btn => {

@@ -13,6 +13,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django import forms
 from .forms import PhoneLoginForm, PhoneVerificationForm, PhoneRegistrationForm, send_sms_code, verify_sms_code
 from django.core.mail import mail_admins
+from decimal import Decimal
 import logging
 import random
 logger = logging.getLogger('paint_shop_project')
@@ -1046,12 +1047,21 @@ def create_order(request):
                 # Получаем сумму кешбэка из формы
                 cashback_amount_str = request.POST.get('cashback_amount', '0')
                 try:
-                    cashback_amount = Decimal(str(cashback_amount_str))
+                    # Проверяем, что строка не пустая и содержит только цифры и точку
+                    if not cashback_amount_str or not cashback_amount_str.strip():
+                        cashback_amount_str = '0'
+                    # Удаляем пробелы и заменяем запятую на точку
+                    cashback_amount_str = cashback_amount_str.strip().replace(',', '.')
+                    # Проверяем, что это валидное число
+                    if not cashback_amount_str.replace('.', '').replace('-', '').isdigit():
+                        cashback_amount_str = '0'
+                    cashback_amount = Decimal(cashback_amount_str)
                     # Ограничиваем максимальной суммой баланса и итоговой суммой заказа
                     cashback_used = min(cashback_balance, Decimal(str(final_total)), cashback_amount)
                     if cashback_used < 0:
                         cashback_used = Decimal('0')
-                except (ValueError, TypeError):
+                except (ValueError, TypeError, Exception) as e:
+                    logger.warning("Invalid cashback amount: %s, error: %s", cashback_amount_str, e)
                     cashback_used = Decimal('0')
                 
                 final_total = float(Decimal(str(final_total)) - cashback_used)
