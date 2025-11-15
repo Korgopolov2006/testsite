@@ -279,34 +279,22 @@ LOGGING = {
         },
     },
     'handlers': {
-        'file': {
-            'level': 'ERROR',
-            'class': 'logging.FileHandler',
-            'filename': 'logs/errors.log',
-            'formatter': 'verbose',
-        },
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'simple',
         },
-        'debug_file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': 'logs/debug.log',
-            'formatter': 'verbose',
-        },
     },
     'loggers': {
         'django': {
-            'handlers': ['file', 'console'],
-            'level': 'ERROR',
-            'propagate': True,
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
         },
         'paint_shop_project': {
-            'handlers': ['file', 'console', 'debug_file'],
+            'handlers': ['console'],
             'level': 'DEBUG',
-            'propagate': True,
+            'propagate': False,
         },
     },
 }
