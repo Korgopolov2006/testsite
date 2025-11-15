@@ -166,7 +166,6 @@ def perform_backup(
     label: str | None = None,
     destination_dir: Path | None = None,
     folder_name: str | None = None,
-    created_by: User | None = None,
     comment: str | None = None,
 ) -> Path:
     db_settings = _get_db_settings()
@@ -214,14 +213,34 @@ def perform_backup(
 
     logger.info("Starting PostgreSQL backup to %s", backup_path)
     
-    # Записываем начало операции в историю (используем save() чтобы избежать конфликтов с ID)
-    backup_record = DatabaseBackup(
-        operation='backup',
-        status='in_progress',
-        file_path=str(backup_path),
-        comment=comment or f"Резервная копия {label or 'автоматическая'}",
-    )
-    backup_record.save()
+    # Записываем начало операции в историю
+    try:
+        backup_record = DatabaseBackup(
+            operation='backup',
+            status='in_progress',
+            file_path=str(backup_path),
+            comment=comment or f"Резервная копия {label or 'автоматическая'}",
+        )
+        backup_record.save()
+    except Exception as e:
+        # Если ошибка с первичным ключом, исправляем последовательность и повторяем
+        if 'paint_shop_project_databasebackup_pkey' in str(e) or 'duplicate key' in str(e).lower():
+            logger.warning("Fixing sequence for DatabaseBackup due to key conflict")
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT setval('paint_shop_project_databasebackup_id_seq', 
+                                  COALESCE((SELECT MAX(id) FROM paint_shop_project_databasebackup), 1), 
+                                  true);
+                """)
+            backup_record = DatabaseBackup(
+                operation='backup',
+                status='in_progress',
+                file_path=str(backup_path),
+                comment=comment or f"Резервная копия {label or 'автоматическая'}",
+            )
+            backup_record.save()
+        else:
+            raise
     
     try:
         result = subprocess.run(
@@ -323,7 +342,6 @@ def perform_restore_from_file(
     file_path: Path,
     *,
     create_backup: bool = True,
-    created_by: User | None = None,
     comment: str | None = None,
 ) -> None:
     if not file_path.exists():
@@ -333,17 +351,35 @@ def perform_restore_from_file(
     _ensure_postgres(db_settings)
 
     # Записываем начало операции в историю
-    restore_record = DatabaseBackup.objects.create(
-        operation='restore',
-        status='in_progress',
-        file_path=str(file_path),
-        created_by=created_by,
-        comment=comment or f"Восстановление из {file_path.name}",
-    )
+    try:
+        restore_record = DatabaseBackup.objects.create(
+            operation='restore',
+            status='in_progress',
+            file_path=str(file_path),
+            comment=comment or f"Восстановление из {file_path.name}",
+        )
+    except Exception as e:
+        # Если ошибка с первичным ключом, исправляем последовательность и повторяем
+        if 'paint_shop_project_databasebackup_pkey' in str(e) or 'duplicate key' in str(e).lower():
+            logger.warning("Fixing sequence for DatabaseBackup due to key conflict")
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT setval('paint_shop_project_databasebackup_id_seq', 
+                                  COALESCE((SELECT MAX(id) FROM paint_shop_project_databasebackup), 1), 
+                                  true);
+                """)
+            restore_record = DatabaseBackup.objects.create(
+                operation='restore',
+                status='in_progress',
+                file_path=str(file_path),
+                comment=comment or f"Восстановление из {file_path.name}",
+            )
+        else:
+            raise
     
     if create_backup:
         try:
-            perform_backup(label="pre_restore", created_by=created_by, comment="Автоматический бэкап перед восстановлением")
+            perform_backup(label="pre_restore", comment="Автоматический бэкап перед восстановлением")
         except Exception as exc:  # pragma: no cover - безопасность
             logger.warning("Failed to create safety backup before restore: %s", exc)
 
@@ -658,7 +694,6 @@ class DatabaseMaintenanceView(TemplateView):
                     backup_path = perform_backup(
                         destination_dir=destination_dir,
                         folder_name=folder_name,
-                        created_by=request.user,
                         comment=backup_form.cleaned_data.get("folder_name") or None,
                     )
 
@@ -720,7 +755,6 @@ class DatabaseMaintenanceView(TemplateView):
                 try:
                     perform_restore_from_file(
                         temp_path,
-                        created_by=request.user,
                         comment=f"Восстановление из загруженного файла: {upload.name}",
                     )
                     messages.success(
@@ -750,7 +784,6 @@ class DatabaseMaintenanceView(TemplateView):
                 try:
                     perform_restore_from_file(
                         backup_path,
-                        created_by=request.user,
                         comment=f"Восстановление из выбранного бэкапа: {backup_name}",
                     )
                     messages.success(
@@ -954,7 +987,6 @@ def perform_backup(
     label: str | None = None,
     destination_dir: Path | None = None,
     folder_name: str | None = None,
-    created_by: User | None = None,
     comment: str | None = None,
 ) -> Path:
     db_settings = _get_db_settings()
@@ -1002,14 +1034,34 @@ def perform_backup(
 
     logger.info("Starting PostgreSQL backup to %s", backup_path)
     
-    # Записываем начало операции в историю (используем save() чтобы избежать конфликтов с ID)
-    backup_record = DatabaseBackup(
-        operation='backup',
-        status='in_progress',
-        file_path=str(backup_path),
-        comment=comment or f"Резервная копия {label or 'автоматическая'}",
-    )
-    backup_record.save()
+    # Записываем начало операции в историю
+    try:
+        backup_record = DatabaseBackup(
+            operation='backup',
+            status='in_progress',
+            file_path=str(backup_path),
+            comment=comment or f"Резервная копия {label or 'автоматическая'}",
+        )
+        backup_record.save()
+    except Exception as e:
+        # Если ошибка с первичным ключом, исправляем последовательность и повторяем
+        if 'paint_shop_project_databasebackup_pkey' in str(e) or 'duplicate key' in str(e).lower():
+            logger.warning("Fixing sequence for DatabaseBackup due to key conflict")
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT setval('paint_shop_project_databasebackup_id_seq', 
+                                  COALESCE((SELECT MAX(id) FROM paint_shop_project_databasebackup), 1), 
+                                  true);
+                """)
+            backup_record = DatabaseBackup(
+                operation='backup',
+                status='in_progress',
+                file_path=str(backup_path),
+                comment=comment or f"Резервная копия {label or 'автоматическая'}",
+            )
+            backup_record.save()
+        else:
+            raise
     
     try:
         result = subprocess.run(
@@ -1111,7 +1163,6 @@ def perform_restore_from_file(
     file_path: Path,
     *,
     create_backup: bool = True,
-    created_by: User | None = None,
     comment: str | None = None,
 ) -> None:
     if not file_path.exists():
@@ -1121,17 +1172,35 @@ def perform_restore_from_file(
     _ensure_postgres(db_settings)
 
     # Записываем начало операции в историю
-    restore_record = DatabaseBackup.objects.create(
-        operation='restore',
-        status='in_progress',
-        file_path=str(file_path),
-        created_by=created_by,
-        comment=comment or f"Восстановление из {file_path.name}",
-    )
+    try:
+        restore_record = DatabaseBackup.objects.create(
+            operation='restore',
+            status='in_progress',
+            file_path=str(file_path),
+            comment=comment or f"Восстановление из {file_path.name}",
+        )
+    except Exception as e:
+        # Если ошибка с первичным ключом, исправляем последовательность и повторяем
+        if 'paint_shop_project_databasebackup_pkey' in str(e) or 'duplicate key' in str(e).lower():
+            logger.warning("Fixing sequence for DatabaseBackup due to key conflict")
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT setval('paint_shop_project_databasebackup_id_seq', 
+                                  COALESCE((SELECT MAX(id) FROM paint_shop_project_databasebackup), 1), 
+                                  true);
+                """)
+            restore_record = DatabaseBackup.objects.create(
+                operation='restore',
+                status='in_progress',
+                file_path=str(file_path),
+                comment=comment or f"Восстановление из {file_path.name}",
+            )
+        else:
+            raise
     
     if create_backup:
         try:
-            perform_backup(label="pre_restore", created_by=created_by, comment="Автоматический бэкап перед восстановлением")
+            perform_backup(label="pre_restore", comment="Автоматический бэкап перед восстановлением")
         except Exception as exc:  # pragma: no cover - безопасность
             logger.warning("Failed to create safety backup before restore: %s", exc)
 
@@ -1446,7 +1515,6 @@ class DatabaseMaintenanceView(TemplateView):
                     backup_path = perform_backup(
                         destination_dir=destination_dir,
                         folder_name=folder_name,
-                        created_by=request.user,
                         comment=backup_form.cleaned_data.get("folder_name") or None,
                     )
 
@@ -1508,7 +1576,6 @@ class DatabaseMaintenanceView(TemplateView):
                 try:
                     perform_restore_from_file(
                         temp_path,
-                        created_by=request.user,
                         comment=f"Восстановление из загруженного файла: {upload.name}",
                     )
                     messages.success(
@@ -1538,7 +1605,6 @@ class DatabaseMaintenanceView(TemplateView):
                 try:
                     perform_restore_from_file(
                         backup_path,
-                        created_by=request.user,
                         comment=f"Восстановление из выбранного бэкапа: {backup_name}",
                     )
                     messages.success(

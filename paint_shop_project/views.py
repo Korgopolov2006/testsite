@@ -1047,6 +1047,12 @@ def create_order(request):
                 # Получаем сумму кешбэка из формы
                 cashback_amount_str = request.POST.get('cashback_amount', '0')
                 try:
+                    # Проверяем, что значение не None и является строкой
+                    if cashback_amount_str is None:
+                        cashback_amount_str = '0'
+                    else:
+                        cashback_amount_str = str(cashback_amount_str)
+                    
                     # Проверяем, что строка не пустая и содержит только цифры и точку
                     if not cashback_amount_str or not cashback_amount_str.strip():
                         cashback_amount_str = '0'
