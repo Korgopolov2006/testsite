@@ -1,4 +1,4 @@
-Django==5.2.2
+Django==4.2.16
 psycopg2-binary==2.9.9
 Pillow==10.4.0
 python-decouple==3.8
@@ -12,7 +12,7 @@ django-cors-headers==4.3.1
 django-filter==23.5
 # Celery для планировщика задач
 celery==5.3.4
-django-celery-beat==2.5.0
+django-celery-beat==2.6.0
 django-celery-results==2.5.1
 
 # Telegram Bot API для уведомлений
@@ -24,3 +24,9 @@ xlsxwriter==3.1.9
 
 # Мониторинг производительности
 django-silk==5.0.3
+
+# Production server
+gunicorn==21.2.0
+dj-database-url==2.1.0
+whitenoise==6.6.0
+django-prometheus==2.3.1
