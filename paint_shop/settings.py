@@ -14,6 +14,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 import os
 from pathlib import Path
+from decouple import config, Csv
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -95,14 +97,11 @@ WSGI_APPLICATION = "paint_shop.wsgi.application"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "Jevjik_shop",
-        "USER": "postgres",
-        "PASSWORD": "1",
-        "HOST": "localhost",
-        "PORT": "5432",
-    }
+    "default": dj_database_url.config(
+        default=f"postgresql://postgres:1@localhost:5432/Jevjik_shop",
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
 }
 
 # Настройки для резервного копирования PostgreSQL
