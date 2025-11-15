@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Жевжик - Продуктовый магазин{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #ff6b9d;
+            --primary-dark: #e55a8a;
+            --primary-light: #ffb3d1;
+            --secondary-color: #ffd700;
+            --accent-color: #ff4757;
+            --success-color: #2ed573;
+            --warning-color: #ffa502;
+            --info-color: #3742fa;
+            --light-gray: #f8f9fa;
+            --medium-gray: #6c757d;
+            --dark-gray: #2c3e50;
+            --white: #ffffff;
+            --shadow: 0 2px 10px rgba(0,0,0,0.1);
+            --shadow-hover: 0 4px 20px rgba(0,0,0,0.15);
+            --border-radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Базовые стили */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--dark-gray);
+            background-color: var(--white);
+        }
+        
+        /* Утилитарные классы */
+        .bg-primary { background-color: var(--primary-color) !important; }
+        .bg-primary-dark { background-color: var(--primary-dark) !important; }
+        .bg-primary-light { background-color: var(--primary-light) !important; }
+        .bg-secondary { background-color: var(--secondary-color) !important; }
+        .bg-accent { background-color: var(--accent-color) !important; }
+        .bg-success { background-color: var(--success-color) !important; }
+        .bg-warning { background-color: var(--warning-color) !important; }
+        .bg-info { background-color: var(--info-color) !important; }
+        .bg-light-gray { background-color: var(--light-gray) !important; }
+        
+        .text-primary { color: var(--primary-color) !important; }
+        .text-primary-dark { color: var(--primary-dark) !important; }
+        .text-secondary { color: var(--secondary-color) !important; }
+        .text-accent { color: var(--accent-color) !important; }
+        .text-success { color: var(--success-color) !important; }
+        .text-warning { color: var(--warning-color) !important; }
+        .text-info { color: var(--info-color) !important; }
+        .text-medium-gray { color: var(--medium-gray) !important; }
+        .text-dark-gray { color: var(--dark-gray) !important; }
+        
+        /* Кнопки */
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: var(--white);
+            font-weight: 600;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+            padding: 10px 20px;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+            color: var(--white);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+        
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            transition: var(--transition);
+            padding: 10px 20px;
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: var(--white);
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+            color: var(--dark-gray);
+            font-weight: 600;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+            padding: 10px 20px;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #fdd835;
+            border-color: #fdd835;
+            color: var(--dark-gray);
+            transform: translateY(-1px);
+        }
+        
+        /* Карточки */
+        .card {
+            border: none;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .card-header {
+            background-color: var(--light-gray);
+            border-bottom: 1px solid #e9ecef;
+            border-radius: var(--border-radius) var(--border-radius) 0 0 !important;
+            font-weight: 600;
+        }
+        
+        /* Формы */
+        .form-control {
+            border: 2px solid #e9ecef;
+            border-radius: var(--border-radius);
+            padding: 12px 16px;
+            transition: var(--transition);
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.1);
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: var(--dark-gray);
+            margin-bottom: 8px;
+        }
+        
+        /* Верхняя панель */
+        .top-bar {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: var(--white);
+            padding: 8px 0;
+            font-size: 0.875rem;
+        }
+
+        .top-bar a {
+            color: var(--white);
+            text-decoration: none;
+            padding: 4px 12px;
+            border-radius: 4px;
+            transition: var(--transition);
+        }
+
+        .top-bar a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--secondary-color);
+        }
+
+        /* Основная навигация */
+        .main-header {
+            background: var(--white);
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0;
+            gap: 20px;
+        }
+
+        /* Логотип */
+        .brand {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+
+        .brand-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            box-shadow: 0 4px 15px rgba(255, 107, 157, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        .brand-icon::before {
+            content: "🐷";
+            font-size: 1.25rem;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* Поиск */
+        .search-container {
+            flex: 1;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 50px 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: var(--transition);
+            background: var(--light-gray);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: var(--white);
+            box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.1);
+        }
+
+        .search-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--primary-color);
+            border: none;
+            color: var(--white);
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .search-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        /* Навигация */
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-item {
+            position: relative;
+        }
+
+        .nav-link {
+            color: var(--dark-gray);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: var(--transition);
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color);
+            background: rgba(255, 107, 157, 0.1);
+        }
+
+        /* Пользовательские действия */
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .user-action {
+            color: var(--dark-gray);
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .user-action:hover {
+            color: var(--primary-color);
+            background: rgba(255, 107, 157, 0.1);
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: var(--accent-color);
+            color: var(--white);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        
+        .dropdown-menu {
+            border: none;
+            box-shadow: var(--shadow-hover);
+            border-radius: var(--border-radius);
+            padding: 8px 0;
+        }
+        
+        .dropdown-item {
+            padding: 8px 16px;
+            transition: var(--transition);
+        }
+        
+        .dropdown-item:hover {
+            background-color: rgba(255, 107, 157, 0.1);
+            color: var(--primary-color);
+        }
+        
+        /* Алерты */
+        .alert {
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+        }
+        
+        .alert-success {
+            background-color: rgba(46, 213, 115, 0.1);
+            color: var(--success-color);
+        }
+        
+        .alert-danger {
+            background-color: rgba(255, 71, 87, 0.1);
+            color: var(--accent-color);
+        }
+        
+        .alert-warning {
+            background-color: rgba(255, 165, 2, 0.1);
+            color: var(--warning-color);
+        }
+        
+        .alert-info {
+            background-color: rgba(55, 66, 250, 0.1);
+            color: var(--info-color);
+        }
+        
+        /* Рейтинг */
+        .rating {
+            color: var(--secondary-color);
+        }
+        
+        /* Бейджи */
+        .badge {
+            font-weight: 600;
+            border-radius: 20px;
+            padding: 6px 12px;
+        }
+        
+        .badge-primary {
+            background-color: var(--primary-color);
+        }
+        
+        .badge-success {
+            background-color: var(--success-color);
+        }
+        
+        .badge-warning {
+            background-color: var(--warning-color);
+        }
+        
+        .badge-danger {
+            background-color: var(--accent-color);
+        }
+        
+        /* Футер */
+        .footer {
+            background-color: var(--dark-gray);
+            color: var(--white);
+            padding: 60px 0 30px;
+            margin-top: 80px;
+        }
+        
+        .footer h5 {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        .footer h6 {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        
+        .footer a {
+            color: #adb5bd;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        
+        .footer a:hover {
+            color: var(--primary-color);
+        }
+        
+        .footer ul li {
+            margin-bottom: 8px;
+        }
+        
+        .footer ul li a {
+            color: #adb5bd;
+            font-size: 0.9rem;
+        }
+        
+        .footer ul li a:hover {
+            color: var(--primary-color);
+            padding-left: 4px;
+        }
+        
+        .app-download .btn {
+            border-radius: 8px;
+            font-size: 0.8rem;
+            padding: 6px 12px;
+        }
+        
+        .newsletter .form-control {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--white);
+        }
+        
+        .newsletter .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .newsletter .form-control:focus {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(255, 107, 157, 0.2);
+        }
+        
+        .footer-info {
+            background: rgba(0, 0, 0, 0.3) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .payment-icon {
+            border-radius: 4px;
+            transition: var(--transition);
+        }
+        
+        .payment-icon:hover {
+            transform: scale(1.1);
+        }
+        
+        .footer-bottom {
+            border-top: 1px solid #495057;
+            padding-top: 30px;
+            margin-top: 40px;
+            color: #adb5bd;
+        }
+        
+        .footer-bottom a {
+            color: #adb5bd;
+            font-size: 0.9rem;
+        }
+        
+        .footer-bottom a:hover {
+            color: var(--primary-color);
+        }
+        
+        /* Анимации */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        /* Утилиты */
+        .shadow-custom {
+            box-shadow: var(--shadow);
+        }
+        
+        .shadow-custom-hover {
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .border-radius-custom {
+            border-radius: var(--border-radius);
+        }
+        
+        .transition-custom {
+            transition: var(--transition);
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 16px;
+            }
+            
+            .search-container {
+                order: 3;
+                max-width: 100%;
+            }
+            
+            .nav-menu {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 16px;
+            }
+            
+            .user-actions {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 12px;
+            }
+            
+            .top-bar .d-flex {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .top-bar .text-md-end {
+                text-align: left !important;
+            }
+            
+            .footer .row > div {
+                margin-bottom: 30px;
+            }
+            
+            .footer-bottom .d-flex {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .footer-bottom .text-md-end {
+                text-align: left !important;
+            }
+        }
+        
+        /* Скрытие элементов на мобильных */
+        @media (max-width: 576px) {
+            .d-mobile-none {
+                display: none !important;
+            }
+        }
+        
+        /* Дополнительные стили для контента */
+        .main-content {
+            min-height: calc(100vh - 200px);
+        }
+        
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: var(--white);
+            padding: 60px 0;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+        
+        .page-subtitle {
+            font-size: 1.25rem;
+            opacity: 0.9;
+        }
+        
+        /* Хлебные крошки */
+        .breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin-bottom: 30px;
+        }
+        
+        .breadcrumb-item a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        
+        .breadcrumb-item.active {
+            color: var(--medium-gray);
+        }
+        
+        /* Пагинация */
+        .pagination .page-link {
+            color: var(--primary-color);
+            border-color: #e9ecef;
+            border-radius: 8px;
+            margin: 0 4px;
+            transition: var(--transition);
+        }
+        
+        .pagination .page-link:hover {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: var(--white);
+        }
+        
+        .pagination .page-item.active .page-link {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        /* Загрузка */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 107, 157, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Уведомления */
+        .toast {
+            border: none;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .toast-header {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border-bottom: none;
+        }
+        
+        /* Модальные окна */
+        .modal-content {
+            border: none;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .modal-header {
+            border-bottom: 1px solid #e9ecef;
+            background-color: var(--light-gray);
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+        }
+        
+        .modal-title {
+            color: var(--dark-gray);
+            font-weight: 600;
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Верхняя панель -->
+    <div class="top-bar">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center gap-3">
+                        <a href="{% url 'loyalty_card' %}">🐷 Жевжик Клуб</a>
+                        <a href="{% url 'promotions' %}">Акции</a>
+                        <a href="{% url 'stores' %}">Магазины</a>
+                    </div>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="d-flex align-items-center justify-content-md-end gap-3">
+                        <span>📍 Москва, Любучанский переулок, 1к3</span>
+                        <a href="tel:+79803600351">📞 +7 (980) 360-03-51</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Основная навигация -->
+    <header class="main-header">
+        <div class="container">
+            <div class="header-content">
+                <!-- Логотип -->
+                <a href="{% url 'home' %}" class="brand">
+                    <div class="brand-icon"></div>
+                    <span>Жевжик</span>
+                </a>
+
+                <!-- Поиск -->
+                <div class="search-container">
+                    <form method="get" action="{% url 'product_list' %}">
+                        <input type="text" name="search" class="search-input" placeholder="Поиск товаров...">
+                        <button type="submit" class="search-btn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Навигация -->
+                <nav>
+                    <ul class="nav-menu">
+                        <li class="nav-item">
+                            <a href="{% url 'product_list' %}" class="nav-link">Каталог</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'promotions' %}" class="nav-link">Акции</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'stores' %}" class="nav-link">Магазины</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'contacts' %}" class="nav-link">Контакты</a>
+                        </li>
+                    </ul>
+                </nav>
+
+                <!-- Пользовательские действия -->
+                <div class="user-actions">
+                    {% if user.is_authenticated %}
+                        <div class="dropdown">
+                            <a href="#" class="user-action dropdown-toggle" data-bs-toggle="dropdown">
+                                <i class="fas fa-user"></i>
+                                <span class="d-none d-md-inline">{{ user.first_name|default:user.username }}</span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{% url 'enhanced_profile' %}">
+                                    <i class="fas fa-user me-2"></i>Личный кабинет
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'order_history' %}">
+                                    <i class="fas fa-list me-2"></i>Мои заказы
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'favorites' %}">
+                                    <i class="fas fa-heart me-2"></i>Избранное
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'cashback_history' %}">
+                                    <i class="fas fa-coins me-2"></i>Кешбэк
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'support_tickets' %}">
+                                    <i class="fas fa-headset me-2"></i>Поддержка
+                                </a></li>
+                                {% if user.can_manage_store %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'manager_dashboard' %}">
+                                    <i class="fas fa-store me-2"></i>Панель менеджера
+                                </a></li>
+                                {% endif %}
+                                {% if user.can_pick_orders %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'picker_dashboard' %}">
+                                    <i class="fas fa-box me-2"></i>Панель сборщика
+                                </a></li>
+                                {% endif %}
+                                {% if user.can_deliver_orders %}
+                                <li><a class="dropdown-item" href="{% url 'delivery_dashboard' %}">
+                                    <i class="fas fa-truck me-2"></i>Панель доставщика
+                                </a></li>
+                                {% endif %}
+                                {% if user.is_staff %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'admin:index' %}">
+                                    <i class="fas fa-cog me-2"></i>Админ панель
+                                </a></li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="post" action="{% url 'logout' %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item">
+                                            <i class="fas fa-sign-out-alt me-2"></i>Выйти
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                        <a href="{% url 'cart' %}" class="user-action position-relative">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="d-none d-md-inline">Корзина</span>
+                            {% if user.cart_items.count > 0 %}
+                                <span class="cart-badge" id="cart-counter">{{ user.cart_items.count }}</span>
+                            {% else %}
+                                <span class="cart-badge" id="cart-counter" style="display: none;">0</span>
+                            {% endif %}
+                        </a>
+                    {% else %}
+                        <a href="{% url 'phone_login' %}" class="user-action">
+                            <i class="fas fa-mobile-alt"></i>
+                            <span class="d-none d-md-inline">Войти</span>
+                        </a>
+                        <a href="{% url 'register' %}" class="user-action">
+                            <i class="fas fa-user-plus"></i>
+                            <span class="d-none d-md-inline">Регистрация</span>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- CSRF токен для AJAX запросов -->
+    {% csrf_token %}
+
+    <!-- Основной контент -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Футер -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <!-- О компании -->
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <h5>🐷 Жевжик</h5>
+                    <p class="mb-3">Продуктовый магазин с милым поросенком. Свежие продукты с доставкой на дом по лучшим ценам.</p>
+                    <div class="d-flex gap-3 mb-3">
+                        <a href="https://t.me/Kav2601" class="text-primary" title="Telegram" target="_blank"><i class="fab fa-telegram fa-lg"></i></a>
+                        <a href="mailto:ower.wolf@mail.ru" class="text-primary" title="Email"><i class="fas fa-envelope fa-lg"></i></a>
+                    </div>
+                </div>
+                
+                <!-- Каталог -->
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h5>Каталог</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{% url 'product_list' %}">Все товары</a></li>
+                        <li><a href="{% url 'promotions' %}">Акции и скидки</a></li>
+                        <li><a href="{% url 'product_list' %}?category=1">Молочные продукты</a></li>
+                        <li><a href="{% url 'product_list' %}?category=2">Мясо и птица</a></li>
+                        <li><a href="{% url 'product_list' %}?category=3">Овощи и фрукты</a></li>
+                        <li><a href="{% url 'product_list' %}?category=4">Хлеб и выпечка</a></li>
+                        <li><a href="{% url 'product_list' %}?category=5">Напитки</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Покупателям -->
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h5>Покупателям</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{% url 'info' %}">О нас</a></li>
+                        <li><a href="{% url 'stores' %}">Наши магазины</a></li>
+                        <li><a href="{% url 'contacts' %}">Контакты</a></li>
+                        <li><a href="{% url 'support' %}">Поддержка</a></li>
+                        <li><a href="{% url 'loyalty_card' %}">Жевжик Клуб</a></li>
+                        <li><a href="{% url 'loyalty_levels' %}">Уровни программы</a></li>
+                        {% if user.is_authenticated %}
+                            <li><a href="{% url 'favorites' %}">Избранное</a></li>
+                            <li><a href="{% url 'order_history' %}">История заказов</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+                
+                
+                <!-- Контакты -->
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <h5>Контакты</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-phone me-2 text-primary"></i>
+                            <a href="tel:+79803600351">+7 (980) 360-03-51</a>
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-envelope me-2 text-primary"></i>
+                            <a href="mailto:ower.wolf@mail.ru">ower.wolf@mail.ru</a>
+                        </li>
+                        <li class="mb-2">
+                            <i class="fab fa-telegram me-2 text-primary"></i>
+                            <a href="https://t.me/Kav2601" target="_blank">@Kav2601</a>
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-map-marker-alt me-2 text-primary"></i>
+                            Москва, Любучанский переулок, 1к3
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-clock me-2 text-primary"></i>
+                            Пн-Вс: 8:00 - 22:00
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-truck me-2 text-primary"></i>
+                            Доставка: 9:00 - 21:00
+                        </li>
+                    </ul>
+                    
+                    <!-- Подписка на новости -->
+                    <div class="newsletter mt-3">
+                        <h6>Подписка на новости</h6>
+                        <form class="d-flex gap-2">
+                            <input type="email" class="form-control form-control-sm" placeholder="Ваш email">
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Дополнительная информация -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="footer-info bg-dark p-3 rounded">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <div class="d-flex flex-wrap gap-4">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-shield-alt text-success me-2"></i>
+                                        <small>Безопасная оплата</small>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-truck text-primary me-2"></i>
+                                        <small>Быстрая доставка</small>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-leaf text-success me-2"></i>
+                                        <small>Свежие продукты</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-md-end">
+                                <div class="d-flex flex-wrap gap-3 justify-content-md-end">
+                                    <div class="payment-icon visa-icon">
+                                        <i class="fab fa-cc-visa"></i>
+                                    </div>
+                                    <div class="payment-icon mc-icon">
+                                        <i class="fab fa-cc-mastercard"></i>
+                                    </div>
+                                    <div class="payment-icon mir-icon">
+                                        <i class="fas fa-credit-card"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Копирайт -->
+            <div class="footer-bottom">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <p class="mb-0">&copy; 2024 Жевжик. Все права защищены.</p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <div class="d-flex flex-wrap gap-3 justify-content-md-end">
+                            <a href="#" class="text-muted">Политика конфиденциальности</a>
+                            <a href="#" class="text-muted">Условия использования</a>
+                            <a href="#" class="text-muted">Публичная оферта</a>
+                            <a href="#" class="text-muted">Карта сайта</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Дополнительные скрипты -->
+    <script>
+        // Функция для показа уведомлений
+        function showToast(message, type = 'info') {
+            // Создаем контейнер для toast, если его нет
+            let toastContainer = document.getElementById('toast-container');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.id = 'toast-container';
+                toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+                toastContainer.style.zIndex = '9999';
+                document.body.appendChild(toastContainer);
+            }
+            
+            // Создаем toast элемент
+            const toastId = 'toast-' + Date.now();
+            const toastHtml = `
+                <div id="${toastId}" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="toast-header">
+                        <i class="fas fa-${type === 'success' ? 'check-circle text-success' : 
+                                          type === 'error' ? 'exclamation-circle text-danger' : 
+                                          type === 'warning' ? 'exclamation-triangle text-warning' : 
+                                          'info-circle text-info'} me-2"></i>
+                        <strong class="me-auto">Жевжик</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                    </div>
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                </div>
+            `;
+            
+            toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+            
+            // Показываем toast
+            const toastElement = document.getElementById(toastId);
+            const toast = new bootstrap.Toast(toastElement, {
+                autohide: true,
+                delay: 3000
+            });
+            toast.show();
+            
+            // Удаляем toast после скрытия
+            toastElement.addEventListener('hidden.bs.toast', function() {
+                toastElement.remove();
+            });
+        }
+        
+        // Функции для получения CSRF токена
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return '';
+        }
+        function getCSRFToken() {
+            const tokenInput = document.querySelector('[name=csrfmiddlewaretoken]');
+            if (tokenInput && tokenInput.value) return tokenInput.value;
+            const cookieToken = getCookie('csrftoken');
+            return cookieToken || '';
+        }
+        
+        // Функция для обновления счетчика корзины
+        function updateCartCounter() {
+            fetch('/cart-count/', {
+                method: 'GET',
+                headers: {
+                    'X-CSRFToken': getCSRFToken(),
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                const counter = document.getElementById('cart-counter');
+                if (counter) {
+                    if (data.count > 0) {
+                        counter.textContent = data.count;
+                        counter.style.display = 'inline-block';
+                    } else {
+                        counter.style.display = 'none';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error updating cart counter:', error);
+            });
+        }
+        
+        // Система логирования ошибок
+        window.addEventListener('error', function(event) {
+            logError('javascript', event.message, event.error ? event.error.stack : '', window.location.href);
+        });
+        
+        window.addEventListener('unhandledrejection', function(event) {
+            logError('javascript', 'Unhandled Promise Rejection: ' + event.reason, '', window.location.href);
+        });
+        
+        function logError(type, message, stackTrace, url) {
+            const errorData = {
+                type: type,
+                message: message,
+                stackTrace: stackTrace,
+                url: url
+            };
+            
+            fetch('/log-error/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken(),
+                },
+                body: JSON.stringify(errorData)
+            }).catch(error => {
+                console.error('Failed to log error:', error);
+            });
+        }
+    </script>
+    <!-- Горячие клавиши и модалка помощи -->
+    <div id="hotkeysModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:2000;">
+        <div style="background:#fff; max-width:720px; margin:5% auto; border-radius:12px; padding:24px; box-shadow:var(--shadow);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h5 style="margin:0;">Горячие клавиши</h5>
+                <button id="hotkeysClose" class="btn btn-sm btn-outline-primary">Закрыть (Esc)</button>
+            </div>
+            <div class="row">
+                <div class="col-6">
+                    <ul style="list-style:none; padding-left:0;">
+                        <li><kbd>g</kbd> + <kbd>h</kbd> — Главная</li>
+                        <li><kbd>g</kbd> + <kbd>c</kbd> — Корзина</li>
+                        <li><kbd>g</kbd> + <kbd>o</kbd> — Мои заказы</li>
+                        <li><kbd>g</kbd> + <kbd>p</kbd> — Профиль</li>
+                    </ul>
+                </div>
+                <div class="col-6">
+                    <ul style="list-style:none; padding-left:0;">
+                        <li><kbd>/</kbd> — Поиск</li>
+                        <li><kbd>n</kbd> — Уведомления</li>
+                        <li><kbd>?</kbd> — Справка по клавишам</li>
+                        <li><kbd>d</kbd> — Дашборд администратора (персонал)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+    (function(){
+        const modal = document.getElementById('hotkeysModal');
+        const closeBtn = document.getElementById('hotkeysClose');
+        function openModal(){ if(modal) modal.style.display='block'; }
+        function closeModal(){ if(modal) modal.style.display='none'; }
+        if (closeBtn) closeBtn.addEventListener('click', closeModal);
+        document.addEventListener('keydown', function(e){
+            const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+            const isTyping = tag === 'input' || tag === 'textarea' || e.target.isContentEditable;
+            if (e.key === 'Escape' && modal && modal.style.display === 'block') { closeModal(); return; }
+            if (isTyping) { return; }
+            if (e.key === '?') { e.preventDefault(); openModal(); return; }
+            if (e.key === '/') {
+                e.preventDefault();
+                const search = document.querySelector('input[type="search"], input[name="search"], input[placeholder*="Поиск" i]');
+                if (search) { search.focus(); search.select && search.select(); }
+                return;
+            }
+            if (e.key === 'g') { window.__gPressedAt = Date.now(); return; }
+            const withinCombo = window.__gPressedAt && (Date.now() - window.__gPressedAt < 800);
+            if (!withinCombo) return;
+            function go(url){ if (url) window.location.href = url; }
+            if (e.key === 'h') { e.preventDefault(); go('{% url "home" %}'); }
+            if (e.key === 'c') { e.preventDefault(); go('{% url "cart" %}'); }
+            if (e.key === 'o') { e.preventDefault(); go('{% url "order_history" %}'); }
+            if (e.key === 'p') { e.preventDefault(); go('{% url "profile" %}'); }
+            if (e.key === 'n') { e.preventDefault(); go('{% url "notifications" %}'); }
+            if (e.key === 'd') {
+                e.preventDefault();
+                {% if request.user.is_staff %}
+                    {% if dashboard_url %}
+                        go('{{ dashboard_url }}');
+                    {% else %}
+                        go('{% url "admin:index" %}');
+                    {% endif %}
+                {% else %}
+                    go('{% url "home" %}');
+                {% endif %}
+            }
+        });
+    })();
+    </script>
+    <script>
+        // Плавная прокрутка
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+        
+        // Анимация появления элементов при прокрутке
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-in-up');
+                }
+            });
+        }, observerOptions);
+        
+        // Наблюдаем за всеми карточками
+        document.querySelectorAll('.card, .product-card, .category-card').forEach(card => {
+            observer.observe(card);
+        });
+        
+        // Автоматическое скрытие уведомлений
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                if (alert.classList.contains('alert-success') || alert.classList.contains('alert-info')) {
+                    alert.style.transition = 'opacity 0.5s ease-out';
+                    alert.style.opacity = '0';
+                    setTimeout(() => alert.remove(), 500);
+                }
+            });
+        }, 5000);
+        
+        // Обработка форм с AJAX
+        document.querySelectorAll('form[data-ajax="true"]').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<span class="loading"></span> Загрузка...';
+                submitBtn.disabled = true;
+                
+                // Здесь можно добавить AJAX запрос
+                setTimeout(() => {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }, 2000);
+            });
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,183 @@
+{% extends "paint_shop_project/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Детали заказа" %} #{{ order.id }} | {% trans "Жевжик" %}{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1000px; margin: 20px auto; padding: 20px;">
+    <div class="header-section" style="margin-bottom: 30px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1>{% trans "Заказ на доставку" %} #{{ order.id }}</h1>
+                <p class="help-text">{{ order.order_date|date:"d.m.Y H:i" }}</p>
+            </div>
+            <a href="{% url 'delivery_dashboard' %}" style="color: #1a2a6c; text-decoration: none;">← {% trans "Назад к заказам" %}</a>
+        </div>
+    </div>
+
+    <div class="order-info-section" style="background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px;">
+        <h2 style="margin-top: 0;">{% trans "Информация о заказе" %}</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+            <div>
+                <strong>{% trans "Статус заказа" %}:</strong><br>
+                <span class="status-badge" style="
+                    display: inline-block;
+                    padding: 5px 15px;
+                    border-radius: 20px;
+                    font-size: 0.9em;
+                    background: {% if order.status == 'ready' %}#10b981{% elif order.status == 'in_transit' %}#3b82f6{% elif order.status == 'delivered' %}#10b981{% else %}#6b7280{% endif %};
+                    color: white;
+                    margin-top: 5px;
+                ">
+                    {{ order.get_status_display }}
+                </span>
+            </div>
+            <div>
+                <strong>{% trans "Статус доставки" %}:</strong><br>
+                <span class="status-badge" style="
+                    display: inline-block;
+                    padding: 5px 15px;
+                    border-radius: 20px;
+                    font-size: 0.9em;
+                    background: {% if delivery.status == 'in_transit' %}#3b82f6{% elif delivery.status == 'delivered' %}#10b981{% elif delivery.status == 'picked_up' %}#f59e0b{% else %}#6b7280{% endif %};
+                    color: white;
+                    margin-top: 5px;
+                ">
+                    {{ delivery.get_status_display }}
+                </span>
+            </div>
+            <div>
+                <strong>{% trans "Сумма заказа" %}:</strong><br>
+                <span style="font-size: 1.2em; font-weight: bold; color: #10b981;">{{ order.total_amount|floatformat:2 }} ₽</span>
+            </div>
+            <div>
+                <strong>{% trans "Способ оплаты" %}:</strong><br>
+                {{ order.get_payment_method_display }}
+            </div>
+        </div>
+    </div>
+
+    <div class="customer-info-section" style="background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px;">
+        <h2 style="margin-top: 0;">{% trans "Информация о покупателе" %}</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+            <div>
+                <strong>{% trans "Имя" %}:</strong><br>
+                {{ customer.get_full_name|default:customer.username }}
+            </div>
+            <div>
+                <strong>{% trans "Телефон" %}:</strong><br>
+                <a href="tel:{{ customer_phone }}" style="color: #1a2a6c; text-decoration: none; font-size: 1.1em;">{{ customer_phone }}</a>
+            </div>
+            <div>
+                <strong>{% trans "Email" %}:</strong><br>
+                <a href="mailto:{{ customer_email }}" style="color: #1a2a6c; text-decoration: none;">{{ customer_email }}</a>
+            </div>
+        </div>
+        <div style="margin-top: 20px; padding: 15px; background: #eff6ff; border-radius: 5px; border-left: 4px solid #3b82f6;">
+            <strong>📍 {% trans "Адрес доставки" %}:</strong><br>
+            <span style="font-size: 1.1em;">{{ delivery_address }}</span>
+        </div>
+        {% if order.comment %}
+        <div style="margin-top: 15px;">
+            <strong>{% trans "Комментарий клиента" %}:</strong><br>
+            {{ order.comment }}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="order-items-section" style="background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px;">
+        <h2 style="margin-top: 0;">{% trans "Состав заказа" %}</h2>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="border-bottom: 2px solid #e5e7eb;">
+                    <th style="padding: 10px; text-align: left;">{% trans "Товар" %}</th>
+                    <th style="padding: 10px; text-align: center;">{% trans "Количество" %}</th>
+                    <th style="padding: 10px; text-align: right;">{% trans "Цена" %}</th>
+                    <th style="padding: 10px; text-align: right;">{% trans "Сумма" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order_items %}
+                <tr style="border-bottom: 1px solid #e5e7eb;">
+                    <td style="padding: 15px;">
+                        <strong>{{ item.product.name }}</strong>
+                    </td>
+                    <td style="padding: 15px; text-align: center;">{{ item.quantity }}</td>
+                    <td style="padding: 15px; text-align: right;">{{ item.price_per_unit|floatformat:2 }} ₽</td>
+                    <td style="padding: 15px; text-align: right;">{{ item.total_price|floatformat:2 }} ₽</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr style="border-top: 2px solid #e5e7eb;">
+                    <td colspan="3" style="padding: 15px; text-align: right; font-weight: bold;">{% trans "Итого" %}:</td>
+                    <td style="padding: 15px; text-align: right; font-weight: bold; font-size: 1.1em;">{{ order.total_amount|floatformat:2 }} ₽</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <div class="actions-section" style="background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h2 style="margin-top: 0;">{% trans "Управление доставкой" %}</h2>
+        
+        {% if delivery.status == 'assigned' or delivery.status == 'picked_up' or delivery.status == 'in_transit' %}
+        <form method="post" action="{% url 'delivery_update_status' order.id %}" style="margin-bottom: 20px;">
+            {% csrf_token %}
+            <div style="margin-bottom: 15px;">
+                <label for="status" style="display: block; margin-bottom: 5px;">
+                    <strong>{% trans "Изменить статус" %}:</strong>
+                </label>
+                <select name="status" id="status" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 1em;" required>
+                    {% if delivery.status == 'assigned' %}
+                    <option value="picked_up">📦 {% trans "Забрал из магазина" %}</option>
+                    {% endif %}
+                    {% if delivery.status == 'picked_up' or delivery.status == 'assigned' %}
+                    <option value="in_transit">🚗 {% trans "В пути" %}</option>
+                    {% endif %}
+                    {% if delivery.status == 'in_transit' or delivery.status == 'picked_up' or delivery.status == 'assigned' %}
+                    <option value="delivered">✅ {% trans "Доставлен" %}</option>
+                    <option value="failed">❌ {% trans "Не доставлен" %}</option>
+                    {% endif %}
+                </select>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label for="comment" style="display: block; margin-bottom: 5px;">
+                    <strong>{% trans "Комментарий" %} ({% trans "необязательно" %}):</strong>
+                </label>
+                <textarea name="comment" id="comment" rows="3" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;"></textarea>
+            </div>
+            <button type="submit" style="
+                padding: 12px 24px;
+                background: #10b981;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 1em;
+            ">
+                {% trans "Обновить статус" %}
+            </button>
+        </form>
+        {% endif %}
+
+        {% if delivery.status == 'delivered' %}
+        <div style="padding: 15px; background: #d1fae5; border-radius: 5px; border-left: 4px solid #10b981;">
+            <strong>✅ {% trans "Заказ доставлен" %}</strong><br>
+            {% if delivery.delivered_at %}
+            <small>{% trans "Время доставки" %}: {{ delivery.delivered_at|date:"d.m.Y H:i" }}</small>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if delivery.comment %}
+        <div style="margin-top: 20px; padding: 15px; background: #f9fafb; border-radius: 5px;">
+            <strong>{% trans "Комментарий доставщика" %}:</strong><br>
+            {{ delivery.comment }}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+
+

@@ -1,0 +1,471 @@
+{% extends 'paint_shop_project/base.html' %}
+{% load static %}
+
+{% block title %}Поддержка - Жевжик{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --zhevzhik-pink: #FF6B9D;
+        --zhevzhik-dark-pink: #E91E63;
+        --zhevzhik-light-pink: #FFB3D1;
+        --zhevzhik-green: #4CAF50;
+        --zhevzhik-yellow: #FFEB3B;
+        --zhevzhik-gray: #6c757d;
+        --zhevzhik-dark-gray: #2c3e50;
+    }
+    .support-hero {
+        background: linear-gradient(135deg, var(--zhevzhik-pink), var(--zhevzhik-light-pink));
+        color: white;
+        padding: 50px 0;
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    
+    .faq-section {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    
+    .faq-item {
+        border-bottom: 1px solid #e9ecef;
+        padding: 20px 0;
+    }
+    
+    .faq-item:last-child {
+        border-bottom: none;
+    }
+    
+    .faq-question {
+        color: var(--zhevzhik-pink);
+        font-weight: 600;
+        margin-bottom: 10px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .faq-question:hover {
+        color: var(--zhevzhik-dark-pink);
+    }
+    
+    .faq-answer {
+        color: var(--zhevzhik-dark-gray);
+        margin-top: 10px;
+        display: none;
+    }
+    
+    .faq-answer.show {
+        display: block;
+    }
+    
+    .faq-icon {
+        transition: transform 0.3s ease;
+    }
+    
+    .faq-icon.rotated {
+        transform: rotate(180deg);
+    }
+    
+    .help-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    
+    .help-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+    
+    .help-icon {
+        background: var(--zhevzhik-light-pink);
+        color: var(--zhevzhik-pink);
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin: 0 auto 15px;
+    }
+    
+    .help-title {
+        color: var(--zhevzhik-pink);
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+    
+    .help-description {
+        color: var(--zhevzhik-dark-gray);
+        margin-bottom: 20px;
+    }
+    
+    .btn-help {
+        background: var(--zhevzhik-pink);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 25px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .btn-help:hover {
+        background: var(--zhevzhik-dark-pink);
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .btn-help i {
+        margin-right: 8px;
+    }
+    
+    .section-title {
+        color: var(--zhevzhik-pink);
+        font-weight: 600;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .section-title i {
+        margin-right: 10px;
+    }
+    
+    .contact-info {
+        background: var(--zhevzhik-light-gray);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .contact-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    
+    .contact-item i {
+        color: var(--zhevzhik-pink);
+        margin-right: 15px;
+        width: 20px;
+    }
+    
+    .contact-item a {
+        color: var(--zhevzhik-pink);
+        text-decoration: none;
+    }
+    
+    .contact-item a:hover {
+        color: var(--zhevzhik-dark-pink);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Заголовок поддержки -->
+<div class="support-hero">
+    <div class="container">
+        <h1 class="display-4 mb-3">🆘 Служба поддержки</h1>
+        <p class="lead">Мы поможем решить любую проблему!</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Способы получения помощи -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="section-title">
+                <i class="fas fa-hands-helping"></i>Как мы можем помочь
+            </h2>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="help-card">
+                <div class="help-icon">
+                    <i class="fas fa-phone"></i>
+                </div>
+                <h4 class="help-title">Позвонить</h4>
+                <p class="help-description">Быстрая помощь по телефону</p>
+                <a href="tel:+74951234567" class="btn-help">
+                    <i class="fas fa-phone"></i>Позвонить
+                </a>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="help-card">
+                <div class="help-icon">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <h4 class="help-title">Чат</h4>
+                <p class="help-description">Онлайн консультант</p>
+                <a href="#" class="btn-help">
+                    <i class="fas fa-comments"></i>Начать чат
+                </a>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="help-card">
+                <div class="help-icon">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <h4 class="help-title">Email</h4>
+                <p class="help-description">Подробное описание проблемы</p>
+                <a href="mailto:support@zhevzhik.ru" class="btn-help">
+                    <i class="fas fa-envelope"></i>Написать
+                </a>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="help-card">
+                <div class="help-icon">
+                    <i class="fas fa-question-circle"></i>
+                </div>
+                <h4 class="help-title">FAQ</h4>
+                <p class="help-description">Часто задаваемые вопросы</p>
+                <a href="#faq" class="btn-help">
+                    <i class="fas fa-question-circle"></i>Смотреть FAQ
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Контактная информация -->
+    <div class="row mb-5">
+        <div class="col-lg-6">
+            <div class="faq-section">
+                <h3 class="section-title">
+                    <i class="fas fa-phone-alt"></i>Контактная информация
+                </h3>
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <i class="fas fa-phone"></i>
+                        <div>
+                            <strong>Горячая линия:</strong><br>
+                            <a href="tel:+74951234567">+7 (495) 123-45-67</a>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-clock"></i>
+                        <div>
+                            <strong>Время работы:</strong><br>
+                            Круглосуточно, 7 дней в неделю
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <div>
+                            <strong>Email поддержки:</strong><br>
+                            <a href="mailto:support@zhevzhik.ru">support@zhevzhik.ru</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="faq-section">
+                <h3 class="section-title">
+                    <i class="fas fa-keyboard"></i>Горячие клавиши
+                </h3>
+                <div class="contact-info">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <ul>
+                                <li><kbd>g</kbd> + <kbd>h</kbd> — Главная</li>
+                                <li><kbd>g</kbd> + <kbd>c</kbd> — Корзина</li>
+                                <li><kbd>g</kbd> + <kbd>o</kbd> — Мои заказы</li>
+                                <li><kbd>g</kbd> + <kbd>p</kbd> — Профиль</li>
+                            </ul>
+                        </div>
+                        <div class="col-sm-6">
+                            <ul>
+                                <li><kbd>/</kbd> — Фокус поиска</li>
+                                <li><kbd>n</kbd> — Уведомления</li>
+                                <li><kbd>?</kbd> — Открыть справку по клавишам</li>
+                                <li><kbd>d</kbd> — Дашборд администратора (персонал)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <small class="text-muted">Подсказка: нажмите «?» в любом месте сайта, чтобы открыть окно со списком клавиш.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- FAQ -->
+    <div class="row" id="faq">
+        <div class="col-12">
+            <div class="faq-section">
+                <h3 class="section-title">
+                    <i class="fas fa-question-circle"></i>Часто задаваемые вопросы
+                </h3>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span>Как оформить заказ?</span>
+                        <i class="fas fa-chevron-down faq-icon"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Для оформления заказа:</p>
+                        <ol>
+                            <li>Выберите товары и добавьте их в корзину</li>
+                            <li>Перейдите в корзину и проверьте заказ</li>
+                            <li>Выберите способ доставки и оплаты</li>
+                            <li>Подтвердите заказ</li>
+                        </ol>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span>Какие способы оплаты доступны?</span>
+                        <i class="fas fa-chevron-down faq-icon"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Мы принимаем:</p>
+                        <ul>
+                            <li>Банковские карты (Visa, MasterCard, МИР)</li>
+                            <li>Электронные кошельки (ЮMoney, QIWI)</li>
+                            <li>Наличные при получении</li>
+                            <li>Банковский перевод</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span>Сколько стоит доставка?</span>
+                        <i class="fas fa-chevron-down faq-icon"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Стоимость доставки зависит от суммы заказа:</p>
+                        <ul>
+                            <li>От 2000 ₽ - бесплатно</li>
+                            <li>До 2000 ₽ - 200 ₽</li>
+                            <li>Экспресс доставка - 500 ₽</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span>Как отследить заказ?</span>
+                        <i class="fas fa-chevron-down faq-icon"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Вы можете отследить заказ:</p>
+                        <ul>
+                            <li>В личном кабинете в разделе "История заказов"</li>
+                            <li>По SMS-уведомлениям</li>
+                            <li>По телефону горячей линии</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span>Можно ли отменить заказ?</span>
+                        <i class="fas fa-chevron-down faq-icon"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Да, заказ можно отменить:</p>
+                        <ul>
+                            <li>До подтверждения - в личном кабинете</li>
+                            <li>После подтверждения - по телефону</li>
+                            <li>При получении - отказаться от товара</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span>Что такое Жевжик Клуб?</span>
+                        <i class="fas fa-chevron-down faq-icon"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Жевжик Клуб - это программа лояльности:</p>
+                        <ul>
+                            <li>Накапливайте баллы за покупки</li>
+                            <li>Получайте скидки в зависимости от уровня</li>
+                            <li>Участвуйте в специальных акциях</li>
+                            <li>Получайте персональные предложения</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Призыв к действию -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card" style="background: linear-gradient(135deg, #ffffff, var(--zhevzhik-light-pink)); color: var(--zhevzhik-dark-gray);">
+                <div class="card-body text-center py-5">
+                    <h2 class="mb-3" style="color: var(--zhevzhik-dark-gray);">🐷 Нужна помощь?</h2>
+                    <p class="lead mb-4" style="color: var(--zhevzhik-dark-gray);">Наша команда поддержки готова помочь 24/7</p>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <a href="tel:+74951234567" class="btn btn-zhevzhik-pink btn-lg w-100 text-white">
+                                <i class="fas fa-phone me-2"></i>Позвонить
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="mailto:support@zhevzhik.ru" class="btn btn-zhevzhik-pink btn-lg w-100 text-white">
+                                <i class="fas fa-envelope me-2"></i>Написать
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="{% url 'contacts' %}" class="btn btn-zhevzhik-pink btn-lg w-100 text-white">
+                                <i class="fas fa-info-circle me-2"></i>Контакты
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleFaq(element) {
+    const answer = element.nextElementSibling;
+    const icon = element.querySelector('.faq-icon');
+    
+    if (answer.classList.contains('show')) {
+        answer.classList.remove('show');
+        icon.classList.remove('rotated');
+    } else {
+        // Закрываем все открытые FAQ
+        document.querySelectorAll('.faq-answer.show').forEach(item => {
+            item.classList.remove('show');
+        });
+        document.querySelectorAll('.faq-icon.rotated').forEach(item => {
+            item.classList.remove('rotated');
+        });
+        
+        // Открываем текущий FAQ
+        answer.classList.add('show');
+        icon.classList.add('rotated');
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,425 @@
+{% extends 'paint_shop_project/base.html' %}
+{% load static %}
+
+{% block title %}Наши магазины - Жевжик{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --zhevzhik-pink: #FF6B9D;
+        --zhevzhik-dark-pink: #E91E63;
+        --zhevzhik-light-pink: #FFB3D1;
+        --zhevzhik-green: #4CAF50;
+        --zhevzhik-yellow: #FFEB3B;
+        --zhevzhik-gray: #6c757d;
+        --zhevzhik-dark-gray: #2c3e50;
+    }
+    .stores-hero {
+        background: linear-gradient(135deg, var(--zhevzhik-pink), var(--zhevzhik-light-pink));
+        color: white;
+        padding: 50px 0;
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    
+    .store-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        margin-bottom: 30px;
+    }
+    
+    .store-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+    
+    .store-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+    
+    .store-content {
+        padding: 25px;
+    }
+    
+    .store-name {
+        color: var(--zhevzhik-pink);
+        font-weight: 600;
+        margin-bottom: 10px;
+        font-size: 1.3rem;
+    }
+    
+    .store-address {
+        color: var(--zhevzhik-dark-gray);
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .store-address i {
+        margin-right: 8px;
+        color: var(--zhevzhik-pink);
+    }
+    
+    .store-hours {
+        color: var(--zhevzhik-gray);
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .store-hours i {
+        margin-right: 8px;
+        color: var(--zhevzhik-pink);
+    }
+    
+    .store-phone {
+        color: var(--zhevzhik-dark-gray);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .store-phone i {
+        margin-right: 8px;
+        color: var(--zhevzhik-pink);
+    }
+    
+    .store-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .btn-store {
+        background: var(--zhevzhik-pink);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .btn-store:hover {
+        background: var(--zhevzhik-dark-pink);
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .btn-store i {
+        margin-right: 5px;
+    }
+    
+    .map-container {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+    
+    .map-embed {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+    
+    .map-placeholder {
+        background: var(--zhevzhik-light-gray);
+        border-radius: 10px;
+        padding: 40px;
+        color: var(--zhevzhik-gray);
+    }
+    
+    .section-title {
+        color: var(--zhevzhik-pink);
+        font-weight: 600;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .section-title i {
+        margin-right: 10px;
+    }
+    
+    .feature-icon {
+        background: var(--zhevzhik-light-pink);
+        color: var(--zhevzhik-pink);
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        margin-bottom: 15px;
+    }
+    
+    .feature-card {
+        text-align: center;
+        padding: 20px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+
+    .stores-cta {
+        background: linear-gradient(135deg, #ffffff, var(--zhevzhik-light-pink));
+        color: var(--zhevzhik-dark-gray);
+        border: none;
+    }
+
+    .stores-cta h2,
+    .stores-cta p {
+        color: var(--zhevzhik-dark-gray);
+    }
+
+    .stores-cta .btn-cta {
+        background: var(--zhevzhik-pink);
+        color: #ffffff;
+        border: none;
+        padding: 12px 28px;
+        border-radius: 30px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .stores-cta .btn-cta:hover {
+        background: var(--zhevzhik-dark-pink);
+        color: #ffffff;
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Заголовок магазинов -->
+<div class="stores-hero">
+    <div class="container">
+        <h1 class="display-4 mb-3">🏪 Наши магазины</h1>
+        <p class="lead">Найдите ближайший магазин Жевжик и заберите заказ</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Карта -->
+    <div class="map-container">
+        <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between mb-3">
+            <div>
+                <h3 class="section-title mb-0">
+                    <i class="fas fa-map-marker-alt"></i>Расположение магазинов
+                </h3>
+                <p class="text-muted mb-0">На карте отмечены наши актуальные точки продаж и пункты самовывоза</p>
+            </div>
+            <a href="https://yandex.ru/maps/?um=constructor%3Afb4a9069499ed32b2008342da6f7807421006e52adfad87390169edc29a0ad4a&source=constructorLink" target="_blank" class="btn btn-outline-zhevzhik-pink mt-3 mt-lg-0">
+                <i class="fas fa-external-link-alt me-2"></i>Открыть карту в Яндекс
+            </a>
+        </div>
+        <div class="map-embed">
+            <script type="text/javascript" charset="utf-8" async src="https://api-maps.yandex.ru/services/constructor/1.0/js/?um=constructor%3Afb4a9069499ed32b2008342da6f7807421006e52adfad87390169edc29a0ad4a&amp;width=100%25&amp;height=420&amp;lang=ru_RU&amp;scroll=true"></script>
+        </div>
+    </div>
+    
+    <!-- Список магазинов -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="section-title">
+                <i class="fas fa-store"></i>Все магазины
+            </h2>
+        </div>
+    </div>
+    
+    <div class="row">
+        {% for store in stores %}
+        <div class="col-lg-4 col-md-6">
+            <div class="store-card">
+                {% if store.image %}
+                    <img src="{{ store.image.url }}" alt="{{ store.name }}" class="store-image">
+                {% else %}
+                    <div class="store-image bg-zhevzhik-light-pink d-flex align-items-center justify-content-center">
+                        <i class="fas fa-store fa-3x text-white"></i>
+                    </div>
+                {% endif %}
+                <div class="store-content">
+                    <h3 class="store-name">{{ store.name }}</h3>
+                    
+                    <div class="store-address">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>{{ store.address }}</span>
+                        <button class="btn btn-sm btn-outline-secondary ms-2" onclick="copyAddress('{{ store.address }}')" title="Копировать адрес">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="store-hours">
+                        <i class="fas fa-clock"></i>
+                        {{ store.working_hours }}
+                    </div>
+                    
+                    <div class="store-phone">
+                        <i class="fas fa-phone"></i>
+                        <a href="tel:{{ store.phone }}" style="color: var(--zhevzhik-dark-gray); text-decoration: none;">{{ store.phone }}</a>
+                    </div>
+                    
+                    <div class="store-actions">
+                        <a href="tel:{{ store.phone }}" class="btn-store">
+                            <i class="fas fa-phone"></i>Позвонить
+                        </a>
+                        <a href="https://yandex.ru/maps/?text={{ store.address|urlencode }}" target="_blank" class="btn-store">
+                            <i class="fas fa-route"></i>Маршрут
+                        </a>
+                        <a href="{% url 'product_list' %}" class="btn-store">
+                            <i class="fas fa-shopping-bag"></i>Заказать
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="fas fa-store fa-3x text-zhevzhik-pink mb-3"></i>
+            <h4>Магазины скоро появятся!</h4>
+            <p class="text-muted">Мы работаем над открытием новых точек</p>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Преимущества -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="section-title">
+                <i class="fas fa-star"></i>Почему выбирают наши магазины
+            </h2>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="feature-card">
+                <div class="feature-icon mx-auto">
+                    <i class="fas fa-truck"></i>
+                </div>
+                <h5>Быстрая доставка</h5>
+                <p class="text-muted">Доставляем заказы в течение 30 минут</p>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="feature-card">
+                <div class="feature-icon mx-auto">
+                    <i class="fas fa-leaf"></i>
+                </div>
+                <h5>Свежие продукты</h5>
+                <p class="text-muted">Только качественные и свежие товары</p>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="feature-card">
+                <div class="feature-icon mx-auto">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <h5>Забота о клиентах</h5>
+                <p class="text-muted">Индивидуальный подход к каждому покупателю</p>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="feature-card">
+                <div class="feature-icon mx-auto">
+                    <i class="fas fa-credit-card"></i>
+                </div>
+                <h5>Удобная оплата</h5>
+                <p class="text-muted">Принимаем все виды платежей</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Призыв к действию -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card stores-cta">
+                <div class="card-body text-center py-5">
+                    <h2 class="mb-3">🐷 Посетите наш магазин!</h2>
+                    <p class="lead mb-4">Убедитесь в качестве наших продуктов лично</p>
+                    <a href="{% url 'product_list' %}" class="btn btn-cta">
+                        <i class="fas fa-shopping-bag me-2"></i>Сделать заказ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Добавляем интерактивность для карточек магазинов
+document.addEventListener('DOMContentLoaded', function() {
+    const storeCards = document.querySelectorAll('.store-card');
+    
+    storeCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-8px)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+    
+    // Анимация появления карточек
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    });
+    
+    storeCards.forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(card);
+    });
+});
+
+// Функция для копирования адреса в буфер обмена
+function copyAddress(address) {
+    navigator.clipboard.writeText(address).then(function() {
+        showToast('Адрес скопирован в буфер обмена!', 'success');
+    });
+}
+
+// Функция для показа уведомлений
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+</script>
+{% endblock %}

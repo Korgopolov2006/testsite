@@ -1,0 +1,1104 @@
+{% extends 'paint_shop_project/base.html' %}
+{% load static %}
+{% load admin_filters %}
+
+{% block title %}Каталог товаров - Жевжик{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Стили для каталога */
+.catalog-header {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: var(--white);
+    padding: 40px 0;
+    margin-bottom: 40px;
+}
+
+.catalog-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+.catalog-subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+.filters-section {
+    background: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    padding: 24px;
+    margin-bottom: 30px;
+}
+
+.filter-group {
+    margin-bottom: 20px;
+}
+
+.filter-label {
+    font-weight: 600;
+    color: var(--dark-gray);
+    margin-bottom: 8px;
+    display: block;
+}
+
+.filter-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+}
+
+.filter-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.1);
+}
+
+.filter-select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: var(--border-radius);
+    background: var(--white);
+    transition: var(--transition);
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.1);
+}
+
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+    margin-bottom: 40px;
+}
+
+.product-card {
+    background: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: var(--transition);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
+}
+
+.product-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    background: var(--light-gray);
+}
+
+.product-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: var(--accent-color);
+    color: var(--white);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.product-new-badge {
+    background: var(--success-color);
+}
+
+/* Стили для срока годности */
+.product-expiry {
+    margin: 8px 0;
+}
+
+.expiry-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+}
+
+.expiry-badge.expired {
+    background-color: #dc3545;
+    color: white;
+}
+
+.expiry-badge.expires-soon {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.expiry-badge.expires-week {
+    background-color: #17a2b8;
+    color: white;
+}
+
+.expiry-badge.fresh {
+    background-color: #28a745;
+    color: white;
+}
+
+.product-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.product-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--dark-gray);
+    margin-bottom: 8px;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.product-price {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 8px;
+}
+
+.product-old-price {
+    font-size: 1rem;
+    color: var(--medium-gray);
+    text-decoration: line-through;
+    margin-left: 8px;
+}
+
+.product-rating {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.rating-stars {
+    color: var(--secondary-color);
+}
+
+.rating-count {
+    font-size: 0.875rem;
+    color: var(--medium-gray);
+}
+
+.product-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: auto;
+}
+
+.product-actions .btn-add-cart,
+.product-actions .cart-quantity-control {
+    flex: 1;
+}
+
+.cart-quantity-control {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    background: var(--light-gray);
+    border-radius: 10px;
+    padding: 6px 10px;
+}
+
+.btn-quantity {
+    background: transparent;
+    border: none;
+    color: var(--primary-color);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: var(--transition);
+}
+
+.btn-quantity:hover {
+    background: rgba(255, 107, 157, 0.1);
+    color: var(--primary-dark);
+}
+
+.btn-quantity:active {
+    transform: scale(0.95);
+}
+
+.btn-quantity.btn-minus {
+    border-color: var(--danger-color);
+    color: var(--danger-color);
+}
+
+.btn-quantity.btn-minus:hover {
+    background: var(--danger-color);
+    color: var(--white);
+}
+
+.cart-qty-display {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    font-weight: 600;
+    color: var(--dark-gray);
+}
+
+.cart-qty-display .qty {
+    font-size: 1.1rem;
+}
+
+.cart-qty-display small {
+    font-size: 0.75rem;
+    color: var(--medium-gray);
+}
+
+.btn-add-cart {
+    background: var(--primary-color);
+    color: var(--white);
+    border: none;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: var(--transition);
+}
+
+.btn-add-cart:hover {
+    background: var(--primary-dark);
+    color: var(--white);
+    transform: translateY(-1px);
+}
+
+.btn-favorite {
+    background: rgba(255, 107, 157, 0.12);
+    color: var(--primary-color);
+    border: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.btn-favorite:hover {
+    background: var(--primary-color);
+    color: var(--white);
+}
+
+.btn-favorite.active {
+    background: var(--primary-color);
+    color: var(--white);
+}
+
+/* Стили для контроля количества в корзине */
+.cart-quantity-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.btn-quantity {
+    width: 36px;
+    height: 36px;
+    border: 2px solid var(--primary-color);
+    background: var(--white);
+    color: var(--primary-color);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    padding: 0;
+}
+
+.btn-quantity:hover {
+    background: var(--primary-color);
+    color: var(--white);
+}
+
+.btn-quantity:active {
+    transform: scale(0.95);
+}
+
+.btn-quantity.btn-minus {
+    border-color: var(--danger-color);
+    color: var(--danger-color);
+}
+
+.btn-quantity.btn-minus:hover {
+    background: var(--danger-color);
+    color: var(--white);
+}
+
+.cart-qty-display {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 50px;
+    justify-content: center;
+    font-weight: 600;
+    color: var(--dark-gray);
+}
+
+.cart-qty-display .qty {
+    font-size: 1.1rem;
+}
+
+.cart-qty-display small {
+    font-size: 0.75rem;
+    color: var(--medium-gray);
+}
+
+.pagination-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 40px;
+}
+
+.pagination {
+    gap: 8px;
+}
+
+.pagination .page-link {
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    color: var(--primary-color);
+    padding: 10px 16px;
+    transition: var(--transition);
+}
+
+.pagination .page-link:hover {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--white);
+}
+
+.pagination .page-item.active .page-link {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--medium-gray);
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: var(--primary-light);
+    margin-bottom: 20px;
+}
+
+.empty-state h3 {
+    color: var(--dark-gray);
+    margin-bottom: 16px;
+}
+
+.results-info {
+    background: var(--light-gray);
+    border-radius: var(--border-radius);
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.results-count {
+    font-weight: 600;
+    color: var(--dark-gray);
+}
+
+.view-toggle {
+    display: flex;
+    gap: 8px;
+}
+
+.view-btn {
+    background: var(--white);
+    border: 2px solid #e9ecef;
+    color: var(--medium-gray);
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.view-btn.active {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--white);
+}
+
+.view-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .catalog-title {
+        font-size: 2rem;
+    }
+    
+    .products-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 16px;
+    }
+    
+    .filters-section {
+        padding: 16px;
+    }
+    
+    .results-info {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 480px) {
+    .products-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .product-actions {
+        flex-direction: column;
+    }
+    
+    .btn-add-cart {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Заголовок каталога -->
+<div class="catalog-header">
+    <div class="container">
+        <div class="text-center">
+            <h1 class="catalog-title">🐷 Каталог товаров</h1>
+            <p class="catalog-subtitle">Свежие продукты для вашего стола</p>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Фильтры -->
+    <div class="filters-section">
+        <!-- Быстрые кнопки категорий -->
+        <div class="mb-3 d-flex flex-wrap gap-2">
+            <a href="{% url 'product_list' %}" class="btn btn-outline-primary btn-sm {% if not selected_category %}active{% endif %}">Все</a>
+            {% for category in categories %}
+                <a href="{% url 'product_list' %}?category={{ category.id }}"
+                   class="btn btn-outline-primary btn-sm {% if selected_category == category.id %}active{% endif %}">
+                    {{ category.name }}
+                </a>
+            {% endfor %}
+        </div>
+        <form method="get" id="filterForm">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="filter-label">Поиск</label>
+                    <input type="text" name="search" class="filter-input" placeholder="Название товара..." value="{{ search_query|default:'' }}">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="filter-label">Категория</label>
+                    <select name="category" class="filter-select">
+                        <option value="">Все категории</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}" {% if selected_category == category.id %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="filter-label">Сортировка</label>
+                    <select name="sort" class="filter-select">
+                        <option value="name" {% if sort_by == 'name' %}selected{% endif %}>По названию</option>
+                        <option value="price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>Цена: по возрастанию</option>
+                        <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>Цена: по убыванию</option>
+                        <option value="rating" {% if sort_by == 'rating' %}selected{% endif %}>По рейтингу</option>
+                        <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Сначала новые</option>
+                    </select>
+                </div>
+                <div class="col-md-2 mb-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i> Найти
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Информация о результатах -->
+    {% if products %}
+    <div class="results-info">
+        <div class="results-count">
+            Найдено товаров: {{ products.paginator.count }}
+            {% if search_query %}
+                по запросу "{{ search_query }}"
+            {% endif %}
+            {% if selected_category_obj %}
+                в категории "{{ selected_category_obj.name }}"
+            {% endif %}
+        </div>
+        <div class="view-toggle">
+            <button class="view-btn active" onclick="toggleView('grid')">
+                <i class="fas fa-th"></i>
+            </button>
+            <button class="view-btn" onclick="toggleView('list')">
+                <i class="fas fa-list"></i>
+            </button>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Список товаров -->
+    {% if products %}
+        <div class="products-grid" id="productsGrid">
+            {% for product in products %}
+            <div class="product-card">
+                {% if product.image %}
+                    <a href="{% url 'product_detail' product.id %}"><img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image"></a>
+                {% else %}
+                    <div class="product-image d-flex align-items-center justify-content-center">
+                        <i class="fas fa-image fa-3x text-muted"></i>
+                    </div>
+                {% endif %}
+                
+                {% if product.discount_percent > 0 %}
+                    <div class="product-badge">-{{ product.discount_percent }}%</div>
+                {% endif %}
+                
+                {% if product.is_featured %}
+                    <div class="product-badge product-new-badge">Новинка</div>
+                {% endif %}
+                
+                <div class="product-content">
+                    <h3 class="product-name"><a href="{% url 'product_detail' product.id %}" class="text-decoration-none text-dark">{{ product.name }}</a></h3>
+                    <div class="product-price">
+                        {{ product.price }} ₽
+                        {% if product.old_price %}
+                            <span class="product-old-price">{{ product.old_price }} ₽</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="product-rating">
+                        <div class="rating-stars">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= product.rating %}
+                                    <i class="fas fa-star"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <span class="rating-count">({{ product.reviews.count }})</span>
+                    </div>
+                    
+                    {% if product.has_expiry_date %}
+                    <div class="product-expiry">
+                        {% if product.is_expired %}
+                            <span class="expiry-badge expired">
+                                <i class="fas fa-exclamation-triangle"></i> Просрочен
+                            </span>
+                        {% elif product.expiry_status == 'expires_soon' %}
+                            <span class="expiry-badge expires-soon">
+                                <i class="fas fa-clock"></i> Истекает через {{ product.days_until_expiry }} дн.
+                            </span>
+                        {% elif product.expiry_status == 'expires_week' %}
+                            <span class="expiry-badge expires-week">
+                                <i class="fas fa-calendar"></i> Истекает через {{ product.days_until_expiry }} дн.
+                            </span>
+                        {% else %}
+                            <span class="expiry-badge fresh">
+                                <i class="fas fa-check"></i> Свежий ({{ product.days_until_expiry }} дн.)
+                            </span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="product-actions">
+                        {% if user.is_authenticated %}
+                            {% if product_id_to_qty %}
+                                {% with qty=product_id_to_qty|get_item:product.id|default:0 %}
+                                    {% if qty %}
+                                        <!-- Блок с +/- для изменения количества -->
+                                        <div class="cart-quantity-control" id="cart-control-{{ product.id }}" style="display: flex; align-items: center; gap: 8px;">
+                                            <button class="btn-quantity btn-minus" onclick="updateCartQuantityFromCatalog({{ product.id }}, -1)" title="Уменьшить">
+                                                <i class="fas fa-minus"></i>
+                                            </button>
+                                            <span class="cart-qty-display">
+                                                <span class="qty" id="qty-{{ product.id }}">{{ qty }}</span>
+                                                <small class="text-muted">шт.</small>
+                                            </span>
+                                            <button class="btn-quantity btn-plus" onclick="updateCartQuantityFromCatalog({{ product.id }}, 1)" title="Увеличить">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+                                        <!-- Скрытая кнопка добавления (показывается если количество станет 0) -->
+                                        <button class="btn-add-cart" onclick="addToCart({{ product.id }})" id="add-btn-{{ product.id }}" style="display: none;">
+                                            <i class="fas fa-shopping-cart"></i>
+                                            В корзину
+                                        </button>
+                                    {% else %}
+                                        <!-- Кнопка "В корзину" -->
+                                        <button class="btn-add-cart" onclick="addToCart({{ product.id }})" id="add-btn-{{ product.id }}">
+                                            <i class="fas fa-shopping-cart"></i>
+                                            В корзину
+                                        </button>
+                                        <!-- Скрытый блок контроля количества (показывается после добавления) -->
+                                        <div class="cart-quantity-control" id="cart-control-{{ product.id }}" style="display: none; align-items: center; gap: 8px;">
+                                            <button class="btn-quantity btn-minus" onclick="updateCartQuantityFromCatalog({{ product.id }}, -1)" title="Уменьшить">
+                                                <i class="fas fa-minus"></i>
+                                            </button>
+                                            <span class="cart-qty-display">
+                                                <span class="qty" id="qty-{{ product.id }}">0</span>
+                                                <small class="text-muted">шт.</small>
+                                            </span>
+                                            <button class="btn-quantity btn-plus" onclick="updateCartQuantityFromCatalog({{ product.id }}, 1)" title="Увеличить">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    {% endif %}
+                                {% endwith %}
+                            {% else %}
+                                <!-- Кнопка "В корзину" по умолчанию -->
+                                <button class="btn-add-cart" onclick="addToCart({{ product.id }})" id="add-btn-{{ product.id }}">
+                                    <i class="fas fa-shopping-cart"></i>
+                                    В корзину
+                                </button>
+                                <!-- Скрытый блок контроля количества (показывается после добавления) -->
+                                <div class="cart-quantity-control" id="cart-control-{{ product.id }}" style="display: none; align-items: center; gap: 8px;">
+                                    <button class="btn-quantity btn-minus" onclick="updateCartQuantityFromCatalog({{ product.id }}, -1)" title="Уменьшить">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <span class="cart-qty-display">
+                                        <span class="qty" id="qty-{{ product.id }}">0</span>
+                                        <small class="text-muted">шт.</small>
+                                    </span>
+                                    <button class="btn-quantity btn-plus" onclick="updateCartQuantityFromCatalog({{ product.id }}, 1)" title="Увеличить">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <a href="{% url 'login' %}" class="btn-add-cart">
+                                <i class="fas fa-sign-in-alt"></i>
+                                Войти
+                            </a>
+                        {% endif %}
+                        <button class="btn-favorite" onclick="toggleFavorite({{ product.id }})">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Пагинация -->
+        {% if products.has_other_pages %}
+        <div class="pagination-wrapper">
+            <nav>
+                <ul class="pagination">
+                    {% if products.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category.id }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">
+                                <i class="fas fa-angle-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ products.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category.id }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">
+                                <i class="fas fa-angle-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in products.paginator.page_range %}
+                        {% if products.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > products.number|add:'-3' and num < products.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category.id }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if products.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ products.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category.id }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">
+                                <i class="fas fa-angle-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ products.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category.id }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">
+                                <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-search"></i>
+            <h3>Товары не найдены</h3>
+            <p>Попробуйте изменить параметры поиска или выбрать другую категорию</p>
+            <a href="{% url 'product_list' %}" class="btn btn-primary">
+                <i class="fas fa-refresh"></i> Сбросить фильтры
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Скрытый input для CSRF токена -->
+{% csrf_token %}
+
+<script>
+// Добавление в корзину
+function addToCart(productId) {
+    const formData = new FormData();
+    const csrfToken = getCSRFToken();
+    if (!csrfToken) {
+        console.error('CSRF token not found');
+        showToast('Ошибка безопасности. Перезагрузите страницу.', 'error');
+        return;
+    }
+    formData.append('csrfmiddlewaretoken', csrfToken);
+    
+    fetch(`/add-to-cart/${productId}/`, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+        body: formData,
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message, 'success');
+            // Обновляем глобальный счётчик
+            if (typeof updateCartCounter === 'function') {
+                updateCartCounter();
+            }
+            // Переключаем отображение: скрываем кнопку "В корзину", показываем блок контроля количества
+            const addBtn = document.getElementById(`add-btn-${productId}`);
+            const controlDiv = document.getElementById(`cart-control-${productId}`);
+            const qtyEl = document.getElementById(`qty-${productId}`);
+            
+            if (addBtn) addBtn.style.display = 'none';
+            if (controlDiv) controlDiv.style.display = 'flex';
+            if (qtyEl && typeof data.quantity !== 'undefined') {
+                qtyEl.textContent = data.quantity;
+            } else if (qtyEl) {
+                const current = parseInt(qtyEl.textContent || '0', 10) || 0;
+                qtyEl.textContent = current + 1;
+            }
+        } else {
+            showToast(data.message || 'Ошибка при добавлении в корзину', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Ошибка при добавлении в корзину', 'error');
+    });
+}
+
+// Обновление количества товара в корзине из каталога
+function updateCartQuantityFromCatalog(productId, delta) {
+    // Находим текущее количество товара в корзине
+    const qtyEl = document.getElementById(`qty-${productId}`);
+    const currentQty = parseInt(qtyEl ? qtyEl.textContent : '0', 10) || 0;
+    const newQty = Math.max(0, currentQty + delta);
+    
+    if (newQty === 0) {
+        // Если количество стало 0, удаляем товар из корзины
+        removeFromCartFromCatalog(productId);
+        return;
+    }
+    
+    if (delta > 0) {
+        // Увеличиваем: добавляем еще один товар
+        addToCart(productId);
+    } else {
+        // Уменьшаем: получаем cart_id и обновляем количество
+        fetch(`/get-cart-id/${productId}/`, {
+            method: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+            credentials: 'same-origin'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.cart_id) {
+                updateCartQuantity(data.cart_id, newQty, productId);
+            } else {
+                // Если товар не найден в корзине, просто обновляем локально
+                if (qtyEl) qtyEl.textContent = newQty;
+                showToast('Количество обновлено', 'success');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Fallback: просто обновляем локально
+            if (qtyEl) qtyEl.textContent = newQty;
+        });
+    }
+}
+
+// Обновление количества товара в корзине
+function updateCartQuantity(cartId, quantity, productId) {
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', getCSRFToken());
+    formData.append('quantity', quantity);
+    
+    fetch(`/update-cart-quantity/${cartId}/`, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+        body: formData,
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Обновляем отображение на карточке
+            const qtyEl = document.getElementById(`qty-${productId}`);
+            if (qtyEl) qtyEl.textContent = data.quantity || quantity;
+            
+            // Обновляем глобальный счётчик
+            if (typeof updateCartCounter === 'function') {
+                updateCartCounter();
+            }
+        } else {
+            showToast(data.message || 'Ошибка при обновлении количества', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Ошибка при обновлении количества', 'error');
+    });
+}
+
+// Удаление товара из корзины из каталога
+function removeFromCartFromCatalog(productId) {
+    // Получаем cart_id и удаляем товар
+    fetch(`/get-cart-id/${productId}/`, {
+        method: 'GET',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.cart_id) {
+            const formData = new FormData();
+            formData.append('csrfmiddlewaretoken', getCSRFToken());
+            
+            fetch(`/remove-from-cart/${data.cart_id}/`, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+                body: formData,
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Переключаем отображение: показываем кнопку "В корзину", скрываем блок контроля
+                    const addBtn = document.getElementById(`add-btn-${productId}`);
+                    const controlDiv = document.getElementById(`cart-control-${productId}`);
+                    
+                    if (addBtn) addBtn.style.display = 'inline-block';
+                    if (controlDiv) controlDiv.style.display = 'none';
+                    
+                    // Обновляем глобальный счётчик
+                    if (typeof updateCartCounter === 'function') {
+                        updateCartCounter();
+                    }
+                    
+                    showToast('Товар удален из корзины', 'info');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Ошибка при удалении товара', 'error');
+            });
+        } else {
+            // Fallback: просто переключаем отображение
+            const addBtn = document.getElementById(`add-btn-${productId}`);
+            const controlDiv = document.getElementById(`cart-control-${productId}`);
+            
+            if (addBtn) addBtn.style.display = 'inline-block';
+            if (controlDiv) controlDiv.style.display = 'none';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+// Переключение вида
+function toggleView(view) {
+    const grid = document.getElementById('productsGrid');
+    const buttons = document.querySelectorAll('.view-btn');
+    
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.closest('.view-btn').classList.add('active');
+    
+    if (view === 'list') {
+        grid.style.gridTemplateColumns = '1fr';
+        grid.classList.add('list-view');
+    } else {
+        grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(280px, 1fr))';
+        grid.classList.remove('list-view');
+    }
+}
+
+// Добавление в избранное (любимые товары)
+function toggleFavorite(productId) {
+    {% if user.is_authenticated %}
+    const btn = event.target.closest('.btn-favorite');
+    const icon = btn.querySelector('i');
+    
+    fetch(`/api/favorites/toggle/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ product_id: productId })
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(errData => Promise.reject({ response, errData }));
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.is_favorite) {
+            btn.classList.add('active');
+            icon.className = 'fas fa-heart';
+            showToast('Товар добавлен в любимые (скидка 10%)', 'success');
+        } else {
+            btn.classList.remove('active');
+            icon.className = 'far fa-heart';
+            showToast('Товар удален из любимых', 'info');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        // Обработка ошибок из API
+        if (error.errData) {
+            const errData = error.errData;
+            if (errData.error) {
+                if (errData.max_reached) {
+                    showFavoriteModal('Максимум 4 любимых товара', 'У вас уже 4 любимых товара. Удалите один из существующих, чтобы добавить новый.');
+                } else if (errData.can_modify === false) {
+                    const nextDate = errData.next_change_date ? new Date(errData.next_change_date).toLocaleDateString('ru-RU') : 'позже';
+                    showFavoriteModal('Любимые товары можно изменять раз в неделю', `Следующее изменение возможно ${nextDate}.`);
+                } else {
+                    showFavoriteModal('Ошибка', errData.error || 'Ошибка при добавлении в любимые товары');
+                }
+            } else {
+                showFavoriteModal('Ошибка', 'Ошибка при добавлении в любимые товары');
+            }
+        } else {
+            showFavoriteModal('Ошибка', 'Ошибка при добавлении в любимые товары');
+        }
+    });
+    {% else %}
+    showToast('Войдите в систему, чтобы добавлять товары в любимые', 'warning');
+    {% endif %}
+}
+
+// Показать модальное окно для любимых товаров
+function showFavoriteModal(title, message) {
+    const modal = document.getElementById('favoriteModal');
+    if (!modal) {
+        // Создаем модальное окно, если его нет
+        const modalHtml = `
+            <div class="modal fade" id="favoriteModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">${title}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>${message}</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Понятно</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+    }
+    const modalElement = document.getElementById('favoriteModal');
+    modalElement.querySelector('.modal-title').textContent = title;
+    modalElement.querySelector('.modal-body p').textContent = message;
+    const bsModal = new bootstrap.Modal(modalElement);
+    bsModal.show();
+}
+
+// Показать уведомление
+function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.className = `toast position-fixed top-0 end-0 m-3`;
+    toast.innerHTML = `
+        <div class="toast-header bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : type === 'warning' ? 'warning' : 'info'} text-white">
+            <strong class="me-auto">${message}</strong>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    document.body.appendChild(toast);
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+    
+    setTimeout(() => toast.remove(), 5000);
+}
+
+// Автоматическая отправка формы при изменении фильтров
+document.querySelectorAll('.filter-select').forEach(select => {
+    select.addEventListener('change', function() {
+        document.getElementById('filterForm').submit();
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,323 @@
+{% extends 'paint_shop_project/base.html' %}
+
+{% block title %}Лог ошибок - Жевжик{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="text-zhevzhik-pink">
+                    <i class="fas fa-bug me-2"></i>Лог ошибок системы
+                </h1>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary" onclick="refreshErrors()">
+                        <i class="fas fa-sync-alt"></i> Обновить
+                    </button>
+                    <button class="btn btn-outline-success" onclick="markAllResolved()">
+                        <i class="fas fa-check"></i> Отметить все как исправленные
+                    </button>
+                </div>
+            </div>
+
+            <!-- Фильтры -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="type" class="form-label">Тип ошибки</label>
+                            <select name="type" id="type" class="form-select">
+                                <option value="">Все типы</option>
+                                {% for type_code, type_name in error_types %}
+                                    <option value="{{ type_code }}" {% if selected_type == type_code %}selected{% endif %}>
+                                        {{ type_name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="resolved" class="form-label">Статус</label>
+                            <select name="resolved" id="resolved" class="form-select">
+                                <option value="">Все</option>
+                                <option value="false" {% if selected_resolved == 'false' %}selected{% endif %}>Не исправленные</option>
+                                <option value="true" {% if selected_resolved == 'true' %}selected{% endif %}>Исправленные</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="fas fa-filter"></i> Фильтровать
+                            </button>
+                            <a href="{% url 'error_log' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Сбросить
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Статистика -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title text-danger">{{ errors|length }}</h5>
+                            <p class="card-text">Всего ошибок</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title text-warning">
+                                {% for error in errors %}
+                                    {% if not error.is_resolved %}{{ forloop.counter0|add:1 }}{% endif %}
+                                {% endfor %}
+                            </h5>
+                            <p class="card-text">Не исправленные</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title text-success">
+                                {% for error in errors %}
+                                    {% if error.is_resolved %}{{ forloop.counter0|add:1 }}{% endif %}
+                                {% endfor %}
+                            </h5>
+                            <p class="card-text">Исправленные</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title text-info">{{ errors|length }}</h5>
+                            <p class="card-text">На странице</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Список ошибок -->
+            <div class="card">
+                <div class="card-body">
+                    {% if errors %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Тип</th>
+                                        <th>Сообщение</th>
+                                        <th>Пользователь</th>
+                                        <th>Дата</th>
+                                        <th>Статус</th>
+                                        <th>Действия</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for error in errors %}
+                                    <tr class="{% if error.is_resolved %}table-success{% elif error.error_type == 'javascript' %}table-warning{% elif error.error_type == 'server' %}table-danger{% endif %}">
+                                        <td>
+                                            <span class="badge bg-{% if error.error_type == 'javascript' %}warning{% elif error.error_type == 'server' %}danger{% elif error.error_type == 'validation' %}info{% elif error.error_type == 'payment' %}primary{% elif error.error_type == 'cart' %}secondary{% else %}dark{% endif %}">
+                                                {{ error.get_error_type_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="error-message" style="max-width: 300px;">
+                                                <strong>{{ error.message|truncatechars:100 }}</strong>
+                                                {% if error.url %}
+                                                    <br><small class="text-muted">URL: {{ error.url }}</small>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if error.user %}
+                                                <a href="{% url 'admin:paint_shop_project_user_change' error.user.id %}" target="_blank">
+                                                    {{ error.user.username }}
+                                                </a>
+                                            {% else %}
+                                                <span class="text-muted">Анонимный</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <small>{{ error.created_at|date:"d.m.Y H:i" }}</small>
+                                        </td>
+                                        <td>
+                                            {% if error.is_resolved %}
+                                                <span class="badge bg-success">Исправлено</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Не исправлено</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <button class="btn btn-outline-primary" onclick="showErrorDetails({{ error.id }})">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                {% if not error.is_resolved %}
+                                                    <button class="btn btn-outline-success" onclick="markResolved({{ error.id }})">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                {% endif %}
+                                                <button class="btn btn-outline-danger" onclick="deleteError({{ error.id }})">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Пагинация -->
+                        {% if errors.has_other_pages %}
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination justify-content-center">
+                                    {% if errors.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page=1{% if selected_type %}&type={{ selected_type }}{% endif %}{% if selected_resolved %}&resolved={{ selected_resolved }}{% endif %}">Первая</a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ errors.previous_page_number }}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if selected_resolved %}&resolved={{ selected_resolved }}{% endif %}">Предыдущая</a>
+                                        </li>
+                                    {% endif %}
+                                    
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ errors.number }} из {{ errors.paginator.num_pages }}</span>
+                                    </li>
+                                    
+                                    {% if errors.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ errors.next_page_number }}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if selected_resolved %}&resolved={{ selected_resolved }}{% endif %}">Следующая</a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ errors.paginator.num_pages }}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if selected_resolved %}&resolved={{ selected_resolved }}{% endif %}">Последняя</a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                            <h4>Ошибок не найдено</h4>
+                            <p class="text-muted">Система работает стабильно!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для деталей ошибки -->
+<div class="modal fade" id="errorDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Детали ошибки</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="errorDetailsContent">
+                <!-- Контент загружается через AJAX -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Показать детали ошибки
+function showErrorDetails(errorId) {
+    fetch(`/admin/paint_shop_project/errorlog/${errorId}/change/`)
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('errorDetailsContent').innerHTML = html;
+            new bootstrap.Modal(document.getElementById('errorDetailsModal')).show();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Ошибка при загрузке деталей');
+        });
+}
+
+// Отметить ошибку как исправленную
+function markResolved(errorId) {
+    if (confirm('Отметить ошибку как исправленную?')) {
+        fetch(`/admin/paint_shop_project/errorlog/${errorId}/change/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'is_resolved=on'
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Ошибка при обновлении статуса');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Ошибка при обновлении статуса');
+        });
+    }
+}
+
+// Удалить ошибку
+function deleteError(errorId) {
+    if (confirm('Удалить эту ошибку?')) {
+        fetch(`/admin/paint_shop_project/errorlog/${errorId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Ошибка при удалении');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Ошибка при удалении');
+        });
+    }
+}
+
+// Обновить список ошибок
+function refreshErrors() {
+    location.reload();
+}
+
+// Отметить все как исправленные
+function markAllResolved() {
+    if (confirm('Отметить все ошибки как исправленные?')) {
+        // Здесь можно добавить AJAX запрос для массового обновления
+        alert('Функция в разработке');
+    }
+}
+</script>
+
+<style>
+.error-message {
+    word-break: break-word;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.badge {
+    font-size: 0.75em;
+}
+</style>
+{% endblock %}

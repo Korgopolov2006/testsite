@@ -1,0 +1,73 @@
+{
+  "id": 2,
+  "type": "stat",
+  "title": "💰 Выручка сегодня",
+  "description": "Выручка за сегодняшний день в рублях",
+  "gridPos": {
+    "x": 6,
+    "y": 0,
+    "h": 4,
+    "w": 6
+  },
+  "fieldConfig": {
+    "defaults": {
+      "color": {
+        "mode": "thresholds"
+      },
+      "mappings": [],
+      "thresholds": {
+        "mode": "absolute",
+        "steps": [
+          {
+            "color": "green",
+            "value": null
+          },
+          {
+            "color": "yellow",
+            "value": 10000
+          },
+          {
+            "color": "red",
+            "value": 50000
+          }
+        ]
+      },
+      "unit": "currencyRUB",
+      "decimals": 0
+    },
+    "overrides": []
+  },
+  "options": {
+    "reduceOptions": {
+      "values": false,
+      "calcs": [
+        "lastNotNull"
+      ],
+      "fields": ""
+    },
+    "orientation": "auto",
+    "textMode": "value_and_name",
+    "colorMode": "background",
+    "graphMode": "area",
+    "justifyMode": "auto"
+  },
+  "pluginVersion": "12.2.0",
+  "targets": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "editorMode": "code",
+      "expr": "zhevzhik_revenue_today",
+      "range": true,
+      "refId": "A"
+    }
+  ],
+  "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+  }
+}
+
+

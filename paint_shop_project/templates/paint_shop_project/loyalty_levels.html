@@ -1,0 +1,266 @@
+{% extends 'paint_shop_project/base.html' %}
+{% load static %}
+
+{% block title %}Жевжик Клуб - Уровни лояльности{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --zhevzhik-pink: #FF6B9D;
+        --zhevzhik-dark-pink: #E91E63;
+        --zhevzhik-light-pink: #FFB3D1;
+        --zhevzhik-green: #4CAF50;
+        --zhevzhik-yellow: #FFEB3B;
+        --zhevzhik-gray: #6c757d;
+        --zhevzhik-dark-gray: #2c3e50;
+    }
+    .summary-card {
+        border-radius: 20px;
+        border: none;
+        background: linear-gradient(135deg, rgba(255,107,157,0.12), rgba(255,221,235,0.4));
+        overflow: hidden;
+        position: relative;
+    }
+    .summary-card::after {
+        content: '';
+        position: absolute;
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        background: rgba(255,107,157,0.25);
+        top: -80px;
+        right: -50px;
+    }
+    .summary-card::before {
+        content: '';
+        position: absolute;
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        background: rgba(255,107,157,0.15);
+        bottom: -60px;
+        left: -40px;
+    }
+    .summary-card .card-body {
+        position: relative;
+        z-index: 1;
+    }
+    .progress-circle {
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        background: conic-gradient(var(--zhevzhik-pink) {{ progress_to_next_level }}%, #f5f5f5 0);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        position: relative;
+    }
+    .progress-circle::after {
+        content: '';
+        position: absolute;
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        background: white;
+    }
+    .progress-value {
+        position: relative;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--zhevzhik-dark-pink);
+    }
+    .level-card {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        border: 3px solid transparent;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    .level-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+    .level-card.bronze { border-color: #cd7f32; }
+    .level-card.silver { border-color: #c0c0c0; }
+    .level-card.gold { border-color: #ffd700; }
+    .level-card.platinum { border-color: #e5e4e2; }
+    .level-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin: 0 auto 20px;
+        color: white;
+    }
+    .level-icon.bronze { background: linear-gradient(135deg, #cd7f32, #b8860b); }
+    .level-icon.silver { background: linear-gradient(135deg, #c0c0c0, #a8a8a8); }
+    .level-icon.gold { background: linear-gradient(135deg, #ffd700, #ffb347); }
+    .level-icon.platinum { background: linear-gradient(135deg, #e5e4e2, #c0c0c0); }
+    .level-title { font-size: 1.5rem; font-weight: bold; text-align: center; margin-bottom: 10px; }
+    .level-discount { font-size: 2rem; font-weight: bold; text-align: center; color: var(--zhevzhik-pink); margin-bottom: 8px; }
+    .level-cashback { text-align: center; color: var(--zhevzhik-dark-gray); margin-bottom: 16px; }
+    .level-requirements { background: rgba(255,107,157,0.08); border-radius: 10px; padding: 15px; margin-bottom: 20px; }
+    .level-benefits { list-style: none; padding: 0; }
+    .level-benefits li { padding: 6px 0; border-bottom: 1px solid #eee; }
+    .level-benefits li:last-child { border-bottom: none; }
+    .level-benefits li i { color: var(--zhevzhik-green); margin-right: 10px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card summary-card">
+                <div class="card-body p-4 p-lg-5">
+                    <div class="row align-items-center g-4">
+                        <div class="col-lg-4 text-center">
+                            <div class="progress-circle mb-3">
+                                <span class="progress-value">{{ progress_to_next_level|floatformat:0 }}%</span>
+                            </div>
+                            <p class="text-muted mb-0">
+                                {% if points_to_next_level > 0 %}
+                                    Осталось {{ points_to_next_level }} баллов до уровня «{{ next_level_name }}»
+                                {% else %}
+                                    У вас максимальный уровень лояльности
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-lg-5">
+                            <h1 class="display-6 fw-bold text-zhevzhik-dark-gray">{{ current_level_name }} уровень</h1>
+                            <p class="lead text-muted mb-3">Ваша карта: <strong>{{ loyalty_card.card_number }}</strong></p>
+                            <div class="d-flex flex-wrap gap-3">
+                                <div class="border rounded-4 px-4 py-3 bg-white shadow-sm">
+                                    <span class="text-muted d-block">Баллов</span>
+                                    <span class="fs-4 fw-semibold text-zhevzhik-dark-gray">{{ loyalty_card.points }}</span>
+                                </div>
+                                <div class="border rounded-4 px-4 py-3 bg-white shadow-sm">
+                                    <span class="text-muted d-block">Скидка</span>
+                                    <span class="fs-4 fw-semibold text-zhevzhik-dark-gray">{{ current_discount }}%</span>
+                                </div>
+                                <div class="border rounded-4 px-4 py-3 bg-white shadow-sm">
+                                    <span class="text-muted d-block">Кешбэк</span>
+                                    <span class="fs-4 fw-semibold text-zhevzhik-dark-gray">{{ current_cashback }}%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="border rounded-4 bg-white p-4 shadow-sm h-100">
+                                <h5 class="fw-semibold mb-3"><i class="fas fa-gift text-zhevzhik-pink me-2"></i>Преимущества</h5>
+                                <ul class="list-unstyled text-muted mb-4">
+                                    <li class="mb-2"><i class="fas fa-check text-zhevzhik-pink me-2"></i>Скидка {{ current_discount }}% на все заказы</li>
+                                    <li class="mb-2"><i class="fas fa-check text-zhevzhik-pink me-2"></i>Кешбэк {{ current_cashback }}% в баллах</li>
+                                    <li><i class="fas fa-check text-zhevzhik-pink me-2"></i>Персональные предложения каждую неделю</li>
+                                </ul>
+                                <a href="{% url 'loyalty_card' %}" class="btn btn-sm btn-outline-zhevzhik-pink w-100">Посмотреть историю</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold text-zhevzhik-dark-gray">Уровни Жевжик Клуба</h2>
+                <p class="text-muted mb-0">Накопленные баллы не сгорают. Баллы зачисляются после доставки или получения заказа.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        {% for level in levels %}
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="level-card {{ level.level }}">
+                {% if level.level == loyalty_card.level %}
+                <span class="badge bg-zhevzhik-pink position-absolute top-0 start-0 m-3">Ваш уровень</span>
+                {% endif %}
+                <div class="level-icon {{ level.level }}">
+                    {% if level.level == 'bronze' %}
+                        <i class="fas fa-medal"></i>
+                    {% elif level.level == 'silver' %}
+                        <i class="fas fa-award"></i>
+                    {% elif level.level == 'gold' %}
+                        <i class="fas fa-crown"></i>
+                    {% elif level.level == 'platinum' %}
+                        <i class="fas fa-gem"></i>
+                    {% endif %}
+                </div>
+                <div class="level-title">{{ level.name }}</div>
+                <div class="level-discount">{{ level.discount }}%</div>
+                <div class="level-cashback">Кешбэк {{ level.cashback }}%</div>
+                <div class="level-requirements">
+                    <strong>Требуется:</strong><br>
+                    {% if level.max_points %}
+                        {{ level.min_points }} – {{ level.max_points }} баллов
+                    {% else %}
+                        от {{ level.min_points }} баллов
+                    {% endif %}
+                </div>
+                <ul class="level-benefits">
+                    <li><i class="fas fa-check"></i>Скидка {{ level.discount }}% на весь каталог</li>
+                    <li><i class="fas fa-check"></i>Кешбэк {{ level.cashback }}% на баланс</li>
+                    {% if level.level in ('gold', 'platinum') %}
+                    <li><i class="fas fa-check"></i>Приоритетная доставка</li>
+                    {% endif %}
+                    {% if level.level == 'platinum' %}
+                    <li><i class="fas fa-check"></i>Персональный менеджер и VIP-акции</li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-zhevzhik-pink text-white">
+                    <h3 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Как быстрее повышать уровень</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="text-center">
+                                <div class="bg-zhevzhik-pink text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-shopping-cart fa-2x"></i>
+                                </div>
+                                <h5 class="mt-3">Покупайте чаще</h5>
+                                <p class="text-muted">Каждая оплаченная покупка приносит баллы. Делайте несколько небольших заказов — так прогресс идет быстрее.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="text-center">
+                                <div class="bg-zhevzhik-yellow text-dark rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-star fa-2x"></i>
+                                </div>
+                                <h5 class="mt-3">Оставляйте отзывы</h5>
+                                <p class="text-muted">Мы начисляем дополнительные баллы за отзывы о товарах, оценку сборщиков и курьеров.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="text-center">
+                                <div class="bg-zhevzhik-green text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-gift fa-2x"></i>
+                                </div>
+                                <h5 class="mt-3">Участвуйте в акциях</h5>
+                                <p class="text-muted">Следите за разделом «Акции» — там появляются предложения с удвоенным кешбэком и бонусами.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

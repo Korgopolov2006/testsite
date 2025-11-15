@@ -1,0 +1,65 @@
+{
+  "id": 4,
+  "type": "stat",
+  "title": "💳 Средний чек",
+  "description": "Средняя стоимость заказа в рублях",
+  "gridPos": {
+    "x": 18,
+    "y": 0,
+    "h": 4,
+    "w": 6
+  },
+  "fieldConfig": {
+    "defaults": {
+      "color": {
+        "mode": "palette-classic"
+      },
+      "mappings": [],
+      "thresholds": {
+        "mode": "absolute",
+        "steps": [
+          {
+            "color": "green",
+            "value": null
+          }
+        ]
+      },
+      "unit": "currencyRUB",
+      "decimals": 0
+    },
+    "overrides": []
+  },
+  "options": {
+    "reduceOptions": {
+      "values": false,
+      "calcs": [
+        "lastNotNull"
+      ],
+      "fields": ""
+    },
+    "orientation": "auto",
+    "textMode": "value_and_name",
+    "colorMode": "background",
+    "graphMode": "area",
+    "justifyMode": "auto"
+  },
+  "pluginVersion": "12.2.0",
+  "targets": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "editorMode": "code",
+      "expr": "zhevzhik_avg_order_value",
+      "range": true,
+      "refId": "A"
+    }
+  ],
+  "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+  }
+}
+
+

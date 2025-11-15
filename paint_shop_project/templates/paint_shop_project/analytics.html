@@ -1,0 +1,317 @@
+{% extends 'paint_shop_project/base.html' %}
+{% load static %}
+
+{% block title %}Аналитика - Жевжик{% endblock %}
+
+{% block extra_css %}
+<style>
+    .analytics-hero {
+        background: linear-gradient(135deg, var(--zhevzhik-pink), var(--zhevzhik-light-pink));
+        color: white;
+        padding: 50px 0;
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: var(--zhevzhik-pink);
+        margin-bottom: 10px;
+    }
+    
+    .stat-label {
+        color: var(--zhevzhik-dark-gray);
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+    
+    .stat-description {
+        color: var(--zhevzhik-gray);
+        font-size: 0.9rem;
+    }
+    
+    .chart-container {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    
+    .chart-title {
+        color: var(--zhevzhik-pink);
+        font-weight: 600;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .chart-title i {
+        margin-right: 10px;
+    }
+    
+    .table-analytics {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+    
+    .table-analytics th {
+        background: var(--zhevzhik-light-pink);
+        color: var(--zhevzhik-dark-pink);
+        border: none;
+        font-weight: 600;
+    }
+    
+    .table-analytics td {
+        border: none;
+        border-bottom: 1px solid #f8f9fa;
+    }
+    
+    .badge-status {
+        padding: 5px 12px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    
+    .badge-created { background: #17a2b8; color: white; }
+    .badge-confirmed { background: #ffc107; color: black; }
+    .badge-ready { background: #28a745; color: white; }
+    .badge-delivered { background: #6f42c1; color: white; }
+    .badge-cancelled { background: #dc3545; color: white; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Заголовок аналитики -->
+<div class="analytics-hero">
+    <div class="container">
+        <h1 class="display-4 mb-3">📊 Аналитика</h1>
+        <p class="lead">Статистика и отчеты по работе магазина</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Основная статистика -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="chart-title">
+                <i class="fas fa-chart-line"></i>Общая статистика
+            </h2>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="stat-card">
+                <div class="stat-number">{{ total_users }}</div>
+                <div class="stat-label">Пользователей</div>
+                <div class="stat-description">Всего зарегистрировано</div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="stat-card">
+                <div class="stat-number">{{ total_products }}</div>
+                <div class="stat-label">Товаров</div>
+                <div class="stat-description">В каталоге</div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="stat-card">
+                <div class="stat-number">{{ total_orders }}</div>
+                <div class="stat-label">Заказов</div>
+                <div class="stat-description">Всего оформлено</div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="stat-card">
+                <div class="stat-number">{{ total_revenue|floatformat:0 }} ₽</div>
+                <div class="stat-label">Выручка</div>
+                <div class="stat-description">Общая сумма</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Статистика за 30 дней -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="chart-title">
+                <i class="fas fa-calendar-alt"></i>За последние 30 дней
+            </h2>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="stat-card">
+                <div class="stat-number">{{ recent_revenue|floatformat:0 }} ₽</div>
+                <div class="stat-label">Выручка</div>
+                <div class="stat-description">За последний месяц</div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="stat-card">
+                <div class="stat-number">{{ recent_users }}</div>
+                <div class="stat-label">Новых пользователей</div>
+                <div class="stat-description">Зарегистрировалось</div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="stat-card">
+                <div class="stat-number">{{ active_users }}</div>
+                <div class="stat-label">Активных пользователей</div>
+                <div class="stat-description">Заходили в систему</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Популярные товары -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="chart-container">
+                <h3 class="chart-title">
+                    <i class="fas fa-star"></i>Популярные товары
+                </h3>
+                <div class="table-responsive">
+                    <table class="table table-analytics">
+                        <thead>
+                            <tr>
+                                <th>Товар</th>
+                                <th>Категория</th>
+                                <th>Цена</th>
+                                <th>Заказов</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in popular_products %}
+                            <tr>
+                                <td>{{ product.name }}</td>
+                                <td>{{ product.category.name }}</td>
+                                <td>{{ product.price }} ₽</td>
+                                <td>{{ product.order_count }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">Нет данных</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Популярные категории -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="chart-container">
+                <h3 class="chart-title">
+                    <i class="fas fa-tags"></i>Популярные категории
+                </h3>
+                <div class="table-responsive">
+                    <table class="table table-analytics">
+                        <thead>
+                            <tr>
+                                <th>Категория</th>
+                                <th>Товаров</th>
+                                <th>Заказов</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for category in popular_categories %}
+                            <tr>
+                                <td>{{ category.name }}</td>
+                                <td>{{ category.product_count }}</td>
+                                <td>{{ category.order_count }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">Нет данных</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Статистика по статусам заказов -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="chart-container">
+                <h3 class="chart-title">
+                    <i class="fas fa-chart-pie"></i>Статусы заказов
+                </h3>
+                <div class="row">
+                    {% for status in order_statuses %}
+                    <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                        <div class="stat-card">
+                            <div class="stat-number">{{ status.count }}</div>
+                            <div class="stat-label">{{ status.status }}</div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12 text-center text-muted">
+                        <p>Нет данных о заказах</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Призыв к действию -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card bg-gradient" style="background: linear-gradient(135deg, var(--zhevzhik-pink), var(--zhevzhik-light-pink)); color: white;">
+                <div class="card-body text-center py-5">
+                    <h2 class="mb-3">🐷 Управляйте своим магазином!</h2>
+                    <p class="lead mb-4">Используйте аналитику для принятия решений</p>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <a href="/admin/" class="btn btn-light btn-lg w-100">
+                                <i class="fas fa-cog me-2"></i>Админ-панель
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="{% url 'product_list' %}" class="btn btn-light btn-lg w-100">
+                                <i class="fas fa-shopping-bag me-2"></i>Каталог
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="{% url 'order_history' %}" class="btn btn-light btn-lg w-100">
+                                <i class="fas fa-list me-2"></i>Заказы
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

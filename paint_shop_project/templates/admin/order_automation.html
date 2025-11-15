@@ -1,0 +1,87 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }} | {% trans "Администрирование Django" %}{% endblock %}
+
+{% block extrastyle %}
+<style>
+    .automation-container { padding-bottom:40px; }
+    .automation-header { display:flex; flex-wrap:wrap; gap:18px; align-items:center; justify-content:space-between; margin-bottom:32px; }
+    .automation-card { background:#fff; border-radius:12px; padding:24px; box-shadow:0 12px 30px rgba(0,0,0,0.05); margin-bottom:24px; }
+    .automation-card h3 { margin-top:0; }
+    .rule-item { display:flex; justify-content:space-between; align-items:center; padding:16px; border-bottom:1px solid #f2f2f2; }
+    .rule-item:last-child { border-bottom:none; }
+    .rule-content { flex:1; }
+    .rule-title { font-weight:600; margin-bottom:4px; }
+    .rule-description { color:#6c757d; font-size:14px; }
+    .rule-toggle { display:flex; align-items:center; gap:12px; }
+    .switch { position:relative; display:inline-block; width:50px; height:24px; }
+    .switch input { opacity:0; width:0; height:0; }
+    .slider { position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background-color:#ccc; transition:.4s; border-radius:24px; }
+    .slider:before { position:absolute; content:""; height:18px; width:18px; left:3px; bottom:3px; background-color:white; transition:.4s; border-radius:50%; }
+    input:checked + .slider { background-color:#1a2a6c; }
+    input:checked + .slider:before { transform:translateX(26px); }
+    .stats-card { background:#f0f4ff; padding:16px; border-radius:8px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="automation-container">
+    <div class="automation-header">
+        <div>
+            <h1>{{ title }}</h1>
+            <p class="help">{% trans "Настройка автоматической обработки заказов" %}</p>
+        </div>
+        <a href="{% url 'admin:index' %}" class="button">← {% trans "Вернуться" %}</a>
+    </div>
+
+    <div class="stats-card" style="margin-bottom:24px;">
+        <strong>{% trans "Необработанные заказы (>24 часа):" %}</strong> {{ unprocessed_24h }}
+    </div>
+
+    <div class="automation-card">
+        <h3>{% trans "Правила автоматизации" %}</h3>
+        {% for rule in rules %}
+        <div class="rule-item">
+            <div class="rule-content">
+                <div class="rule-title">{{ rule.name }}</div>
+                <div class="rule-description">{{ rule.description }}</div>
+            </div>
+            <div class="rule-toggle">
+                <label class="switch">
+                    <input type="checkbox" data-rule-id="{{ rule.id }}" {% if rule.enabled %}checked{% endif %}>
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.switch input').forEach(toggle => {
+        toggle.addEventListener('change', function() {
+            const ruleId = this.dataset.ruleId;
+            const enabled = this.checked;
+            
+            const formData = new FormData();
+            formData.append('rule_id', ruleId);
+            formData.append('enabled', enabled);
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+            
+            fetch('{% url "admin:order-automation" %}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .catch(error => console.error('Error:', error));
+        });
+    });
+});
+</script>
+{% endblock %}
+
+
+
+

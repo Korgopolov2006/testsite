@@ -1,0 +1,130 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }} | {% trans "Администрирование Django" %}{% endblock %}
+
+{% block extrastyle %}
+<style>
+    .performance-container { padding-bottom:40px; }
+    .performance-header { display:flex; flex-wrap:wrap; gap:18px; align-items:center; justify-content:space-between; margin-bottom:32px; }
+    .performance-section { background:#fff; border-radius:12px; padding:24px; box-shadow:0 12px 30px rgba(0,0,0,0.05); margin-bottom:24px; }
+    .performance-section h3 { margin-top:0; }
+    .performance-table { width:100%; border-collapse:collapse; }
+    .performance-table th { background:#f0f4ff; padding:12px; text-align:left; font-weight:600; }
+    .performance-table td { padding:12px; border-bottom:1px solid #f2f2f2; }
+    .performance-table tr:hover { background:#f9fafb; }
+    .query-text { font-family:monospace; font-size:12px; max-width:400px; word-break:break-all; }
+    .warning { color:#f59e0b; }
+    .error { color:#ef4444; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="performance-container">
+    <div class="performance-header">
+        <div>
+            <h1>{{ title }}</h1>
+            <p class="help">{% trans "Мониторинг производительности базы данных" %}</p>
+        </div>
+        <a href="{% url 'admin:index' %}" class="button">← {% trans "Вернуться" %}</a>
+    </div>
+
+    {% if has_pg_stat_statements %}
+    <div class="performance-section">
+        <h3>{% trans "Медленные запросы (Top 20)" %}</h3>
+        {% if slow_queries %}
+        <table class="performance-table">
+            <thead>
+                <tr>
+                    <th>{% trans "Запрос" %}</th>
+                    <th>{% trans "Вызовов" %}</th>
+                    <th>{% trans "Среднее время (мс)" %}</th>
+                    <th>{% trans "Макс. время (мс)" %}</th>
+                    <th>{% trans "Общее время (мс)" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for query in slow_queries %}
+                <tr>
+                    <td class="query-text" title="{{ query.full_query }}">{{ query.query }}</td>
+                    <td>{{ query.calls }}</td>
+                    <td class="{% if query.mean_time > 1000 %}warning{% elif query.mean_time > 5000 %}error{% endif %}">{{ query.mean_time|floatformat:2 }}</td>
+                    <td>{{ query.max_time|floatformat:2 }}</td>
+                    <td>{{ query.total_time|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="help">{% trans "Медленных запросов не обнаружено" %}</p>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="performance-section">
+        <p class="help">{% trans "Расширение pg_stat_statements не включено. Для мониторинга медленных запросов включите его в PostgreSQL." %}</p>
+    </div>
+    {% endif %}
+
+    {% if db_stats.tables %}
+    <div class="performance-section">
+        <h3>{% trans "Статистика по таблицам" %}</h3>
+        <table class="performance-table">
+            <thead>
+                <tr>
+                    <th>{% trans "Таблица" %}</th>
+                    <th>{% trans "Живых строк" %}</th>
+                    <th>{% trans "Мертвых строк" %}</th>
+                    <th>{% trans "Последний вакуум" %}</th>
+                    <th>{% trans "Последний анализ" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for table in db_stats.tables %}
+                <tr>
+                    <td>{{ table.schema }}.{{ table.table }}</td>
+                    <td>{{ table.live_tuples|default:"—" }}</td>
+                    <td class="{% if table.dead_tuples > 10000 %}warning{% endif %}">{{ table.dead_tuples|default:"—" }}</td>
+                    <td>{{ table.last_vacuum|default:"—"|date:"d.m.Y H:i" }}</td>
+                    <td>{{ table.last_analyze|default:"—"|date:"d.m.Y H:i" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    {% if db_stats.active_queries %}
+    <div class="performance-section">
+        <h3>{% trans "Активные запросы" %}</h3>
+        <table class="performance-table">
+            <thead>
+                <tr>
+                    <th>{% trans "PID" %}</th>
+                    <th>{% trans "Пользователь" %}</th>
+                    <th>{% trans "Приложение" %}</th>
+                    <th>{% trans "Состояние" %}</th>
+                    <th>{% trans "Время начала" %}</th>
+                    <th>{% trans "Запрос" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for query in db_stats.active_queries %}
+                <tr>
+                    <td>{{ query.pid }}</td>
+                    <td>{{ query.user }}</td>
+                    <td>{{ query.app }}</td>
+                    <td>{{ query.state }}</td>
+                    <td>{{ query.query_start|date:"d.m.Y H:i:s" }}</td>
+                    <td class="query-text">{{ query.query }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+
+
+

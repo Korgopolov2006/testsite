@@ -1,0 +1,400 @@
+{% extends 'paint_shop_project/base.html' %}
+{% load static %}
+
+{% block title %}Регистрация - Жевжик{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --zhevzhik-pink: #FF6B9D;
+        --zhevzhik-dark-pink: #E91E63;
+        --zhevzhik-light-pink: #FFB3D1;
+        --zhevzhik-green: #4CAF50;
+        --zhevzhik-yellow: #FFEB3B;
+        --zhevzhik-gray: #6c757d;
+        --zhevzhik-dark-gray: #2c3e50;
+    }
+    
+    .registration-container {
+        min-height: calc(100vh - 200px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, var(--zhevzhik-light-pink), #fff);
+        padding: 40px 20px;
+        margin: 0;
+        width: 100%;
+    }
+    
+    .registration-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(255, 107, 157, 0.1);
+        padding: 40px;
+        max-width: 500px;
+        width: 100%;
+        margin: 20px;
+    }
+    
+    .registration-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    
+    .registration-title {
+        color: var(--zhevzhik-pink);
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+    
+    .registration-subtitle {
+        color: var(--zhevzhik-gray);
+        font-size: 1.1rem;
+    }
+    
+    .form-group {
+        margin-bottom: 25px;
+    }
+    
+    .form-label {
+        color: var(--zhevzhik-dark-gray);
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: block;
+    }
+    
+    .form-control {
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 15px 20px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: var(--zhevzhik-pink);
+        box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.1);
+        outline: none;
+    }
+    
+    .form-check {
+        margin-bottom: 20px;
+        padding-left: 0;
+    }
+    
+    .form-check-input {
+        margin-right: 10px;
+        margin-top: 0.25rem;
+    }
+    
+    .form-check-label {
+        color: var(--zhevzhik-dark-gray);
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+    
+    .form-check-label a {
+        color: var(--zhevzhik-pink);
+        text-decoration: none;
+    }
+    
+    .form-check-label a:hover {
+        text-decoration: underline;
+    }
+    
+    .btn-register {
+        background: linear-gradient(135deg, var(--zhevzhik-pink), var(--zhevzhik-dark-pink));
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 15px 30px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        width: 100%;
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+    }
+    
+    .btn-register:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(255, 107, 157, 0.3);
+        color: white;
+    }
+    
+    .btn-register:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .login-options {
+        text-align: center;
+        margin-top: 30px;
+    }
+    
+    .login-options a {
+        color: var(--zhevzhik-pink);
+        text-decoration: none;
+        font-weight: 600;
+        margin: 0 15px;
+        transition: color 0.3s ease;
+    }
+    
+    .login-options a:hover {
+        color: var(--zhevzhik-dark-pink);
+    }
+    
+    .user-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, var(--zhevzhik-pink), var(--zhevzhik-dark-pink));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        color: white;
+        font-size: 2rem;
+    }
+    
+    .phone-display {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 20px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--zhevzhik-dark-gray);
+        text-align: center;
+    }
+    
+    .benefits {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 20px;
+        margin-top: 30px;
+    }
+    
+    .benefit-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+        color: var(--zhevzhik-dark-gray);
+    }
+    
+    .benefit-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .benefit-icon {
+        color: var(--zhevzhik-green);
+        margin-right: 10px;
+        font-size: 1.2rem;
+    }
+    
+    .required {
+        color: var(--zhevzhik-pink);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="registration-container">
+    <div class="registration-card">
+        <div class="registration-header">
+            <div class="user-icon">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <h1 class="registration-title">Регистрация</h1>
+            <p class="registration-subtitle">Создайте аккаунт в Жевжик</p>
+            <div class="phone-display">
+                <i class="fas fa-mobile-alt me-2"></i>{{ form.phone.value }}
+            </div>
+        </div>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        <form method="post" id="registration-form">
+            {% csrf_token %}
+            {{ form.phone }}
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                            <i class="fas fa-user me-2"></i>Имя <span class="required">*</span>
+                        </label>
+                        {{ form.first_name }}
+                        {% if form.first_name.errors %}
+                            <div class="text-danger mt-2">
+                                {% for error in form.first_name.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                            <i class="fas fa-user me-2"></i>Фамилия <span class="required">*</span>
+                        </label>
+                        {{ form.last_name }}
+                        {% if form.last_name.errors %}
+                            <div class="text-danger mt-2">
+                                {% for error in form.last_name.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.email.id_for_label }}" class="form-label">
+                    <i class="fas fa-envelope me-2"></i>Email (необязательно)
+                </label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                    <div class="text-danger mt-2">
+                        {% for error in form.email.errors %}
+                            <small>{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="{{ form.password1.id_for_label }}" class="form-label">
+                            <i class="fas fa-lock me-2"></i>Пароль <span class="required">*</span>
+                        </label>
+                        {{ form.password1 }}
+                        {% if form.password1.errors %}
+                            <div class="text-danger mt-2">
+                                {% for error in form.password1.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="{{ form.password2.id_for_label }}" class="form-label">
+                            <i class="fas fa-lock me-2"></i>Подтверждение <span class="required">*</span>
+                        </label>
+                        {{ form.password2 }}
+                        {% if form.password2.errors %}
+                            <div class="text-danger mt-2">
+                                {% for error in form.password2.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-check">
+                {{ form.agree_terms }}
+                <label for="{{ form.agree_terms.id_for_label }}" class="form-check-label">
+                    Я согласен с <a href="#" target="_blank">условиями обработки персональных данных</a> <span class="required">*</span>
+                </label>
+                {% if form.agree_terms.errors %}
+                    <div class="text-danger mt-2">
+                        {% for error in form.agree_terms.errors %}
+                            <small>{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-check">
+                {{ form.agree_privacy }}
+                <label for="{{ form.agree_privacy.id_for_label }}" class="form-check-label">
+                    Я согласен с <a href="#" target="_blank">политикой конфиденциальности</a> <span class="required">*</span>
+                </label>
+                {% if form.agree_privacy.errors %}
+                    <div class="text-danger mt-2">
+                        {% for error in form.agree_privacy.errors %}
+                            <small>{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <button type="submit" class="btn btn-register" id="register-btn">
+                <i class="fas fa-user-plus me-2"></i>Зарегистрироваться
+            </button>
+        </form>
+        
+        <div class="benefits">
+            <h6 class="fw-bold mb-3 text-center">Преимущества регистрации:</h6>
+            <div class="benefit-item">
+                <i class="fas fa-gift benefit-icon"></i>
+                <span>Скидка 500 ₽ на первый заказ</span>
+            </div>
+            <div class="benefit-item">
+                <i class="fas fa-heart benefit-icon"></i>
+                <span>Программа лояльности</span>
+            </div>
+            <div class="benefit-item">
+                <i class="fas fa-truck benefit-icon"></i>
+                <span>Быстрая доставка</span>
+            </div>
+            <div class="benefit-item">
+                <i class="fas fa-bell benefit-icon"></i>
+                <span>Уведомления об акциях</span>
+            </div>
+        </div>
+        
+        <div class="login-options">
+            <a href="{% url 'phone_login' %}">Уже есть аккаунт? Войти</a>
+            <a href="{% url 'login' %}">Обычный вход</a>
+            <a href="{% url 'home' %}">На главную</a>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('registration-form');
+    const registerBtn = document.getElementById('register-btn');
+    const agreeTerms = document.getElementById('{{ form.agree_terms.id_for_label }}');
+    const agreePrivacy = document.getElementById('{{ form.agree_privacy.id_for_label }}');
+    
+    function updateButtonState() {
+        if (agreeTerms.checked && agreePrivacy.checked) {
+            registerBtn.disabled = false;
+        } else {
+            registerBtn.disabled = true;
+        }
+    }
+    
+    agreeTerms.addEventListener('change', updateButtonState);
+    agreePrivacy.addEventListener('change', updateButtonState);
+    
+    // Инициализация состояния кнопки
+    updateButtonState();
+    
+    // Обработка отправки формы
+    form.addEventListener('submit', function(e) {
+        if (!agreeTerms.checked || !agreePrivacy.checked) {
+            e.preventDefault();
+            alert('Необходимо согласиться с условиями обработки персональных данных и политикой конфиденциальности');
+        }
+    });
+});
+</script>
+{% endblock %}

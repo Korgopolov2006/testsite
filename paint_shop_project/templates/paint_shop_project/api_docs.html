@@ -1,0 +1,25 @@
+{% extends 'paint_shop_project/base.html' %}
+{% block content %}
+<div class="container py-4">
+  <h1 class="mb-3">Swagger UI</h1>
+  <p class="text-muted">Интерактивная документация для Жевжик API.</p>
+  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css" />
+  <div id="swagger" class="bg-white border rounded"></div>
+</div>
+<script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+<script>
+  window.addEventListener('DOMContentLoaded', function() {
+    const ui = SwaggerUIBundle({
+      url: '/api/schema.json',
+      dom_id: '#swagger',
+      presets: [SwaggerUIBundle.presets.apis],
+      layout: 'BaseLayout'
+    });
+  });
+  </script>
+{% endblock %}
+
+
+
+
+

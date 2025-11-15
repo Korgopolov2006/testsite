@@ -1,0 +1,314 @@
+{% extends 'paint_shop_project/base.html' %}
+{% load static %}
+
+{% block title %}Любимые категории - Жевжик{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --zhevzhik-pink: #FF6B9D;
+        --zhevzhik-dark-pink: #E91E63;
+        --zhevzhik-light-pink: #FFB3D1;
+        --zhevzhik-green: #4CAF50;
+        --zhevzhik-yellow: #FFEB3B;
+        --zhevzhik-gray: #6c757d;
+        --zhevzhik-dark-gray: #2c3e50;
+    }
+    
+    .categories-hero {
+        background: linear-gradient(135deg, var(--zhevzhik-green), #20c997);
+        color: white;
+        padding: 50px 0;
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    
+    .category-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        padding: 25px;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+        border-left: 4px solid var(--zhevzhik-green);
+    }
+    
+    .category-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+    
+    .category-card.selected {
+        border-left-color: var(--zhevzhik-pink);
+        background: linear-gradient(135deg, #f8f9fa, #fff5f5);
+    }
+    
+    .category-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin: 0 auto 15px;
+        background: linear-gradient(135deg, var(--zhevzhik-light-pink), var(--zhevzhik-pink));
+        color: white;
+    }
+    
+    .category-icon.selected {
+        background: linear-gradient(135deg, var(--zhevzhik-pink), var(--zhevzhik-dark-pink));
+    }
+    
+    .btn-toggle {
+        background: var(--zhevzhik-pink);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-toggle:hover {
+        background: var(--zhevzhik-dark-pink);
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .btn-toggle.selected {
+        background: #dc3545;
+    }
+    
+    .btn-toggle.selected:hover {
+        background: #c82333;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--zhevzhik-gray);
+        background: #f8f9fa;
+        border-radius: 15px;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        color: #dee2e6;
+        margin-bottom: 20px;
+    }
+    
+    .selected-categories {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        padding: 25px;
+        margin-bottom: 30px;
+    }
+    
+    .category-tag {
+        display: inline-block;
+        background: var(--zhevzhik-light-pink);
+        color: var(--zhevzhik-dark-pink);
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        margin: 5px;
+        font-weight: 500;
+        position: relative;
+    }
+    
+    .category-tag .remove-btn {
+        background: none;
+        border: none;
+        color: var(--zhevzhik-dark-pink);
+        font-size: 1.2rem;
+        margin-left: 8px;
+        cursor: pointer;
+        padding: 0;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .category-tag .remove-btn:hover {
+        background: var(--zhevzhik-pink);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    <!-- Заголовок -->
+    <div class="categories-hero">
+        <div class="container">
+            <h1 class="display-4 fw-bold mb-3">❤️ Любимые категории</h1>
+            <p class="lead">Выберите интересующие вас категории для персонализированных рекомендаций</p>
+        </div>
+    </div>
+    
+    <!-- Выбранные категории -->
+    {% if selected_categories %}
+    <div class="selected-categories">
+        <h4 class="mb-3">
+            <i class="fas fa-heart me-2"></i>Ваши любимые категории ({{ selected_categories.count }})
+        </h4>
+        <div id="selected-categories-list">
+            {% for fav_cat in selected_categories %}
+            <span class="category-tag" data-category-id="{{ fav_cat.category.id }}">
+                {{ fav_cat.category.name }} · скидка {{ fav_cat.discount_percent }}% · кешбэк x{{ fav_cat.cashback_multiplier }}
+                <button class="remove-btn" onclick="removeCategory({{ fav_cat.category.id }})">
+                    <i class="fas fa-times"></i>
+                </button>
+            </span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Доступные категории -->
+    <div class="row">
+        {% for category in categories %}
+        <div class="col-md-4 col-lg-3">
+            <div class="category-card {% if category.id in selected_category_ids %}selected{% endif %}" id="category-{{ category.id }}">
+                <div class="text-center">
+                    <div class="category-icon {% if category.id in selected_category_ids %}selected{% endif %}">
+                        {% if category.name == "Молочные продукты" %}
+                            <i class="fas fa-wine-bottle"></i>
+                        {% elif category.name == "Мясо и птица" %}
+                            <i class="fas fa-drumstick-bite"></i>
+                        {% elif category.name == "Овощи и фрукты" %}
+                            <i class="fas fa-apple-alt"></i>
+                        {% elif category.name == "Хлеб и выпечка" %}
+                            <i class="fas fa-bread-slice"></i>
+                        {% elif category.name == "Напитки" %}
+                            <i class="fas fa-coffee"></i>
+                        {% elif category.name == "Сладости" %}
+                            <i class="fas fa-candy-cane"></i>
+                        {% elif category.name == "Консервы" %}
+                            <i class="fas fa-jar"></i>
+                        {% else %}
+                            <i class="fas fa-shopping-basket"></i>
+                        {% endif %}
+                    </div>
+                    <h5 class="mb-3">{{ category.name }}</h5>
+                    <p class="text-muted small mb-3">{{ category.description|truncatewords:10 }}</p>
+                    
+                    <button class="btn btn-toggle {% if category.id in selected_category_ids %}selected{% endif %}" 
+                            onclick="toggleCategory({{ category.id }}, '{{ category.name }}')">
+                        {% if category.id in selected_category_ids %}
+                            <i class="fas fa-heart-broken me-2"></i>Убрать
+                        {% else %}
+                            <i class="fas fa-heart me-2"></i>Добавить
+                        {% endif %}
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Информация о персонализации -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h4 class="card-title mb-3">
+                        <i class="fas fa-magic me-2"></i>Как работает персонализация?
+                    </h4>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-heart fa-lg"></i>
+                                </div>
+                                <h6>Выберите категории</h6>
+                                <p class="text-muted small">Отметьте интересующие вас категории товаров</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-lightbulb fa-lg"></i>
+                                </div>
+                                <h6>Получайте рекомендации</h6>
+                                <p class="text-muted small">Мы будем предлагать товары из ваших любимых категорий</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div class="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-bell fa-lg"></i>
+                                </div>
+                                <h6>Уведомления об акциях</h6>
+                                <p class="text-muted small">Скидки и предложения по вашим категориям</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleCategory(categoryId, categoryName) {
+    const isSelected = document.getElementById(`category-${categoryId}`).classList.contains('selected');
+    
+    if (isSelected) {
+        removeCategory(categoryId);
+    } else {
+        addCategory(categoryId, categoryName);
+    }
+}
+
+function addCategory(categoryId, categoryName) {
+    fetch(`/add-favorite-category/${categoryId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Ошибка: ' + data.message);
+        }
+    });
+}
+
+function removeCategory(categoryId) {
+    fetch(`/remove-favorite-category/${categoryId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Ошибка: ' + data.message);
+        }
+    });
+}
+
+function addToSelectedList() {}
+function removeFromSelectedList() {}
+</script>
+{% endblock %}
+

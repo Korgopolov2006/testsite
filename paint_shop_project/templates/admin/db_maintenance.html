@@ -1,0 +1,512 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+{% load duration %}
+
+{% block title %}{{ title }} | {% trans "Администрирование Django" %}{% endblock %}
+
+{% block extrastyle %}
+<style>
+    .db-maintenance { padding-bottom: 40px; }
+    .db-maintenance__header { display:flex; flex-direction:column; gap:12px; margin-bottom:32px; }
+    .db-maintenance__actions { display:grid; gap:24px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); margin-bottom:32px; }
+    .db-card { background:#fff; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.06); padding:24px; }
+    .db-card h2 { margin-top:0; margin-bottom:16px; }
+    .db-card form .form-row { margin-bottom:14px; }
+    .db-card .radio { margin-bottom:6px; display:block; }
+    .db-card small { color:#666; }
+    .db-badges { display:flex; gap:12px; flex-wrap:wrap; }
+    .db-badge { display:flex; align-items:center; gap:8px; padding:10px 14px; border-radius:10px; background:#f5f5f5; font-weight:600; }
+    .db-section { margin-bottom:40px; }
+    .db-section h2 { margin-bottom:18px; }
+    .db-two-col { display:grid; gap:24px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+    .db-table { width:100%; border-collapse:collapse; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 10px 25px rgba(0,0,0,0.04); }
+    .db-table th { background:#f0f4ff; color:#1a2a6c; text-transform:uppercase; font-size:12px; letter-spacing:.05em; padding:12px 16px; }
+    .db-table td { padding:12px 16px; border-bottom:1px solid #f2f2f2; }
+    .db-table tr:last-child td { border-bottom:none; }
+    .db-stats { display:grid; gap:18px; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); margin-bottom:24px; }
+    .db-stat { background:#fff; border-radius:12px; padding:18px; box-shadow:0 12px 30px rgba(0,0,0,0.05); }
+    .db-stat .label { font-size:12px; text-transform:uppercase; color:#6c757d; letter-spacing:.08em; }
+    .db-stat .value { font-size:24px; font-weight:700; margin-top:6px; }
+    .db-stat .note { font-size:12px; color:#999; margin-top:4px; }
+    .db-link { display:inline-flex; align-items:center; gap:6px; }
+    .db-metrics-grid { display:grid; gap:18px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-bottom:24px; }
+    .db-metrics-card { background:#fff; border-radius:12px; padding:18px; box-shadow:0 12px 25px rgba(0,0,0,0.05); }
+    .db-empty { color:#777; font-style:italic; }
+    .db-alert { padding:14px 18px; border-radius:10px; background:#fff6e5; color:#7a4f00; margin-bottom:18px; }
+    .db-actions-bar { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+    .db-actions-bar .button-secondary { background:#f8f9fa; border:1px solid #d0d7de; color:#0b1320; }
+    .checkbox { display:flex; align-items:center; gap:8px; }
+    @media(max-width:600px){
+        .db-table, .db-table thead, .db-table tbody, .db-table th, .db-table td, .db-table tr { display:block; }
+        .db-table thead { display:none; }
+        .db-table tr { margin-bottom:14px; background:#fff; border-radius:10px; box-shadow:0 4px 14px rgba(0,0,0,0.05); overflow:hidden; }
+        .db-table td { border:none; border-bottom:1px solid #f2f2f2; position:relative; padding-left:48px; }
+        .db-table td::before { content:attr(data-label); position:absolute; left:16px; top:12px; font-size:12px; font-weight:600; color:#6c757d; text-transform:uppercase; }
+        .db-table td:last-child { border-bottom:none; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="db-maintenance">
+    <div class="db-maintenance__header">
+        <div class="db-actions-bar">
+            <a href="{% url 'admin:index' %}" class="button db-link button-secondary">← {% trans "Вернуться в админку" %}</a>
+            <form method="post" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="test-connection">
+                <button type="submit" class="button">{% trans "Проверить соединение" %}</button>
+            </form>
+            <form method="post" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="run-manual-backup">
+                <button type="submit" class="button default">🚀 {% trans "Запустить бэкап вручную" %}</button>
+            </form>
+        </div>
+        <h1>{{ title }}</h1>
+        <p class="help">
+            {% blocktrans %}Резервные копии по умолчанию сохраняются в каталоге {{ backup_root }}. Создавайте отдельные подпапки для каждой копии и при необходимости скачивайте их на локальный компьютер.{% endblocktrans %}
+        </p>
+    </div>
+
+    <div class="db-maintenance__actions">
+        <section class="db-card">
+            <h2>{% trans "Создание резервной копии" %}</h2>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="create-backup">
+                {{ backup_form.non_field_errors }}
+                <div class="form-row">
+                    <label class="label">{{ backup_form.destination.label }}</label>
+                    {% for radio in backup_form.destination %}
+                        <label class="radio">{{ radio.tag }} {{ radio.choice_label }}</label>
+                    {% endfor %}
+                    {% if backup_form.destination.errors %}
+                        <div class="errors">{{ backup_form.destination.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-row">
+                    {{ backup_form.folder_name.label_tag }}
+                    {{ backup_form.folder_name }}
+                    {% if backup_form.folder_name.errors %}
+                        <div class="errors">{{ backup_form.folder_name.errors }}</div>
+                    {% endif %}
+                    <small>{{ backup_form.folder_name.help_text }}</small>
+                </div>
+                <div class="form-row">
+                    {{ backup_form.custom_directory.label_tag }}
+                    {{ backup_form.custom_directory }}
+                    {% if backup_form.custom_directory.errors %}
+                        <div class="errors">{{ backup_form.custom_directory.errors }}</div>
+                    {% endif %}
+                    <small>{{ backup_form.custom_directory.help_text }}</small>
+                </div>
+                <button type="submit" class="button default">{% trans "Создать резервную копию" %}</button>
+                <small>{% trans "Если pg_dump/pg_restore не найден, добавьте их в PATH или опишите каталоги в настройках проекта." %}</small>
+            </form>
+        </section>
+
+        <section class="db-card">
+            <h2>{% trans "Быстрые показатели" %}</h2>
+            <div class="db-stats">
+                <div class="db-stat">
+                    <div class="label">{% trans "Всего заказов" %}</div>
+                    <div class="value">{{ sales_metrics.orders_total|default:"0" }}</div>
+                    <div class="note">{% trans "активность клиентов" %}</div>
+                </div>
+                <div class="db-stat">
+                    <div class="label">{% trans "Выручка (30 дней)" %}</div>
+                    <div class="value">{{ sales_metrics.revenue_last_30|default:0|floatformat:2 }} ₽</div>
+                    <div class="note">{% trans "статус доставленных заказов" %}</div>
+                </div>
+                <div class="db-stat">
+                    <div class="label">{% trans "Средний чек" %}</div>
+                    <div class="value">
+                        {% if sales_metrics.avg_order_value %}
+                            {{ sales_metrics.avg_order_value|floatformat:2 }} ₽
+                        {% else %}
+                            —
+                        {% endif %}
+                    </div>
+                    <div class="note">{% trans "доставленные за всё время" %}</div>
+                </div>
+            </div>
+            <div class="db-badges">
+                <span class="db-badge">{% trans "В работе" %}: {{ sales_metrics.orders_in_progress|default:"0" }}</span>
+                <span class="db-badge">{% trans "Повторные клиенты" %}: {{ sales_metrics.repeat_customers|default:"0" }}</span>
+                <span class="db-badge">{% trans "Новых за 30 дней" %}: {{ sales_metrics.new_customers_last_30|default:"0" }}</span>
+            </div>
+        </section>
+    </div>
+
+    <section class="db-section">
+        <h2>{% trans "Восстановление базы данных" %}</h2>
+        <div class="db-two-col">
+            <section class="db-card">
+                <h3>{% trans "Из файла" %}</h3>
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="restore-upload">
+                    {{ restore_upload_form.non_field_errors }}
+                    <div class="form-row">
+                        {{ restore_upload_form.backup_file.label_tag }}
+                        {{ restore_upload_form.backup_file }}
+                        {% if restore_upload_form.backup_file.errors %}
+                            <div class="errors">{{ restore_upload_form.backup_file.errors }}</div>
+                        {% endif %}
+                        <small>{{ restore_upload_form.backup_file.help_text }}</small>
+                    </div>
+                    <div class="form-row">
+                        <label class="checkbox">
+                            {{ restore_upload_form.confirm }} {{ restore_upload_form.confirm.label }}
+                        </label>
+                        {% if restore_upload_form.confirm.errors %}
+                            <div class="errors">{{ restore_upload_form.confirm.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="button default">{% trans "Восстановить" %}</button>
+                </form>
+            </section>
+
+            <section class="db-card">
+                <h3>{% trans "Из созданных бэкапов" %}</h3>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="restore-existing">
+                    {{ restore_existing_form.non_field_errors }}
+                    <div class="form-row">
+                        {{ restore_existing_form.backup_name.label_tag }}
+                        {{ restore_existing_form.backup_name }}
+                        {% if restore_existing_form.backup_name.errors %}
+                            <div class="errors">{{ restore_existing_form.backup_name.errors }}</div>
+                        {% endif %}
+                        {% if not backup_files %}
+                            <small class="db-empty">{% trans "Создайте хотя бы одну резервную копию, чтобы список заполнился." %}</small>
+                        {% endif %}
+                    </div>
+                    <div class="form-row">
+                        <label class="checkbox">
+                            {{ restore_existing_form.confirm }} {{ restore_existing_form.confirm.label }}
+                        </label>
+                        {% if restore_existing_form.confirm.errors %}
+                            <div class="errors">{{ restore_existing_form.confirm.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="button">{% trans "Восстановить выбранный бэкап" %}</button>
+                </form>
+            </section>
+        </div>
+    </section>
+
+    <section class="db-section">
+        <h2>{% trans "История операций резервного копирования" %}</h2>
+        {% if backup_history %}
+            <table class="db-table" style="margin-bottom:24px;">
+                <thead>
+                    <tr>
+                        <th>{% trans "Операция" %}</th>
+                        <th>{% trans "Статус" %}</th>
+                        <th>{% trans "Создал" %}</th>
+                        <th>{% trans "Размер" %}</th>
+                        <th>{% trans "Начало" %}</th>
+                        <th>{% trans "Окончание" %}</th>
+                        <th>{% trans "Длительность" %}</th>
+                        <th>{% trans "Действия" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in backup_history %}
+                        <tr>
+                            <td data-label="{% trans "Операция" %}">{{ record.get_operation_display }}</td>
+                            <td data-label="{% trans "Статус" %}">
+                                {% if record.status == 'success' %}
+                                    <span style="color:green;">✅ {% trans "Успешно" %}</span>
+                                {% elif record.status == 'failed' %}
+                                    <span style="color:red;">❌ {% trans "Ошибка" %}</span>
+                                {% else %}
+                                    <span style="color:orange;">⏳ {% trans "В процессе" %}</span>
+                                {% endif %}
+                            </td>
+                            <td data-label="{% trans "Создал" %}">{{ record.created_by.username|default:"—" }}</td>
+                            <td data-label="{% trans "Размер" %}">{{ record.format_file_size }}</td>
+                            <td data-label="{% trans "Начало" %}">{{ record.started_at|date:"d.m.Y H:i" }}</td>
+                            <td data-label="{% trans "Окончание" %}">
+                                {% if record.completed_at %}
+                                    {{ record.completed_at|date:"d.m.Y H:i" }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td data-label="{% trans "Длительность" %}">
+                                {{ record.duration|format_duration }}
+                            </td>
+                            <td data-label="{% trans "Действия" %}">
+                                <a href="{% url 'admin:paint_shop_project_databasebackup_change' record.id %}" class="button">{% trans "Подробнее" %}</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <p class="help">
+                <a href="{% url 'admin:paint_shop_project_databasebackup_changelist' %}">{% trans "Просмотреть всю историю →" %}</a>
+            </p>
+        {% else %}
+            <p class="db-empty">{% trans "История операций пока пуста." %}</p>
+        {% endif %}
+    </section>
+
+    <section class="db-section">
+        <h2>{% trans "Каталог резервных копий" %}</h2>
+        {% if backup_files %}
+            <table class="db-table">
+                <thead>
+                    <tr>
+                        <th>{% trans "Папка" %}</th>
+                        <th>{% trans "Файл" %}</th>
+                        <th>{% trans "Размер" %}</th>
+                        <th>{% trans "Создан" %}</th>
+                        <th>{% trans "Действия" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for backup in backup_files %}
+                        <tr>
+                            <td data-label="{% trans "Папка" %}">{{ backup.folder|default:"—" }}</td>
+                            <td data-label="{% trans "Файл" %}">{{ backup.name }}</td>
+                            <td data-label="{% trans "Размер" %}">{{ backup.size_display }}</td>
+                            <td data-label="{% trans "Создан" %}">{{ backup.created_at|date:"d.m.Y H:i" }}</td>
+                            <td data-label="{% trans "Действия" %}">
+                                <a class="button" href="?download={{ backup.relative_path|urlencode }}">{% trans "Скачать" %}</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="db-empty">{% trans "Бэкапы ещё не созданы — создайте первый прямо сейчас." %}</p>
+        {% endif %}
+        <p class="help">{% trans "Бэкапы, сохранённые вне стандартной папки, не отображаются в каталоге и доступны только вручную." %}</p>
+    </section>
+
+    <section class="db-section">
+        <h2>{% trans "Метрики по продажам" %}</h2>
+        {% if sales_metric_errors %}
+            <div class="db-alert">
+                {% for err in sales_metric_errors %}
+                    <div>{{ err }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        <div class="db-two-col">
+            <section class="db-card">
+                <h3>{% trans "Статусы заказов" %}</h3>
+                {% if sales_metrics.orders_by_status %}
+                    <ul>
+                        {% for row in sales_metrics.orders_by_status %}
+                            <li><strong>{{ row.status }}</strong> — {{ row.count }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="db-empty">{% trans "Заказы ещё не созданы." %}</p>
+                {% endif %}
+            </section>
+
+            <section class="db-card">
+                <h3>{% trans "Динамика за 7 дней" %}</h3>
+                {% if sales_metrics.daily_revenue %}
+                    <table class="db-table">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Дата" %}</th>
+                                <th>{% trans "Выручка" %}</th>
+                                <th>{% trans "Заказы" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in sales_metrics.daily_revenue %}
+                                <tr>
+                                    <td data-label="{% trans "Дата" %}">{{ row.day|date:"d.m" }}</td>
+                                    <td data-label="{% trans "Выручка" %}">{{ row.revenue|floatformat:2 }} ₽</td>
+                                    <td data-label="{% trans "Заказы" %}">{{ row.orders }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="db-empty">{% trans "Недостаточно данных за последние 7 дней." %}</p>
+                {% endif %}
+            </section>
+        </div>
+
+        <div class="db-two-col" style="margin-top:24px;">
+            <section class="db-card">
+                <h3>{% trans "Топ-товары" %}</h3>
+                {% if sales_metrics.top_products %}
+                    <table class="db-table">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Товар" %}</th>
+                                <th>{% trans "Выручка" %}</th>
+                                <th>{% trans "Количество" %}</th>
+                                <th>{% trans "Заказы" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in sales_metrics.top_products %}
+                                <tr>
+                                    <td data-label="{% trans "Товар" %}">{{ row.name }}</td>
+                                    <td data-label="{% trans "Выручка" %}">{{ row.revenue|floatformat:2 }} ₽</td>
+                                    <td data-label="{% trans "Количество" %}">{{ row.quantity }}</td>
+                                    <td data-label="{% trans "Заказы" %}">{{ row.orders }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="db-empty">{% trans "Пока нет доставленных заказов." %}</p>
+                {% endif %}
+            </section>
+
+            <section class="db-card">
+                <h3>{% trans "Топ-категории" %}</h3>
+                {% if sales_metrics.top_categories %}
+                    <table class="db-table">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Категория" %}</th>
+                                <th>{% trans "Выручка" %}</th>
+                                <th>{% trans "Количество" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in sales_metrics.top_categories %}
+                                <tr>
+                                    <td data-label="{% trans "Категория" %}">{{ row.name }}</td>
+                                    <td data-label="{% trans "Выручка" %}">{{ row.revenue|floatformat:2 }} ₽</td>
+                                    <td data-label="{% trans "Количество" %}">{{ row.quantity }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="db-empty">{% trans "Нет данных о категориях." %}</p>
+                {% endif %}
+            </section>
+        </div>
+    </section>
+
+    <section class="db-section">
+        <h2>{% trans "Метрики базы данных" %}</h2>
+
+        {% if metric_errors %}
+            <div class="db-alert">
+                {% for err in metric_errors %}
+                    <div>{{ err }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if metrics %}
+            <div class="db-metrics-grid">
+                <div class="db-metrics-card">
+                    <div class="label">{% trans "СУБД" %}</div>
+                    <div class="value">{{ metrics.version }}</div>
+                </div>
+                <div class="db-metrics-card">
+                    <div class="label">{% trans "База данных" %}</div>
+                    <div class="value">{{ metrics.database_name }}</div>
+                </div>
+                <div class="db-metrics-card">
+                    <div class="label">{% trans "Размер" %}</div>
+                    <div class="value">{{ metrics.database_size_display }}</div>
+                </div>
+                <div class="db-metrics-card">
+                    <div class="label">{% trans "Аптайм" %}</div>
+                    <div class="value">{{ metrics.uptime }}</div>
+                </div>
+                <div class="db-metrics-card">
+                    <div class="label">{% trans "Подключений" %}</div>
+                    <div class="value">{{ metrics.connections_total }}</div>
+                </div>
+                <div class="db-metrics-card">
+                    <div class="label">{% trans "Cache hit ratio" %}</div>
+                    <div class="value">
+                        {% if metrics.cache_hit_ratio %}
+                            {{ metrics.cache_hit_ratio|floatformat:2 }}%
+                        {% else %}
+                            —
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {% if metrics.connections_by_state %}
+                <h3>{% trans "Подключения по состояниям" %}</h3>
+                <table class="db-table">
+                    <thead>
+                        <tr>
+                            <th>{% trans "Состояние" %}</th>
+                            <th>{% trans "Количество" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in metrics.connections_by_state %}
+                            <tr>
+                                <td data-label="{% trans "Состояние" %}">{{ row.state }}</td>
+                                <td data-label="{% trans "Количество" %}">{{ row.count }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+
+            {% if metrics.top_tables %}
+                <h3>{% trans "Крупнейшие таблицы" %}</h3>
+                <table class="db-table">
+                    <thead>
+                        <tr>
+                            <th>{% trans "Таблица" %}</th>
+                            <th>{% trans "Общий размер" %}</th>
+                            <th>{% trans "Данные" %}</th>
+                            <th>{% trans "Индексы" %}</th>
+                            <th>{% trans "Строк" %}</th>
+                            <th>{% trans "Dead tuples" %}</th>
+                            <th>{% trans "Autovacuum" %}</th>
+                            <th>{% trans "Vacuum" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in metrics.top_tables %}
+                            <tr>
+                                <td data-label="{% trans "Таблица" %}">{{ row.table }}</td>
+                                <td data-label="{% trans "Общий размер" %}">{{ row.total_size }}</td>
+                                <td data-label="{% trans "Данные" %}">{{ row.table_size }}</td>
+                                <td data-label="{% trans "Индексы" %}">{{ row.index_size }}</td>
+                                <td data-label="{% trans "Строк" %}">{{ row.live_rows }}</td>
+                                <td data-label="{% trans "Dead tuples" %}">{{ row.dead_rows }}</td>
+                                <td data-label="{% trans "Autovacuum" %}">
+                                    {% if row.last_autovacuum %}
+                                        {{ row.last_autovacuum|date:"d.m.Y H:i" }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+                                <td data-label="{% trans "Vacuum" %}">
+                                    {% if row.last_vacuum %}
+                                        {{ row.last_vacuum|date:"d.m.Y H:i" }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+        {% else %}
+            <p class="db-empty">{% trans "Метрики базы данных недоступны." %}</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}
+

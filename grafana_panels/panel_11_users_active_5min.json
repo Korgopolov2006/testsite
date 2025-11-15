@@ -1,0 +1,110 @@
+{
+  "id": 11,
+  "type": "timeseries",
+  "title": "👥 Активные пользователи за 5 минут",
+  "description": "Количество пользователей, заходивших на сайт за последние 5 минут",
+  "gridPos": {
+    "x": 12,
+    "y": 16,
+    "h": 8,
+    "w": 12
+  },
+  "fieldConfig": {
+    "defaults": {
+      "custom": {
+        "drawStyle": "line",
+        "lineInterpolation": "smooth",
+        "barAlignment": 0,
+        "lineWidth": 2,
+        "fillOpacity": 10,
+        "gradientMode": "opacity",
+        "spanNulls": false,
+        "insertNulls": false,
+        "showPoints": "auto",
+        "pointSize": 5,
+        "stacking": {
+          "mode": "none",
+          "group": "A"
+        },
+        "axisPlacement": "auto",
+        "axisLabel": "Пользователей",
+        "axisColorMode": "text",
+        "scaleDistribution": {
+          "type": "linear"
+        },
+        "axisCenteredZero": false,
+        "hideFrom": {
+          "tooltip": false,
+          "viz": false,
+          "legend": false
+        },
+        "thresholdsStyle": {
+          "mode": "line"
+        }
+      },
+      "color": {
+        "mode": "fixed",
+        "fixedColor": "green"
+      },
+      "mappings": [],
+      "thresholds": {
+        "mode": "absolute",
+        "steps": [
+          {
+            "color": "green",
+            "value": null
+          },
+          {
+            "color": "yellow",
+            "value": 10
+          },
+          {
+            "color": "red",
+            "value": 50
+          }
+        ]
+      },
+      "unit": "short",
+      "decimals": 0,
+      "min": 0
+    },
+    "overrides": []
+  },
+  "options": {
+    "tooltip": {
+      "mode": "single",
+      "sort": "none",
+      "hideZeros": false
+    },
+    "legend": {
+      "showLegend": true,
+      "displayMode": "table",
+      "placement": "bottom",
+      "calcs": [
+        "lastNotNull",
+        "mean",
+        "max"
+      ],
+      "width": 400
+    }
+  },
+  "pluginVersion": "12.2.0",
+  "targets": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "editorMode": "code",
+      "expr": "zhevzhik_users_active_5min",
+      "legendFormat": "Активных за 5 мин",
+      "range": true,
+      "refId": "A"
+    }
+  ],
+  "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+  }
+}
+

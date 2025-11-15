@@ -1,0 +1,282 @@
+{% extends "paint_shop_project/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Панель менеджера" %} | {% trans "Жевжик" %}{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1400px; margin: 20px auto; padding: 20px;">
+    <div class="header-section" style="margin-bottom: 30px;">
+        <h1>{% trans "Панель менеджера магазина" %}</h1>
+        <p class="help-text">{% trans "Добро пожаловать" %}, {{ manager_name }}!</p>
+        {% if managed_stores %}
+        <p class="help-text">{% trans "Управляемые магазины" %}: 
+            {% for store in managed_stores %}
+                <strong>{{ store.name }}</strong>{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+        </p>
+        {% endif %}
+    </div>
+
+    <!-- Быстрые переходы -->
+    <div class="quick-links" style="display: flex; gap: 15px; margin-bottom: 30px; flex-wrap: wrap;">
+        <a href="{% url 'admin:index' %}" class="btn btn-primary">
+            <i class="fas fa-cog me-2"></i>{% trans "Админ панель" %}
+        </a>
+        {% if user.can_pick_orders %}
+        <a href="{% url 'picker_dashboard' %}" class="btn btn-secondary">
+            <i class="fas fa-box me-2"></i>{% trans "Панель сборщика" %}
+        </a>
+        {% endif %}
+        {% if user.can_deliver_orders %}
+        <a href="{% url 'delivery_dashboard' %}" class="btn btn-secondary">
+            <i class="fas fa-truck me-2"></i>{% trans "Панель доставщика" %}
+        </a>
+        {% endif %}
+        <a href="{% url 'admin:paint_shop_project_product_changelist' %}" class="btn btn-outline-primary">
+            <i class="fas fa-shopping-bag me-2"></i>{% trans "Управление товарами" %}
+        </a>
+        <a href="{% url 'admin:paint_shop_project_order_changelist' %}" class="btn btn-outline-primary">
+            <i class="fas fa-list me-2"></i>{% trans "Управление заказами" %}
+        </a>
+        <a href="{% url 'admin:paint_shop_project_promotion_changelist' %}" class="btn btn-outline-primary">
+            <i class="fas fa-tags me-2"></i>{% trans "Акции и промокоды" %}
+        </a>
+    </div>
+
+    <!-- Статистика заказов -->
+    <div class="stats-section" style="margin-bottom: 30px;">
+        <h2>{% trans "Статистика заказов" %}</h2>
+        <div class="stats-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+            <div class="stat-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="font-size: 2em; font-weight: bold; color: #1a2a6c;">{{ total_orders }}</div>
+                <div style="color: #666;">{% trans "Всего заказов" %}</div>
+            </div>
+            <div class="stat-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="font-size: 2em; font-weight: bold; color: #10b981;">{{ orders_today }}</div>
+                <div style="color: #666;">{% trans "Заказов сегодня" %}</div>
+            </div>
+            <div class="stat-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="font-size: 2em; font-weight: bold; color: #3b82f6;">{{ orders_last_7 }}</div>
+                <div style="color: #666;">{% trans "За последние 7 дней" %}</div>
+            </div>
+            <div class="stat-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="font-size: 2em; font-weight: bold; color: #8b5cf6;">{{ orders_last_30 }}</div>
+                <div style="color: #666;">{% trans "За последние 30 дней" %}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Статистика выручки -->
+    <div class="revenue-section" style="margin-bottom: 30px;">
+        <h2>{% trans "Выручка" %}</h2>
+        <div class="stats-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+            <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="font-size: 2em; font-weight: bold;">{{ total_revenue|floatformat:0 }} ₽</div>
+                <div style="opacity: 0.9;">{% trans "Общая выручка" %}</div>
+            </div>
+            <div class="stat-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="font-size: 2em; font-weight: bold; color: #10b981;">{{ revenue_today|floatformat:0 }} ₽</div>
+                <div style="color: #666;">{% trans "Выручка сегодня" %}</div>
+            </div>
+            <div class="stat-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="font-size: 2em; font-weight: bold; color: #3b82f6;">{{ revenue_last_7|floatformat:0 }} ₽</div>
+                <div style="color: #666;">{% trans "За последние 7 дней" %}</div>
+            </div>
+            <div class="stat-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="font-size: 2em; font-weight: bold; color: #8b5cf6;">{{ revenue_last_30|floatformat:0 }} ₽</div>
+                <div style="color: #666;">{% trans "За последние 30 дней" %}</div>
+            </div>
+            <div class="stat-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="font-size: 2em; font-weight: bold; color: #f59e0b;">{{ avg_order_value|floatformat:0 }} ₽</div>
+                <div style="color: #666;">{% trans "Средний чек" %}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Статистика товаров -->
+    <div class="products-section" style="margin-bottom: 30px;">
+        <h2>{% trans "Статистика товаров" %}</h2>
+        <div class="stats-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+            <div class="stat-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="font-size: 2em; font-weight: bold; color: #1a2a6c;">{{ total_products }}</div>
+                <div style="color: #666;">{% trans "Всего товаров" %}</div>
+            </div>
+            <div class="stat-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="font-size: 2em; font-weight: bold; color: #10b981;">{{ active_products }}</div>
+                <div style="color: #666;">{% trans "Активных товаров" %}</div>
+            </div>
+            <div class="stat-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="font-size: 2em; font-weight: bold; color: #f59e0b;">{{ low_stock_products }}</div>
+                <div style="color: #666;">{% trans "Низкий остаток (< 10)" %}</div>
+            </div>
+            <div class="stat-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="font-size: 2em; font-weight: bold; color: #ef4444;">{{ out_of_stock_products }}</div>
+                <div style="color: #666;">{% trans "Нет в наличии" %}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Статистика партий -->
+    <div class="batches-section" style="margin-bottom: 30px;">
+        <h2>{% trans "Статистика партий товаров" %}</h2>
+        <div class="stats-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+            <div class="stat-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="font-size: 2em; font-weight: bold; color: #1a2a6c;">{{ total_batches }}</div>
+                <div style="color: #666;">{% trans "Всего партий" %}</div>
+            </div>
+            <div class="stat-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="font-size: 2em; font-weight: bold; color: #f59e0b;">{{ expiring_soon_batches }}</div>
+                <div style="color: #666;">{% trans "Истекают в течение недели" %}</div>
+            </div>
+            <div class="stat-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="font-size: 2em; font-weight: bold; color: #ef4444;">{{ expired_batches }}</div>
+                <div style="color: #666;">{% trans "Просроченные партии" %}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Статистика сборок -->
+    <div class="picking-section" style="margin-bottom: 30px;">
+        <h2>{% trans "Статистика сборок заказов" %}</h2>
+        <div class="stats-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+            <div class="stat-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="font-size: 2em; font-weight: bold; color: #1a2a6c;">{{ total_pickings }}</div>
+                <div style="color: #666;">{% trans "Всего сборок" %}</div>
+            </div>
+            <div class="stat-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="font-size: 2em; font-weight: bold; color: #6b7280;">{{ pending_pickings }}</div>
+                <div style="color: #666;">{% trans "Ожидают сборки" %}</div>
+            </div>
+            <div class="stat-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="font-size: 2em; font-weight: bold; color: #f59e0b;">{{ in_progress_pickings }}</div>
+                <div style="color: #666;">{% trans "В процессе" %}</div>
+            </div>
+            <div class="stat-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="font-size: 2em; font-weight: bold; color: #10b981;">{{ completed_pickings }}</div>
+                <div style="color: #666;">{% trans "Завершено" %}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Акции и промокоды -->
+    <div class="promotions-section" style="margin-bottom: 30px;">
+        <h2>{% trans "Акции и промокоды" %}</h2>
+        <div class="stats-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+            <div class="stat-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="font-size: 2em; font-weight: bold; color: #10b981;">{{ active_promotions }}</div>
+                <div style="color: #666;">{% trans "Активных акций" %}</div>
+            </div>
+            <div class="stat-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="font-size: 2em; font-weight: bold; color: #3b82f6;">{{ active_promocodes }}</div>
+                <div style="color: #666;">{% trans "Активных промокодов" %}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Статусы заказов -->
+    <div class="orders-by-status" style="margin-bottom: 30px;">
+        <h2>{% trans "Заказы по статусам" %}</h2>
+        <div class="stats-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+            {% for status_data in orders_by_status %}
+            <div class="stat-card" style="background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="font-size: 1.5em; font-weight: bold; color: #1a2a6c;">{{ status_data.count }}</div>
+                <div style="color: #666; font-size: 0.9em;">
+                    {% if status_data.status == 'created' %}{% trans "Создан" %}
+                    {% elif status_data.status == 'confirmed' %}{% trans "Подтверждён" %}
+                    {% elif status_data.status == 'ready' %}{% trans "Готов" %}
+                    {% elif status_data.status == 'in_transit' %}{% trans "В пути" %}
+                    {% elif status_data.status == 'delivered' %}{% trans "Доставлен" %}
+                    {% elif status_data.status == 'cancelled' %}{% trans "Отменён" %}
+                    {% else %}{{ status_data.status }}{% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Топ товары -->
+    {% if top_products %}
+    <div class="top-products-section" style="margin-bottom: 30px;">
+        <h2>{% trans "Топ-10 товаров по продажам" %}</h2>
+        <div class="table-responsive" style="background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow-x: auto;">
+            <table class="table" style="width: 100%; margin: 0;">
+                <thead style="background: #f9fafb;">
+                    <tr>
+                        <th style="padding: 12px;">#</th>
+                        <th style="padding: 12px;">{% trans "Товар" %}</th>
+                        <th style="padding: 12px; text-align: right;">{% trans "Количество" %}</th>
+                        <th style="padding: 12px; text-align: right;">{% trans "Выручка" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in top_products %}
+                    <tr>
+                        <td style="padding: 12px;">{{ forloop.counter }}</td>
+                        <td style="padding: 12px;">
+                            <a href="{% url 'admin:paint_shop_project_product_change' product.product__id %}" style="color: #1a2a6c; text-decoration: none;">
+                                {{ product.product__name }}
+                            </a>
+                        </td>
+                        <td style="padding: 12px; text-align: right;">{{ product.total_quantity }}</td>
+                        <td style="padding: 12px; text-align: right;">{{ product.total_revenue|floatformat:0 }} ₽</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Последние заказы -->
+    <div class="recent-orders-section" style="margin-bottom: 30px;">
+        <h2>{% trans "Последние заказы" %}</h2>
+        {% if recent_orders %}
+        <div class="orders-list" style="display: grid; gap: 15px;">
+            {% for order in recent_orders %}
+            <div class="order-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div>
+                        <h3 style="margin: 0 0 5px 0;">
+                            <a href="{% url 'admin:paint_shop_project_order_change' order.id %}" style="color: #1a2a6c; text-decoration: none;">
+                                {% trans "Заказ" %} #{{ order.id }}
+                            </a>
+                        </h3>
+                        <p style="margin: 0; color: #666;">
+                            {% trans "Клиент" %}: {{ order.user.get_full_name|default:order.user.username }}
+                        </p>
+                        <p style="margin: 5px 0 0 0; color: #666;">
+                            {% trans "Дата" %}: {{ order.order_date|date:"d.m.Y H:i" }}
+                        </p>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 1.2em; font-weight: bold; color: #1a2a6c; margin-bottom: 5px;">
+                            {{ order.total_amount|floatformat:0 }} ₽
+                        </div>
+                        <span class="status-badge" style="
+                            padding: 5px 15px;
+                            border-radius: 20px;
+                            font-size: 0.9em;
+                            background: {% if order.status == 'delivered' %}#10b981{% elif order.status == 'ready' %}#3b82f6{% elif order.status == 'in_transit' %}#f59e0b{% elif order.status == 'cancelled' %}#ef4444{% else %}#6b7280{% endif %};
+                            color: white;
+                            display: inline-block;
+                        ">
+                            {% if order.status == 'created' %}{% trans "Создан" %}
+                            {% elif order.status == 'confirmed' %}{% trans "Подтверждён" %}
+                            {% elif order.status == 'ready' %}{% trans "Готов" %}
+                            {% elif order.status == 'in_transit' %}{% trans "В пути" %}
+                            {% elif order.status == 'delivered' %}{% trans "Доставлен" %}
+                            {% elif order.status == 'cancelled' %}{% trans "Отменён" %}
+                            {% else %}{{ order.status }}{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color: #666;">{% trans "Нет заказов" %}</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

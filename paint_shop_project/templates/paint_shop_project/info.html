@@ -1,0 +1,205 @@
+{% extends 'paint_shop_project/base.html' %}
+{% load static %}
+
+{% block title %}О магазине Жевжик{% endblock %}
+
+{% block extra_css %}
+<style>
+    .info-hero {
+        background: linear-gradient(135deg, rgba(255,107,157,0.15), rgba(255,221,235,0.6));
+        border-radius: 24px;
+        padding: 48px;
+        position: relative;
+        overflow: hidden;
+    }
+    .info-hero::after {
+        content: '';
+        position: absolute;
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        background: rgba(255,107,157,0.25);
+        top: -60px;
+        right: -60px;
+    }
+    .info-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255,107,157,0.1);
+        color: #FF6B9D;
+        font-size: 22px;
+    }
+    .info-card {
+        border-radius: 18px;
+        border: none;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.06);
+        height: 100%;
+    }
+    .timeline-dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #FF6B9D;
+        box-shadow: 0 0 0 8px rgba(255,107,157,0.15);
+    }
+    .timeline-item {
+        position: relative;
+        padding-left: 32px;
+        margin-bottom: 24px;
+    }
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: 6px;
+        top: 0;
+        bottom: -24px;
+        width: 2px;
+        background: rgba(255,107,157,0.2);
+    }
+    .timeline-item:last-child::before {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="info-hero">
+                <div class="row align-items-center">
+                    <div class="col-lg-7">
+                        <h1 class="display-5 fw-bold text-zhevzhik-pink mb-3">Жевжик — свежие продукты с заботой о каждом клиенте</h1>
+                        <p class="lead text-muted mb-4">
+                            Мы доставляем фермерские продукты и любимые бренды по всей Москве и области. Наша цель — чтобы у вас всегда были свежие овощи, молоко, выпечка и готовые решения для всей семьи.
+                        </p>
+                        <div class="d-flex gap-3 flex-wrap">
+                            <span class="badge bg-light text-dark px-3 py-2"><i class="fas fa-box me-2 text-zhevzhik-pink"></i>25 000+ товаров</span>
+                            <span class="badge bg-light text-dark px-3 py-2"><i class="fas fa-truck me-2 text-zhevzhik-pink"></i>Доставка за 2 часа</span>
+                            <span class="badge bg-light text-dark px-3 py-2"><i class="fas fa-seedling me-2 text-zhevzhik-pink"></i>Эко-ассортимент</span>
+                        </div>
+                    </div>
+                    <div class="col-lg-5 text-lg-end mt-4 mt-lg-0">
+                        <img src="{% static 'paint_shop_project/img/info/hero.svg' %}" alt="Жевжик" class="img-fluid" onerror="this.style.display='none'">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card info-card h-100">
+                <div class="card-body p-4">
+                    <div class="info-icon mb-3"><i class="fas fa-store"></i></div>
+                    <h4 class="fw-semibold mb-3">Собственные магазины</h4>
+                    <p class="text-muted mb-0">У нас есть розничные точки «Жевжик» с собственной кулинарией. Можно забрать заказ в пункте самовывоза или подобрать свежие продукты лично.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card info-card h-100">
+                <div class="card-body p-4">
+                    <div class="info-icon mb-3"><i class="fas fa-users"></i></div>
+                    <h4 class="fw-semibold mb-3">Команда профи</h4>
+                    <p class="text-muted mb-0">Профессиональные сборщики, курьеры и служба поддержки 24/7. Каждый заказ проходит контроль качества перед выдачей или доставкой.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card info-card h-100">
+                <div class="card-body p-4">
+                    <div class="info-icon mb-3"><i class="fas fa-heart"></i></div>
+                    <h4 class="fw-semibold mb-3">Лояльность и кешбэк</h4>
+                    <p class="text-muted mb-0">Мы начисляем кешбэк, дарим персональные акции и повышаем уровень привилегий за регулярные покупки.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5 align-items-center">
+        <div class="col-lg-6">
+            <h2 class="fw-bold mb-4">Как мы работаем</h2>
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <h5 class="fw-semibold">Выбираете товары</h5>
+                <p class="text-muted mb-0">Каталог обновляется ежедневно. Добавляйте продукты в корзину, используйте избранное и любимые категории.</p>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <h5 class="fw-semibold">Сборка заказа</h5>
+                <p class="text-muted mb-0">Сборщик проверяет сроки, целостность упаковки и подбирает лучшие экземпляры. Фото-отчёт доступен в приложении.</p>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <h5 class="fw-semibold">Доставка или самовывоз</h5>
+                <p class="text-muted mb-0">Курьер привезёт заказ к удобному времени, а самовывоз — без очередей. Доступна бесконтактная выдача.</p>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card info-card">
+                <div class="card-body p-4">
+                    <h4 class="fw-semibold mb-3"><i class="fas fa-clipboard-check me-2 text-zhevzhik-pink"></i>Почему выбирают Жевжик</h4>
+                    <ul class="list-unstyled mb-0 text-muted">
+                        <li class="mb-2"><i class="fas fa-check text-zhevzhik-pink me-2"></i>Гарантия возврата, если что-то не понравилось</li>
+                        <li class="mb-2"><i class="fas fa-check text-zhevzhik-pink me-2"></i>Бесплатная доставка от 5 000 ₽</li>
+                        <li class="mb-2"><i class="fas fa-check text-zhevzhik-pink me-2"></i>Поддержка в чате и по телефону 24/7</li>
+                        <li class="mb-2"><i class="fas fa-check text-zhevzhik-pink me-2"></i>Собственная лаборатория контроля качества</li>
+                        <li><i class="fas fa-check text-zhevzhik-pink me-2"></i>Единая программа лояльности для онлайн и офлайн</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-xl-6">
+            <div class="card info-card">
+                <div class="card-body p-4">
+                    <h4 class="fw-semibold mb-3"><i class="fas fa-gift me-2 text-zhevzhik-pink"></i>Лояльность и акции</h4>
+                    <p class="text-muted">Каждый заказ приносит баллы Жевжика. Повышайте уровень, чтобы получать дополнительные скидки и кешбэк до 10% на любимые категории.</p>
+                    <a href="{% url 'loyalty_levels' %}" class="btn btn-outline-zhevzhik-pink">Подробнее об уровнях</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-6">
+            <div class="card info-card">
+                <div class="card-body p-4">
+                    <h4 class="fw-semibold mb-3"><i class="fas fa-headset me-2 text-zhevzhik-pink"></i>Связь с нами</h4>
+                    <p class="text-muted mb-4">Если есть вопросы — мы рядом. Поддержка отвечает круглосуточно и решает вопросы с заказом, доставкой или акциями.</p>
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <div class="p-3 border rounded-3">
+                                <strong class="d-block">Телефон</strong>
+                                <span class="text-muted">+7 (495) 123-45-67</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="p-3 border rounded-3">
+                                <strong class="d-block">Почта</strong>
+                                <span class="text-muted">info@zhevzhik.ru</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="p-3 border rounded-3">
+                                <strong class="d-block">Поддержка</strong>
+                                <span class="text-muted">Чат 24/7</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="p-3 border rounded-3">
+                                <strong class="d-block">Офис</strong>
+                                <span class="text-muted">Москва, Любучанский переулок, 1к3</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

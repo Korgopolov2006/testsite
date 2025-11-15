@@ -1,0 +1,307 @@
+{% extends 'paint_shop_project/base.html' %}
+{% load math_filters %}
+
+{% block title %}Акции и скидки - Жевжик{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --zhevzhik-pink: #FF6B9D;
+        --zhevzhik-dark-pink: #E91E63;
+        --zhevzhik-light-pink: #FFB3D1;
+        --zhevzhik-green: #4CAF50;
+        --zhevzhik-yellow: #FFEB3B;
+        --zhevzhik-gray: #6c757d;
+        --zhevzhik-dark-gray: #2c3e50;
+    }
+    
+    .promotions-header {
+        background: linear-gradient(135deg, var(--zhevzhik-pink), var(--zhevzhik-light-pink));
+        color: white;
+        padding: 60px 0;
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    
+    .promotion-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(255, 107, 157, 0.15);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        margin-bottom: 30px;
+        border: 2px solid transparent;
+    }
+    
+    .promotion-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(255, 107, 157, 0.25);
+        border-color: var(--zhevzhik-pink);
+    }
+    
+    .promotion-image {
+        height: 200px;
+        background: linear-gradient(135deg, var(--zhevzhik-pink), var(--zhevzhik-light-pink));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 48px;
+    }
+    
+    .promotion-content {
+        padding: 25px;
+    }
+    
+    .promotion-title {
+        font-size: 24px;
+        font-weight: bold;
+        color: var(--zhevzhik-dark-gray);
+        margin-bottom: 15px;
+    }
+    
+    .promotion-description {
+        color: var(--zhevzhik-gray);
+        line-height: 1.6;
+        margin-bottom: 20px;
+    }
+    
+    .promotion-details {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .discount-badge {
+        background: linear-gradient(135deg, var(--zhevzhik-green), #2e7d32);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: bold;
+        font-size: 18px;
+        display: inline-block;
+        margin-bottom: 15px;
+    }
+    
+    .promotion-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    
+    .info-item {
+        text-align: center;
+    }
+    
+    .info-label {
+        font-size: 12px;
+        color: var(--zhevzhik-gray);
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+    
+    .info-value {
+        font-size: 16px;
+        font-weight: bold;
+        color: var(--zhevzhik-dark-gray);
+    }
+    
+    .apply-btn {
+        background: linear-gradient(135deg, var(--zhevzhik-pink), var(--zhevzhik-dark-pink));
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 25px;
+        font-weight: bold;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+        width: 100%;
+        text-align: center;
+    }
+    
+    .apply-btn:hover {
+        background: linear-gradient(135deg, var(--zhevzhik-dark-pink), var(--zhevzhik-pink));
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 107, 157, 0.4);
+    }
+    
+    .empty-promotions {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--zhevzhik-gray);
+    }
+    
+    .empty-promotions i {
+        font-size: 64px;
+        color: var(--zhevzhik-light-pink);
+        margin-bottom: 20px;
+    }
+    
+    .countdown {
+        background: var(--zhevzhik-yellow);
+        color: var(--zhevzhik-dark-gray);
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+<div class="promotions-header">
+    <div class="container">
+        <h1 class="display-4 fw-bold mb-3">
+            <i class="fas fa-gift me-3"></i>Акции и скидки
+        </h1>
+        <p class="lead">Специальные предложения для наших клиентов</p>
+    </div>
+</div>
+
+<div class="container">
+    {% if promotions %}
+        <div class="row">
+            {% for promotion in promotions %}
+            <div class="col-lg-4 col-md-6">
+                <div class="promotion-card">
+                    <div class="promotion-image">
+                        {% if promotion.image %}
+                            <img src="{{ promotion.image.url }}" alt="{{ promotion.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                            <i class="fas fa-percent"></i>
+                        {% endif %}
+                    </div>
+                    <div class="promotion-content">
+                        <h3 class="promotion-title d-flex align-items-center gap-2 flex-wrap">
+                            {{ promotion.name }}
+                            {% if promotion.id in new_ids %}
+                                <span class="badge bg-success">Новое</span>
+                            {% endif %}
+                            {% if promotion.id in ending_ids %}
+                                <span class="badge bg-warning text-dark">Скоро закончится</span>
+                            {% endif %}
+                        </h3>
+                        <p class="promotion-description">{{ promotion.description }}</p>
+                        
+                        <div class="promotion-details">
+                            <div class="discount-badge">
+                                {% if promotion.discount_type == 'percentage' %}
+                                    -{{ promotion.discount_value }}%
+                                {% else %}
+                                    -{{ promotion.discount_value }} ₽
+                                {% endif %}
+                            </div>
+                            
+                            <div class="promotion-info">
+                                <div class="info-item">
+                                    <div class="info-label">Минимальная сумма</div>
+                                    <div class="info-value">{{ promotion.min_order_amount }} ₽</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Действует до</div>
+                                    <div class="info-value">{{ promotion.end_date|date:"d.m.Y" }}</div>
+                                </div>
+                            </div>
+                            
+                            {% if promotion.end_date %}
+                                <div class="text-center">
+                                    <span class="countdown">
+                                        <i class="fas fa-clock me-1"></i>
+                                        До окончания: {{ promotion.end_date|timeuntil }}
+                                    </span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <a href="{% url 'apply_promotion' promotion.id %}" class="apply-btn" onclick="applyPromotion(event, {{ promotion.id }})">
+                            <i class="fas fa-tag me-2"></i>Применить акцию
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-promotions">
+            <i class="fas fa-gift"></i>
+            <h3>Сейчас нет активных акций</h3>
+            <p>Следите за обновлениями, чтобы не пропустить выгодные предложения!</p>
+            <a href="{% url 'product_list' %}" class="btn btn-zhevzhik-pink btn-lg">
+                <i class="fas fa-shopping-bag me-2"></i>Перейти к каталогу
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function applyPromotion(event, promotionId) {
+    event.preventDefault();
+    
+    fetch(`/apply-promotion/${promotionId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken(),
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message, 'success');
+            // Перенаправляем в корзину для применения акции
+            setTimeout(() => {
+                window.location.href = '/cart/';
+            }, 2000);
+        } else {
+            showToast(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Ошибка при применении акции', 'error');
+    });
+}
+
+function getCSRFToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]').value;
+}
+
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0`;
+    toast.setAttribute('role', 'alert');
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+                ${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+        toastContainer.style.zIndex = '9999';
+        document.body.appendChild(toastContainer);
+    }
+    
+    toastContainer.appendChild(toast);
+    
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+    
+    toast.addEventListener('hidden.bs.toast', () => {
+        toast.remove();
+    });
+}
+</script>
+{% endblock %}

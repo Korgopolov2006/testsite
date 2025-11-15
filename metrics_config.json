@@ -1,0 +1,428 @@
+{
+  "dashboard_title": "Бизнес-метрики Жевжик",
+  "dashboard_description": "Главные метрики для мониторинга работы продуктового магазина Жевжик",
+  "refresh_interval": "30s",
+  "time_range": "Last 6 hours",
+  "metrics": [
+    {
+      "id": 1,
+      "name": "Заказы сегодня",
+      "description": "Количество заказов за сегодняшний день",
+      "metric_name": "zhevzhik_orders_today",
+      "promql_query": "zhevzhik_orders_today",
+      "visualization_type": "Stat",
+      "panel_title": "📦 Заказов сегодня",
+      "panel_description": "Количество заказов за сегодняшний день",
+      "settings": {
+        "unit": "short",
+        "decimals": 0,
+        "color_mode": "Value",
+        "font_size": "Auto",
+        "text_mode": "Value and name",
+        "thresholds": {
+          "mode": "absolute",
+          "steps": [
+            {
+              "value": 0,
+              "color": "green"
+            },
+            {
+              "value": 10,
+              "color": "yellow"
+            },
+            {
+              "value": 50,
+              "color": "red",
+              "is_greater_equal": true
+            }
+          ]
+        }
+      },
+      "position": {
+        "x": 0,
+        "y": 0,
+        "width": 6,
+        "height": 4
+      }
+    },
+    {
+      "id": 2,
+      "name": "Выручка сегодня",
+      "description": "Выручка за сегодняшний день в рублях",
+      "metric_name": "zhevzhik_revenue_today",
+      "promql_query": "zhevzhik_revenue_today",
+      "visualization_type": "Stat",
+      "panel_title": "💰 Выручка сегодня",
+      "panel_description": "Выручка за сегодняшний день в рублях",
+      "settings": {
+        "unit": "currency(RUB)",
+        "decimals": 0,
+        "color_mode": "Background",
+        "gradient_mode": "Opacity",
+        "font_size": "Large",
+        "text_mode": "Value and name",
+        "thresholds": {
+          "mode": "absolute",
+          "steps": [
+            {
+              "value": 0,
+              "color": "green"
+            },
+            {
+              "value": 10000,
+              "color": "yellow"
+            },
+            {
+              "value": 50000,
+              "color": "red",
+              "is_greater_equal": true
+            }
+          ]
+        }
+      },
+      "position": {
+        "x": 6,
+        "y": 0,
+        "width": 6,
+        "height": 4
+      }
+    },
+    {
+      "id": 3,
+      "name": "Новых пользователей сегодня",
+      "description": "Количество новых пользователей, зарегистрированных сегодня",
+      "metric_name": "zhevzhik_users_today",
+      "promql_query": "zhevzhik_users_today",
+      "visualization_type": "Stat",
+      "panel_title": "👥 Новых пользователей сегодня",
+      "panel_description": "Количество новых пользователей, зарегистрированных сегодня",
+      "settings": {
+        "unit": "short",
+        "decimals": 0,
+        "color_mode": "Value",
+        "font_size": "Auto",
+        "text_mode": "Value and name",
+        "thresholds": {
+          "mode": "absolute",
+          "steps": [
+            {
+              "value": 0,
+              "color": "green"
+            },
+            {
+              "value": 5,
+              "color": "yellow"
+            },
+            {
+              "value": 20,
+              "color": "red",
+              "is_greater_equal": true
+            }
+          ]
+        }
+      },
+      "position": {
+        "x": 12,
+        "y": 0,
+        "width": 6,
+        "height": 4
+      }
+    },
+    {
+      "id": 4,
+      "name": "Средний чек",
+      "description": "Средняя стоимость заказа",
+      "metric_name": "zhevzhik_avg_order_value",
+      "promql_query": "zhevzhik_avg_order_value",
+      "visualization_type": "Stat",
+      "panel_title": "💳 Средний чек",
+      "panel_description": "Средняя стоимость заказа в рублях",
+      "settings": {
+        "unit": "currency(RUB)",
+        "decimals": 0,
+        "color_mode": "Background",
+        "gradient_mode": "Opacity",
+        "font_size": "Auto",
+        "text_mode": "Value and name"
+      },
+      "position": {
+        "x": 18,
+        "y": 0,
+        "width": 6,
+        "height": 4
+      }
+    },
+    {
+      "id": 5,
+      "name": "Всего пользователей",
+      "description": "Общее количество зарегистрированных пользователей",
+      "metric_name": "zhevzhik_users_total",
+      "promql_query": "zhevzhik_users_total",
+      "visualization_type": "Stat",
+      "panel_title": "Всего пользователей",
+      "panel_description": "Общее количество зарегистрированных пользователей",
+      "settings": {
+        "unit": "short",
+        "decimals": 0,
+        "color_mode": "Value",
+        "font_size": "Large",
+        "text_mode": "Value and name",
+        "thresholds": {
+          "mode": "absolute",
+          "steps": [
+            {
+              "value": 0,
+              "color": "green"
+            },
+            {
+              "value": 100,
+              "color": "yellow"
+            },
+            {
+              "value": 500,
+              "color": "red",
+              "is_greater_equal": true
+            }
+          ]
+        }
+      },
+      "position": {
+        "x": 0,
+        "y": 4,
+        "width": 6,
+        "height": 4
+      }
+    },
+    {
+      "id": 6,
+      "name": "Активных пользователей",
+      "description": "Количество активных пользователей",
+      "metric_name": "zhevzhik_users_active",
+      "promql_query": "zhevzhik_users_active",
+      "visualization_type": "Stat",
+      "panel_title": "Активных пользователей",
+      "panel_description": "Количество активных пользователей",
+      "settings": {
+        "unit": "short",
+        "decimals": 0,
+        "color_mode": "Background",
+        "gradient_mode": "Opacity",
+        "font_size": "Auto",
+        "text_mode": "Value and name"
+      },
+      "position": {
+        "x": 6,
+        "y": 4,
+        "width": 6,
+        "height": 4
+      }
+    },
+    {
+      "id": 7,
+      "name": "Динамика пользователей",
+      "description": "Изменение количества пользователей во времени",
+      "metric_name": "zhevzhik_users_total",
+      "promql_query": "zhevzhik_users_total",
+      "visualization_type": "Time series",
+      "panel_title": "📈 Динамика пользователей",
+      "panel_description": "Изменение количества пользователей во времени",
+      "queries": [
+        {
+          "query": "zhevzhik_users_total",
+          "legend": "Всего пользователей",
+          "color": "#3742fa"
+        },
+        {
+          "query": "zhevzhik_users_active",
+          "legend": "Активных",
+          "color": "#2ed573"
+        },
+        {
+          "query": "zhevzhik_users_today",
+          "legend": "Новых сегодня",
+          "color": "#ffa502"
+        }
+      ],
+      "settings": {
+        "legend": {
+          "display_mode": "Table",
+          "placement": "Bottom",
+          "show_values": ["Value", "Last"],
+          "width": "Auto"
+        },
+        "axes": {
+          "left_y": {
+            "label": "Количество пользователей",
+            "unit": "short",
+            "min": 0,
+            "max": null
+          },
+          "right_y": {
+            "show": false
+          }
+        },
+        "graph_styles": {
+          "line_width": 2,
+          "fill_opacity": 10,
+          "gradient_mode": "Opacity",
+          "show_points": "Never"
+        },
+        "color_scheme": "Classic palette"
+      },
+      "position": {
+        "x": 12,
+        "y": 4,
+        "width": 12,
+        "height": 8
+      }
+    },
+    {
+      "id": 8,
+      "name": "Заказы по статусам",
+      "description": "Распределение заказов по статусам",
+      "metric_name": "zhevzhik_orders_by_status",
+      "promql_query": "zhevzhik_orders_by_status",
+      "visualization_type": "Pie chart",
+      "panel_title": "Заказы по статусам",
+      "panel_description": "Распределение заказов по статусам",
+      "settings": {
+        "legend": {
+          "display_mode": "Table",
+          "placement": "Right",
+          "show_values": ["Value", "Percent"]
+        },
+        "color_mode": "Palette",
+        "color_scheme": "Classic palette",
+        "pie_chart": {
+          "display_labels": "Name",
+          "tooltip_mode": "All fields",
+          "donut": 30
+        }
+      },
+      "position": {
+        "x": 0,
+        "y": 8,
+        "width": 8,
+        "height": 8
+      }
+    },
+    {
+      "id": 9,
+      "name": "HTTP запросы в секунду",
+      "description": "Количество HTTP запросов в секунду по методам и статусам",
+      "metric_name": "zhevzhik_http_requests_total",
+      "promql_query": "rate(zhevzhik_http_requests_total[5m])",
+      "visualization_type": "Time series",
+      "panel_title": "HTTP запросы в секунду",
+      "panel_description": "Количество HTTP запросов в секунду по методам и статусам",
+      "queries": [
+        {
+          "query": "rate(zhevzhik_http_requests_total[5m])",
+          "legend": "{{method}} - {{status_code}}"
+        }
+      ],
+      "settings": {
+        "legend": {
+          "display_mode": "Table",
+          "placement": "Bottom",
+          "show_values": ["Value", "Last"]
+        },
+        "axes": {
+          "left_y": {
+            "label": "Запросов/сек",
+            "min": 0
+          }
+        },
+        "graph_styles": {
+          "line_width": 2,
+          "fill_opacity": 10,
+          "gradient_mode": "Opacity"
+        },
+        "color_scheme": "Classic palette"
+      },
+      "position": {
+        "x": 8,
+        "y": 8,
+        "width": 16,
+        "height": 8
+      }
+    },
+    {
+      "id": 10,
+      "name": "Время ответа сервера",
+      "description": "Среднее время ответа сервера на HTTP запросы",
+      "metric_name": "zhevzhik_http_request_duration_seconds",
+      "promql_query": "zhevzhik_http_request_duration_seconds_avg",
+      "visualization_type": "Time series",
+      "panel_title": "⏱️ Среднее время ответа",
+      "panel_description": "Среднее время ответа сервера на HTTP запросы",
+      "queries": [
+        {
+          "query": "zhevzhik_http_request_duration_seconds_avg",
+          "legend": "{{method}} - {{path}}"
+        }
+      ],
+      "settings": {
+        "unit": "s (seconds)",
+        "decimals": 3,
+        "legend": {
+          "display_mode": "Table",
+          "placement": "Bottom"
+        },
+        "axes": {
+          "left_y": {
+            "label": "Секунды",
+            "min": 0
+          }
+        },
+        "thresholds": {
+          "mode": "absolute",
+          "steps": [
+            {
+              "value": 0.5,
+              "color": "yellow"
+            },
+            {
+              "value": 1.0,
+              "color": "red",
+              "is_greater_equal": true
+            }
+          ]
+        },
+        "graph_styles": {
+          "line_width": 2,
+          "fill_opacity": 10
+        },
+        "color_scheme": "Classic palette"
+      },
+      "position": {
+        "x": 0,
+        "y": 16,
+        "width": 12,
+        "height": 8
+      }
+    }
+  ],
+  "color_palette": {
+    "success": "#2ed573",
+    "warning": "#ffa502",
+    "error": "#ff4757",
+    "info": "#3742fa",
+    "primary": "#1a2a6c",
+    "secondary": "#4f63d8"
+  },
+  "notes": {
+    "description": "Этот JSON файл содержит конфигурацию для 10 ключевых метрик приложения Жевжик",
+    "usage": "Используйте этот файл для автоматического создания дашборда в Grafana или как справочник при ручной настройке",
+    "metrics_explanation": {
+      "1-4": "Ключевые показатели за сегодня (верхняя строка)",
+      "5-6": "Метрики пользователей",
+      "7": "График динамики пользователей",
+      "8": "Круговая диаграмма заказов по статусам",
+      "9": "Мониторинг HTTP запросов",
+      "10": "Мониторинг производительности (время ответа)"
+    }
+  }
+}
+
+

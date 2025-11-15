@@ -1,0 +1,653 @@
+{% extends 'paint_shop_project/base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }} - Жевжик{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Современные стили для страницы товара */
+.product-hero {
+    background: var(--white);
+    padding: 40px 0;
+    margin-bottom: 40px;
+}
+
+.product-gallery {
+    position: relative;
+}
+
+.product-main-image {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    background: var(--light-gray);
+}
+
+.product-badges {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.product-badge {
+    background: var(--accent-color);
+    color: var(--white);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.product-badge.new {
+    background: var(--success-color);
+}
+
+.product-info {
+    padding-left: 40px;
+}
+
+.product-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--dark-gray);
+    margin-bottom: 16px;
+    line-height: 1.3;
+}
+
+.product-rating {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.rating-stars {
+    color: var(--secondary-color);
+    font-size: 1.2rem;
+}
+
+.rating-text {
+    color: var(--medium-gray);
+    font-size: 0.9rem;
+}
+
+.product-price-section {
+    background: var(--light-gray);
+    border-radius: var(--border-radius);
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.product-price {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 8px;
+}
+
+.product-old-price {
+    font-size: 1.25rem;
+    color: var(--medium-gray);
+    text-decoration: line-through;
+    margin-left: 12px;
+}
+
+.product-discount {
+    background: var(--accent-color);
+    color: var(--white);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    display: inline-block;
+    margin-left: 16px;
+}
+
+.product-actions {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.btn-add-cart {
+    background: var(--primary-color);
+    color: var(--white);
+    border: none;
+    padding: 16px 32px;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: var(--transition);
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.btn-add-cart:hover {
+    background: var(--primary-dark);
+    color: var(--white);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+}
+
+.btn-favorite {
+    background: transparent;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+    padding: 16px 20px;
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.btn-favorite:hover {
+    background: var(--primary-color);
+    color: var(--white);
+}
+
+.product-details {
+    background: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    padding: 32px;
+    margin-bottom: 40px;
+}
+
+.details-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--dark-gray);
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--light-gray);
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: var(--medium-gray);
+    font-size: 0.9rem;
+}
+
+.detail-value {
+    color: var(--dark-gray);
+    font-weight: 500;
+}
+
+.reviews-section {
+    background: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    padding: 32px;
+}
+
+.review-form {
+    background: var(--light-gray);
+    border-radius: var(--border-radius);
+    padding: 24px;
+    margin-bottom: 32px;
+}
+
+.rating-input {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-start;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.rating-input input[type="radio"] {
+    display: none;
+}
+
+.rating-input label.star {
+    font-size: 2rem;
+    color: #ddd;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.rating-input input[type="radio"]:checked ~ label.star,
+.rating-input label.star:hover,
+.rating-input label.star:hover ~ label.star {
+    color: var(--secondary-color);
+}
+
+.review-item {
+    border-bottom: 1px solid #e9ecef;
+    padding: 20px 0;
+}
+
+.review-item:last-child {
+    border-bottom: none;
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.review-author {
+    font-weight: 600;
+    color: var(--dark-gray);
+}
+
+.review-date {
+    color: var(--medium-gray);
+    font-size: 0.9rem;
+}
+
+.review-rating {
+    color: var(--secondary-color);
+    margin-bottom: 8px;
+}
+
+.review-text {
+    color: var(--dark-gray);
+    line-height: 1.6;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .product-info {
+        padding-left: 0;
+        margin-top: 24px;
+    }
+    
+    .product-title {
+        font-size: 1.5rem;
+    }
+    
+    .product-price {
+        font-size: 2rem;
+    }
+    
+    .product-actions {
+        flex-direction: column;
+    }
+    
+    .details-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Хлебные крошки -->
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Главная</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'product_list' %}">Каталог</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'product_list' %}?category={{ product.category.id }}">{{ product.category.name }}</a></li>
+            <li class="breadcrumb-item active">{{ product.name }}</li>
+        </ol>
+    </nav>
+</div>
+
+<!-- Основная информация о товаре -->
+<div class="product-hero">
+    <div class="container">
+        <div class="row">
+            <!-- Галерея товара -->
+            <div class="col-lg-6">
+                <div class="product-gallery">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-main-image">
+                    {% else %}
+                        <div class="product-main-image d-flex align-items-center justify-content-center">
+                            <i class="fas fa-image fa-4x text-muted"></i>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="product-badges">
+                        {% if product.discount_percent > 0 %}
+                            <div class="product-badge">-{{ product.discount_percent }}%</div>
+                        {% endif %}
+                        {% if product.is_featured %}
+                            <div class="product-badge new">Новинка</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Информация о товаре -->
+            <div class="col-lg-6">
+                <div class="product-info">
+                    <h1 class="product-title">{{ product.name }}</h1>
+                    
+                    <div class="product-rating">
+                        <div class="rating-stars">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= product.rating %}
+                                    <i class="fas fa-star"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <span class="rating-text">{{ product.rating|floatformat:1 }} ({{ product.reviews.count }} отзывов)</span>
+                    </div>
+                    
+                    <div class="product-price-section">
+                        <div class="product-price">
+                            {{ product.price }} ₽
+                            {% if product.old_price %}
+                                <span class="product-old-price">{{ product.old_price }} ₽</span>
+                            {% endif %}
+                            {% if product.discount_percent > 0 %}
+                                <span class="product-discount">-{{ product.discount_percent }}%</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="product-actions">
+                        {% if user.is_authenticated %}
+                            <button class="btn-add-cart" onclick="addToCart({{ product.id }})">
+                                <i class="fas fa-shopping-cart"></i>
+                                Добавить в корзину
+                            </button>
+                        {% else %}
+                            <a href="{% url 'login' %}" class="btn-add-cart">
+                                <i class="fas fa-sign-in-alt"></i>
+                                Войти для покупки
+                            </a>
+                        {% endif %}
+                        <button class="btn-favorite" onclick="addToFavorites({{ product.id }})">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Детальная информация о товаре -->
+    <div class="product-details">
+        <h2 class="details-title">Описание и характеристики</h2>
+        
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="mb-4">
+                    <h5>Описание</h5>
+                    <p class="text-dark-gray">{{ product.description|default:"Описание товара не указано." }}</p>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Производитель</span>
+                        <span class="detail-value">{{ product.manufacturer.name|default:"Не указан" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Категория</span>
+                        <span class="detail-value">{{ product.category.name }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Вес</span>
+                        <span class="detail-value">{{ product.weight|default:"Не указан" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Единица измерения</span>
+                        <span class="detail-value">{{ product.unit }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">В наличии</span>
+                        <span class="detail-value text-success">
+                            <i class="fas fa-check-circle"></i> {{ product.stock_quantity }} шт.
+                        </span>
+                    </div>
+                    {% if product.has_expiry_date %}
+                    <div class="detail-item">
+                        <span class="detail-label">Срок годности</span>
+                        <span class="detail-value">
+                            {% if product.is_expired %}
+                                <span class="text-danger">
+                                    <i class="fas fa-exclamation-triangle"></i> Просрочен
+                                </span>
+                            {% elif product.expiry_status == 'expires_soon' %}
+                                <span class="text-warning">
+                                    <i class="fas fa-clock"></i> Истекает через {{ product.days_until_expiry }} дн.
+                                </span>
+                            {% elif product.expiry_status == 'expires_week' %}
+                                <span class="text-info">
+                                    <i class="fas fa-calendar"></i> Истекает через {{ product.days_until_expiry }} дн.
+                                </span>
+                            {% else %}
+                                <span class="text-success">
+                                    <i class="fas fa-check"></i> Свежий ({{ product.days_until_expiry }} дн.)
+                                </span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Отзывы -->
+    <div class="reviews-section">
+        <h2 class="details-title">Отзывы покупателей</h2>
+        
+        {% if user.is_authenticated %}
+        <div class="review-form">
+            <h5>Оставить отзыв</h5>
+            <form id="reviewForm">
+                {% csrf_token %}
+                <div class="rating-input">
+                    <input type="radio" id="star5" name="rating" value="5">
+                    <label for="star5" class="star">★</label>
+                    <input type="radio" id="star4" name="rating" value="4">
+                    <label for="star4" class="star">★</label>
+                    <input type="radio" id="star3" name="rating" value="3">
+                    <label for="star3" class="star">★</label>
+                    <input type="radio" id="star2" name="rating" value="2">
+                    <label for="star2" class="star">★</label>
+                    <input type="radio" id="star1" name="rating" value="1">
+                    <label for="star1" class="star">★</label>
+                </div>
+                <div class="mb-3">
+                    <textarea class="form-control" name="comment" rows="3" placeholder="Ваш отзыв..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Отправить отзыв</button>
+            </form>
+        </div>
+        {% endif %}
+        
+        <div id="reviewsContainer">
+            {% for review in product.reviews.all %}
+            <div class="review-item">
+                <div class="review-header">
+                    <span class="review-author">{{ review.user.username }}</span>
+                    <span class="review-date">{{ review.created_at|date:"d.m.Y" }}</span>
+                </div>
+                <div class="review-rating">
+                    {% for i in "12345" %}
+                        {% if forloop.counter <= review.rating %}
+                            <i class="fas fa-star"></i>
+                        {% else %}
+                            <i class="far fa-star"></i>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <div class="review-text">{{ review.comment }}</div>
+            </div>
+            {% empty %}
+            <div class="text-center text-muted py-4">
+                <i class="fas fa-comments fa-3x mb-3"></i>
+                <p>Пока нет отзывов. Станьте первым!</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+// Добавление в корзину
+function addToCart(productId) {
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', getCSRFToken());
+    
+    fetch(`/add-to-cart/${productId}/`, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message, 'success');
+            updateCartCounter();
+        } else {
+            showToast(data.message || 'Ошибка при добавлении в корзину', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Ошибка при добавлении в корзину', 'error');
+    });
+}
+
+// Добавление в избранное
+function addToFavorites(productId) {
+    {% if user.is_authenticated %}
+    const btn = event.target.closest('.btn-favorite');
+    const icon = btn.querySelector('i');
+    
+    fetch(`/add-to-favorites/${productId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'added') {
+            btn.classList.add('active');
+            icon.className = 'fas fa-heart';
+            showToast('Товар добавлен в избранное', 'success');
+        } else if (data.status === 'removed') {
+            btn.classList.remove('active');
+            icon.className = 'far fa-heart';
+            showToast('Товар удален из избранного', 'info');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Ошибка при добавлении в избранное', 'error');
+    });
+    {% else %}
+    showToast('Войдите в систему, чтобы добавлять товары в избранное', 'warning');
+    {% endif %}
+}
+
+// Отправка отзыва
+document.getElementById('reviewForm')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const rating = formData.get('rating');
+    const comment = formData.get('comment');
+    
+    if (!rating) {
+        showToast('Пожалуйста, выберите оценку', 'warning');
+        return;
+    }
+    
+    fetch(`/add-review/{{ product.id }}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            rating: rating,
+            comment: comment
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Отзыв отправлен!', 'success');
+            this.reset();
+            loadReviews();
+        } else {
+            showToast(data.message || 'Ошибка при отправке отзыва', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Ошибка при отправке отзыва', 'error');
+    });
+});
+
+// Загрузка отзывов
+function loadReviews() {
+    fetch(`/get-reviews/{{ product.id }}/`)
+    .then(response => response.json())
+    .then(data => {
+        const container = document.getElementById('reviewsContainer');
+        container.innerHTML = data.reviews_html;
+    })
+    .catch(error => {
+        console.error('Error loading reviews:', error);
+    });
+}
+
+// Показать уведомление
+function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.className = `toast position-fixed top-0 end-0 m-3`;
+    toast.innerHTML = `
+        <div class="toast-header bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : type === 'warning' ? 'warning' : 'info'} text-white">
+            <strong class="me-auto">${message}</strong>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    document.body.appendChild(toast);
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+    
+    setTimeout(() => toast.remove(), 5000);
+}
+
+// Добавление в историю просмотров
+{% if user.is_authenticated %}
+fetch(`/add-to-view-history/{{ product.id }}/`, {
+    method: 'POST',
+    headers: {
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        'Content-Type': 'application/json',
+    },
+});
+{% endif %}
+</script>
+{% endblock %}

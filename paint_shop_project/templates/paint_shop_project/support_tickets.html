@@ -1,0 +1,258 @@
+{% extends 'paint_shop_project/base.html' %}
+{% load static %}
+
+{% block title %}Мои обращения - Жевжик{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --zhevzhik-pink: #FF6B9D;
+        --zhevzhik-dark-pink: #E91E63;
+        --zhevzhik-light-pink: #FFB3D1;
+        --zhevzhik-green: #4CAF50;
+        --zhevzhik-yellow: #FFEB3B;
+        --zhevzhik-gray: #6c757d;
+        --zhevzhik-dark-gray: #2c3e50;
+    }
+    
+    .support-hero {
+        background: linear-gradient(135deg, var(--zhevzhik-pink), var(--zhevzhik-dark-pink));
+        color: white;
+        padding: 50px 0;
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    
+    .ticket-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        padding: 25px;
+        margin-bottom: 20px;
+        border-left: 4px solid var(--zhevzhik-pink);
+        transition: all 0.3s ease;
+    }
+    
+    .ticket-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .ticket-status {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .status-open {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .status-in-progress {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+    
+    .status-resolved {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .status-closed {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .priority-high {
+        border-left-color: #dc3545;
+    }
+    
+    .priority-medium {
+        border-left-color: #ffc107;
+    }
+    
+    .priority-low {
+        border-left-color: #28a745;
+    }
+    
+    .create-ticket-btn {
+        background: linear-gradient(135deg, var(--zhevzhik-green), #20c997);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 15px 30px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        margin-bottom: 30px;
+    }
+    
+    .create-ticket-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+        color: white;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--zhevzhik-gray);
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        color: #dee2e6;
+        margin-bottom: 20px;
+    }
+    
+    .ticket-meta {
+        font-size: 0.9rem;
+        color: var(--zhevzhik-gray);
+    }
+    
+    .ticket-priority {
+        font-weight: 600;
+    }
+    
+    .priority-high-text {
+        color: #dc3545;
+    }
+    
+    .priority-medium-text {
+        color: #ffc107;
+    }
+    
+    .priority-low-text {
+        color: #28a745;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Заголовок -->
+    <div class="support-hero">
+        <div class="container">
+            <h1 class="display-4 fw-bold mb-3">🎫 Мои обращения</h1>
+            <p class="lead">Управляйте вашими обращениями в службу поддержки</p>
+        </div>
+    </div>
+    
+    <!-- Кнопка создания обращения -->
+    <div class="text-center">
+        <a href="{% url 'support' %}" class="btn create-ticket-btn">
+            <i class="fas fa-plus me-2"></i>Создать новое обращение
+        </a>
+    </div>
+    
+    <!-- Список обращений -->
+    <div class="row">
+        <div class="col-12">
+            {% if tickets %}
+                {% for ticket in tickets %}
+                <div class="ticket-card priority-{{ ticket.priority }}">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h5 class="mb-2">{{ ticket.subject }}</h5>
+                            <p class="ticket-meta mb-0">
+                                <i class="fas fa-calendar me-1"></i>
+                                Создано: {{ ticket.created_at|date:"d.m.Y H:i" }}
+                            </p>
+                        </div>
+                        <div class="col-md-2">
+                            <span class="ticket-status status-{{ ticket.status }}">
+                                {% if ticket.status == 'open' %}Открыто
+                                {% elif ticket.status == 'in_progress' %}В работе
+                                {% elif ticket.status == 'resolved' %}Решено
+                                {% elif ticket.status == 'closed' %}Закрыто
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="col-md-2">
+                            <span class="ticket-priority priority-{{ ticket.priority }}-text">
+                                {% if ticket.priority == 'high' %}Высокий
+                                {% elif ticket.priority == 'medium' %}Средний
+                                {% elif ticket.priority == 'low' %}Низкий
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="col-md-2 text-md-end">
+                            <a href="{% url 'support_ticket_detail' ticket.id %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-eye me-1"></i>Подробнее
+                            </a>
+                        </div>
+                    </div>
+                    
+                    {% if ticket.description %}
+                    <div class="mt-3">
+                        <p class="text-muted mb-0">{{ ticket.description|truncatewords:20 }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if ticket.responses.count > 0 %}
+                    <div class="mt-2">
+                        <small class="text-success">
+                            <i class="fas fa-reply me-1"></i>
+                            {{ ticket.responses.count }} ответов
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-ticket-alt"></i>
+                    <h4>Обращений пока нет</h4>
+                    <p>У вас нет активных обращений в службу поддержки</p>
+                    <a href="{% url 'support' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Создать первое обращение
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Статистика -->
+    {% if tickets %}
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">
+                        <i class="fas fa-chart-bar me-2"></i>Статистика обращений
+                    </h5>
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="border-end">
+                                <h4 class="text-primary">{{ tickets|length }}</h4>
+                                <p class="text-muted mb-0">Всего обращений</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="border-end">
+                                <h4 class="text-warning">{{ open_tickets|length }}</h4>
+                                <p class="text-muted mb-0">Открытых</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="border-end">
+                                <h4 class="text-info">{{ in_progress_tickets|length }}</h4>
+                                <p class="text-muted mb-0">В работе</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-success">{{ resolved_tickets|length }}</h4>
+                            <p class="text-muted mb-0">Решено</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

@@ -1,0 +1,368 @@
+%% Mermaid UML Class Diagram for Zhevzhik (generated from models overview)
+classDiagram
+    direction LR
+
+    class Role {
+      +name: CharField(choices)
+      +description: TextField
+    }
+
+    class User {
+      +username
+      +email
+      +first_name
+      +last_name
+      +role: FK(Role)
+      +phone: CharField
+      +address: TextField
+      +birth_date: DateField
+      +avatar: ImageField
+      +preferred_delivery_time: CharField
+      +notification_preferences: JSONField
+      +total_cashback_earned: Decimal
+      +total_cashback_spent: Decimal
+      +is_newsletter_subscribed: Bool
+      +registration_source: CharField
+    }
+
+    class Category {
+      +name: CharField
+      +slug: SlugField
+      +description: TextField
+      +image: ImageField
+      +parent: FK(Category)
+      +is_active: Bool
+      +sort_order: PositiveInteger
+    }
+
+    class Manufacturer {
+      +name: CharField
+      +address: TextField
+      +phone: CharField
+      +email: EmailField
+      +website: URLField
+      +logo: ImageField
+      +is_active: Bool
+    }
+
+    class Product {
+      +name: CharField
+      +slug: SlugField
+      +description: TextField
+      +category: FK(Category)
+      +manufacturer: FK(Manufacturer)
+      +price: Decimal
+      +old_price: Decimal?
+      +stock_quantity: PositiveInteger
+      +unit: Char(choices)
+      +weight: CharField
+      +image: ImageField
+      +rating: Decimal(0..5)
+      +is_featured: Bool
+      +is_active: Bool
+      +has_expiry_date: Bool
+      +expiry_date: Date?
+      +production_date: Date?
+      +shelf_life_days: PositiveInteger?
+    }
+
+    class Cart {
+      +user: FK(User)
+      +product: FK(Product)
+      +quantity: PositiveInteger
+      +added_at: DateTime
+    }
+
+    class Order {
+      +user: FK(User)
+      +order_date: DateTime
+      +status: Char(choices)
+      +delivery_type: Char(choices)
+      +pickup_point: FK(Store)?
+      +delivery_address: Text
+      +total_amount: Decimal
+      +payment_method: Char(choices)
+      +comment: Text
+      +favorite_discount_amount: Decimal
+      +promotion_discount: Decimal
+      +delivery_cost: Decimal
+      +courier_name: Char?
+      +courier_phone: Char?
+      +estimated_delivery_time: DateTime?
+      +actual_delivery_time: DateTime?
+      +tracking_number: Char?
+    }
+
+    class OrderItem {
+      +order: FK(Order)
+      +product: FK(Product)
+      +quantity: PositiveInteger
+      +price_per_unit: Decimal
+    }
+
+    class OrderStatusHistory {
+      +order: FK(Order)
+      +status: Char(choices)
+      +timestamp: DateTime
+      +comment: Text
+      +courier_name: Char?
+      +courier_phone: Char?
+    }
+
+    class Delivery {
+      +order: OneToOne(Order)
+      +courier: FK(User)
+      +status: Char(choices)
+      +estimated_time: DateTime
+      +actual_time: DateTime?
+      +comment: Text
+    }
+
+    class Payment {
+      +order: FK(Order)
+      +payment_date: DateTime
+      +amount: Decimal
+      +payment_method: Char(choices)
+      +status: Char(choices)
+      +transaction_id: Char?
+    }
+
+    class Review {
+      +user: FK(User)
+      +product: FK(Product)
+      +rating: PositiveInteger(1..5)
+      +comment: Text
+      +created_at: DateTime
+      +is_approved: Bool
+    }
+
+    class Promotion {
+      +name: Char
+      +description: Text
+      +discount_type: Char(percentage|fixed)
+      +discount_value: Decimal
+      +min_order_amount: Decimal
+      +start_date: DateTime
+      +end_date: DateTime
+      +is_active: Bool
+      +image: Image
+    }
+
+    class UserPromotion {
+      +user: FK(User)
+      +promotion: FK(Promotion)
+      +order: FK(Order)
+      +discount_amount: Decimal
+      +used_at: DateTime
+    }
+
+    class LoyaltyCard {
+      +user: OneToOne(User)
+      +card_number: Char(unique)
+      +points: PositiveInteger
+      +total_spent: Decimal
+      +level: Char(choices)
+      +created_at: DateTime
+      +last_activity: DateTime
+    }
+
+    class LoyaltyTransaction {
+      +card: FK(LoyaltyCard)
+      +transaction_type: Char(choices)
+      +points: Integer
+      +description: Char
+      +order: FK(Order)?
+      +created_at: DateTime
+    }
+
+    class CashbackTransaction {
+      +user: FK(User)
+      +order: FK(Order)
+      +amount: Decimal
+      +transaction_type: Char(earned|spent|expired)
+      +description: Char
+      +created_at: DateTime
+    }
+
+    class Favorite {
+      +user: FK(User)
+      +product: FK(Product)
+      +created_at: DateTime
+    }
+
+    class FavoriteCategory {
+      +user: FK(User)
+      +category: FK(Category)
+      +cashback_multiplier: Decimal
+      +discount_percent: PositiveInteger(0..50)
+      +is_active: Bool
+      +created_at: DateTime
+    }
+
+    class Store {
+      +name: Char
+      +address: Text
+      +phone: Char
+      +email: Email?
+      +working_hours: Char
+      +manager: FK(User)
+      +is_active: Bool
+    }
+
+    class SearchHistory {
+      +user: FK(User)
+      +query: Char
+      +created_at: DateTime
+    }
+
+    class ViewHistory {
+      +user: FK(User)
+      +product: FK(Product)
+      +viewed_at: DateTime
+    }
+
+    class Notification {
+      +user: FK(User)
+      +title: Char
+      +message: Text
+      +notification_type: Char
+      +is_read: Bool
+      +created_at: DateTime
+    }
+
+    class EmployeeRating {
+      +user: FK(User)
+      +employee_name: Char
+      +order: FK(Order)
+      +rating: Integer(1..5)
+      +comment: Text
+      +created_at: DateTime
+    }
+
+    class SupportTicket {
+      +user: FK(User)
+      +subject: Char
+      +message: Text
+      +status: Char
+      +priority: Char
+      +category: Char
+      +order: FK(Order)?
+      +created_at: DateTime
+      +updated_at: DateTime
+    }
+
+    class SupportResponse {
+      +ticket: FK(SupportTicket)
+      +user: FK(User)
+      +message: Text
+      +is_staff_response: Bool
+      +created_at: DateTime
+    }
+
+    class SpecialSection {
+      +name: Char
+      +description: Text
+      +icon: Char
+      +color: Char
+      +cashback_multiplier: Decimal
+      +is_active: Bool
+      +created_at: DateTime
+    }
+
+    class UserSpecialSection {
+      +user: FK(User)
+      +section: FK(SpecialSection)
+      +joined_at: DateTime
+    }
+
+    class PromoCode {
+      +code: Char(unique)
+      +description: Char
+      +discount_type: Char(percent|fixed)
+      +discount_value: Decimal
+      +min_order_amount: Decimal
+      +max_uses: PositiveInteger
+      +used_count: PositiveInteger
+      +start_date: DateTime
+      +end_date: DateTime
+      +is_active: Bool
+      +created_at: DateTime
+    }
+
+    class Discount {
+      +product: FK(Product)
+      +discount_percent: PositiveInteger
+      +start_date: DateTime
+      +end_date: DateTime
+      +is_active: Bool
+      +created_at: DateTime
+    }
+
+    class ErrorLog {
+      +error_type: Char
+      +message: Text
+      +stack_trace: Text?
+      +user: FK(User)?
+      +url: URL?
+      +user_agent: Text?
+      +ip_address: IP?
+      +is_resolved: Bool
+      +created_at: DateTime
+    }
+
+    class PhoneVerification {
+      +phone: Char
+      +code: Char(6)
+      +created_at: DateTime
+      +expires_at: DateTime
+      +is_used: Bool
+      +verification_type: Char
+    }
+
+    %% Relationships
+    User --> Role : role
+    Category --> Category : parent
+    Product --> Category : category
+    Product --> Manufacturer : manufacturer
+    Cart --> User : user
+    Cart --> Product : product
+    Order --> User : user
+    OrderItem --> Order : order
+    OrderItem --> Product : product
+    OrderStatusHistory --> Order : order
+    Delivery --> Order : order (1..1)
+    Delivery --> User : courier
+    Payment --> Order : order
+    Review --> User : user
+    Review --> Product : product
+    Favorite --> User : user
+    Favorite --> Product : product
+    FavoriteCategory --> User : user
+    FavoriteCategory --> Category : category
+    LoyaltyCard --> User : user (1..1)
+    LoyaltyTransaction --> LoyaltyCard : card
+    CashbackTransaction --> User : user
+    CashbackTransaction --> Order : order
+    Store --> User : manager
+    Order --> Store : pickup_point
+    SearchHistory --> User : user
+    ViewHistory --> User : user
+    ViewHistory --> Product : product
+    Notification --> User : user
+    EmployeeRating --> User : user
+    EmployeeRating --> Order : order
+    SupportTicket --> User : user
+    SupportTicket --> Order : order
+    SupportResponse --> SupportTicket : ticket
+    SupportResponse --> User : user
+    UserSpecialSection --> User : user
+    UserSpecialSection --> SpecialSection : section
+    UserPromotion --> User : user
+    UserPromotion --> Promotion : promotion
+    UserPromotion --> Order : order
+    Discount --> Product : product
+    ErrorLog --> User : user
+    PhoneVerification ..> User : phone (logical)
+
+
+

@@ -1,0 +1,282 @@
+{% extends 'paint_shop_project/base.html' %}
+{% load static %}
+
+{% block title %}Специальные разделы - Жевжик{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --zhevzhik-pink: #FF6B9D;
+        --zhevzhik-dark-pink: #E91E63;
+        --zhevzhik-light-pink: #FFB3D1;
+        --zhevzhik-green: #4CAF50;
+        --zhevzhik-yellow: #FFEB3B;
+        --zhevzhik-gray: #6c757d;
+        --zhevzhik-dark-gray: #2c3e50;
+    }
+    
+    .sections-hero {
+        background: linear-gradient(135deg, var(--zhevzhik-pink), var(--zhevzhik-dark-pink));
+        color: white;
+        padding: 50px 0;
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    
+    .section-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        padding: 30px;
+        margin-bottom: 25px;
+        transition: all 0.3s ease;
+        border-left: 4px solid var(--zhevzhik-pink);
+    }
+    
+    .section-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+    
+    .section-card.joined {
+        border-left-color: var(--zhevzhik-green);
+        background: linear-gradient(135deg, #f8f9fa, #e8f5e8);
+    }
+    
+    .section-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+    }
+    
+    .section-icon.premium {
+        background: linear-gradient(135deg, var(--zhevzhik-yellow), #ffc107);
+        color: white;
+    }
+    
+    .section-icon.exclusive {
+        background: linear-gradient(135deg, var(--zhevzhik-pink), var(--zhevzhik-dark-pink));
+        color: white;
+    }
+    
+    .section-icon.vip {
+        background: linear-gradient(135deg, #6f42c1, #e83e8c);
+        color: white;
+    }
+    
+    .btn-join {
+        background: var(--zhevzhik-green);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-join:hover {
+        background: #45a049;
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .btn-leave {
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-leave:hover {
+        background: #c82333;
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .benefits-list {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .benefits-list li {
+        padding: 5px 0;
+        color: var(--zhevzhik-dark-gray);
+    }
+    
+    .benefits-list li:before {
+        content: "✓";
+        color: var(--zhevzhik-green);
+        font-weight: bold;
+        margin-right: 10px;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .status-joined {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .status-available {
+        background: #fff3cd;
+        color: #856404;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Заголовок -->
+    <div class="sections-hero">
+        <div class="container">
+            <h1 class="display-4 fw-bold mb-3">⭐ Специальные разделы</h1>
+            <p class="lead">Присоединяйтесь к эксклюзивным программам и получайте дополнительные привилегии</p>
+        </div>
+    </div>
+    
+    <!-- Список разделов -->
+    <div class="row">
+        {% for section in sections %}
+        <div class="col-md-6 col-lg-4">
+            <div class="section-card {% if section.id in user_section_ids %}joined{% endif %}">
+                <div class="text-center">
+                    <div class="section-icon {{ section.section_type }}">
+                        <i class="{{ section.icon_class }}"></i>
+                    </div>
+                    <h4 class="mb-3">{{ section.name }}</h4>
+                    <p class="text-muted mb-3">{{ section.description }}</p>
+                    
+                    {% if section.id in user_section_ids %}
+                        <span class="status-badge status-joined mb-3">Участник</span>
+                        <br>
+                        <a href="#" class="btn btn-leave" onclick="leaveSection({{ section.id }})">
+                            <i class="fas fa-times me-2"></i>Покинуть
+                        </a>
+                    {% else %}
+                        <span class="status-badge status-available mb-3">Доступно</span>
+                        <br>
+                        <a href="#" class="btn btn-join" onclick="joinSection({{ section.id }})">
+                            <i class="fas fa-plus me-2"></i>Присоединиться
+                        </a>
+                    {% endif %}
+                </div>
+                
+                <hr class="my-3">
+                
+                <h6 class="fw-bold mb-2">Преимущества:</h6>
+                <ul class="benefits-list">
+                    {% for benefit in section.benefits %}
+                    <li>{{ benefit }}</li>
+                    {% endfor %}
+                </ul>
+                
+                {% if section.requirements %}
+                <div class="mt-3">
+                    <h6 class="fw-bold mb-2">Требования:</h6>
+                    <p class="text-muted small">{{ section.requirements }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Информация о программе -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h4 class="card-title mb-3">
+                        <i class="fas fa-info-circle me-2"></i>Как работают специальные разделы?
+                    </h4>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-user-plus fa-lg"></i>
+                                </div>
+                                <h6>Присоединяйтесь</h6>
+                                <p class="text-muted small">Выберите интересующие вас разделы</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-gift fa-lg"></i>
+                                </div>
+                                <h6>Получайте привилегии</h6>
+                                <p class="text-muted small">Доступ к эксклюзивным предложениям</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div class="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-star fa-lg"></i>
+                                </div>
+                                <h6>Накапливайте статус</h6>
+                                <p class="text-muted small">Повышайте уровень в программе</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function joinSection(sectionId) {
+    fetch(`/join-section/${sectionId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Ошибка: ' + data.message);
+        }
+    });
+}
+
+function leaveSection(sectionId) {
+    if (confirm('Вы уверены, что хотите покинуть этот раздел?')) {
+        fetch(`/leave-section/${sectionId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Ошибка: ' + data.message);
+            }
+        });
+    }
+}
+</script>
+{% endblock %}
+

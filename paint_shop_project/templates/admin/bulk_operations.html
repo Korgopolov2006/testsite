@@ -1,0 +1,136 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }} | {% trans "Администрирование Django" %}{% endblock %}
+
+{% block extrastyle %}
+<style>
+    .bulk-container { padding-bottom:40px; }
+    .bulk-header { display:flex; flex-wrap:wrap; gap:18px; align-items:center; justify-content:space-between; margin-bottom:32px; }
+    .bulk-card { background:#fff; border-radius:12px; padding:24px; box-shadow:0 12px 30px rgba(0,0,0,0.05); margin-bottom:24px; }
+    .bulk-card h3 { margin-top:0; }
+    .search-box { margin-bottom:16px; }
+    .search-box input { width:100%; padding:12px; border:1px solid #d0d7de; border-radius:6px; }
+    .users-list { max-height:400px; overflow-y:auto; border:1px solid #d0d7de; border-radius:6px; padding:12px; }
+    .user-item { display:flex; align-items:center; gap:12px; padding:8px; border-bottom:1px solid #f2f2f2; }
+    .user-item:last-child { border-bottom:none; }
+    .user-item input[type="checkbox"] { margin:0; }
+    .bulk-actions { display:grid; gap:16px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bulk-container">
+    <div class="bulk-header">
+        <div>
+            <h1>{{ title }}</h1>
+            <p class="help">{% trans "Массовые операции с пользователями" %}</p>
+        </div>
+        <a href="{% url 'admin:index' %}" class="button">← {% trans "Вернуться" %}</a>
+    </div>
+
+    <div class="bulk-card">
+        <h3>{% trans "Поиск пользователей" %}</h3>
+        <div class="search-box">
+            <input type="text" id="user-search" placeholder="{% trans 'Поиск по имени, email, username...' %}" autocomplete="off">
+        </div>
+        <div id="users-list" class="users-list">
+            <p class="help">{% trans "Введите текст для поиска пользователей" %}</p>
+        </div>
+    </div>
+
+    <form method="post" id="bulk-form">
+        {% csrf_token %}
+        <input type="hidden" name="user_ids" id="selected-users">
+        
+        <div class="bulk-card">
+            <h3>{% trans "Выбранные операции" %}</h3>
+            <div class="bulk-actions">
+                <div class="form-group">
+                    <label>{% trans "Изменить роль" %}</label>
+                    <select name="role_id" id="role-select">
+                        <option value="">{% trans "Выберите роль" %}</option>
+                        {% for role in roles %}
+                        <option value="{{ role.id }}">{{ role.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" name="operation" value="change_role" class="button">{% trans "Применить" %}</button>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" name="operation" value="activate" class="button">{% trans "Активировать" %}</button>
+                    <button type="submit" name="operation" value="deactivate" class="button">{% trans "Деактивировать" %}</button>
+                </div>
+                
+                <div class="form-group">
+                    <label>{% trans "Отправить уведомление" %}</label>
+                    <input type="text" name="notification_title" placeholder="{% trans 'Заголовок' %}" required>
+                    <textarea name="notification_message" placeholder="{% trans 'Сообщение' %}" rows="3" required></textarea>
+                    <button type="submit" name="operation" value="send_notification" class="button">{% trans "Отправить" %}</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('user-search');
+    const usersList = document.getElementById('users-list');
+    const selectedUsers = new Set();
+    
+    let searchTimeout;
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        const query = this.value.trim();
+        
+        if (query.length < 2) {
+            usersList.innerHTML = '<p class="help">{% trans "Введите минимум 2 символа" %}</p>';
+            return;
+        }
+        
+        searchTimeout = setTimeout(() => {
+            fetch(`{% url 'admin:bulk-users-search' %}?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.users.length === 0) {
+                        usersList.innerHTML = '<p class="help">{% trans "Пользователи не найдены" %}</p>';
+                        return;
+                    }
+                    
+                    usersList.innerHTML = data.users.map(user => `
+                        <div class="user-item">
+                            <input type="checkbox" value="${user.id}" ${selectedUsers.has(user.id) ? 'checked' : ''}>
+                            <div style="flex:1;">
+                                <strong>${user.name}</strong><br>
+                                <small>${user.email} | ${user.role || '—'}</small>
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    // Обработчики чекбоксов
+                    usersList.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                        cb.addEventListener('change', function() {
+                            if (this.checked) {
+                                selectedUsers.add(parseInt(this.value));
+                            } else {
+                                selectedUsers.delete(parseInt(this.value));
+                            }
+                            updateSelectedUsers();
+                        });
+                    });
+                })
+                .catch(error => console.error('Search error:', error));
+        }, 300);
+    });
+    
+    function updateSelectedUsers() {
+        document.getElementById('selected-users').value = Array.from(selectedUsers).join(',');
+    }
+});
+</script>
+{% endblock %}
+
+
+
+

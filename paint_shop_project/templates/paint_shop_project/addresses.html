@@ -1,0 +1,108 @@
+{% extends 'paint_shop_project/base.html' %}
+{% load static %}
+
+{% block title %}Мои адреса - Жевжик{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-3">Мои адреса</h2>
+  <div class="row">
+    <div class="col-lg-6">
+      <div class="card mb-3">
+        <div class="card-header">Добавить адрес</div>
+        <div class="card-body">
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add" />
+            <div class="mb-2">
+              <label class="form-label">Метка</label>
+              <input type="text" class="form-control" name="label" placeholder="Дом / Офис" />
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Адрес</label>
+              <input type="text" class="form-control" name="address" placeholder="Улица, дом, корпус" required />
+            </div>
+            <div class="row">
+              <div class="col-md-4 mb-2">
+                <label class="form-label">Подъезд</label>
+                <input type="text" class="form-control" name="entrance" />
+              </div>
+              <div class="col-md-4 mb-2">
+                <label class="form-label">Этаж</label>
+                <input type="text" class="form-control" name="floor" />
+              </div>
+              <div class="col-md-4 mb-2">
+                <label class="form-label">Квартира</label>
+                <input type="text" class="form-control" name="apartment" />
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-2">
+                <label class="form-label">Код домофона</label>
+                <input type="text" class="form-control" name="intercom_code" />
+              </div>
+              <div class="col-md-6 mb-2">
+                <label class="form-label">Комментарий</label>
+                <input type="text" class="form-control" name="comment" placeholder="Например, "3 подъезд, парковка слева"" />
+              </div>
+            </div>
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="checkbox" id="is_default" name="is_default" />
+              <label class="form-check-label" for="is_default">Сделать адресом по умолчанию</label>
+            </div>
+            <button class="btn btn-primary" type="submit">Добавить</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card mb-3">
+        <div class="card-header">Сохраненные адреса</div>
+        <div class="card-body">
+          {% if addresses %}
+            <ul class="list-group">
+              {% for a in addresses %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                  <div><strong>{{ a.label|default:'Адрес' }}</strong> {% if a.is_default %}<span class="badge bg-success">По умолчанию</span>{% endif %}</div>
+                  <div class="text-muted small">{{ a.address }}</div>
+                  <div class="text-muted small">
+                    {% if a.entrance %}Подъезд {{ a.entrance }} · {% endif %}
+                    {% if a.floor %}Этаж {{ a.floor }} · {% endif %}
+                    {% if a.apartment %}Квартира {{ a.apartment }}{% endif %}
+                  </div>
+                  {% if a.intercom_code %}
+                  <div class="text-muted small">Код домофона: {{ a.intercom_code }}</div>
+                  {% endif %}
+                  {% if a.comment %}
+                  <div class="text-muted small">Комментарий: {{ a.comment }}</div>
+                  {% endif %}
+                </div>
+                <div class="d-flex gap-2">
+                  <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="set_default" />
+                    <input type="hidden" name="address_id" value="{{ a.id }}" />
+                    <button class="btn btn-outline-primary btn-sm" type="submit">По умолчанию</button>
+                  </form>
+                  <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="delete" />
+                    <input type="hidden" name="address_id" value="{{ a.id }}" />
+                    <button class="btn btn-outline-danger btn-sm" type="submit">Удалить</button>
+                  </form>
+                </div>
+              </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <div class="text-muted">Адреса не найдены</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+

@@ -1,0 +1,38 @@
+{% extends 'paint_shop_project/base.html' %}
+{% block content %}
+<div class="container py-4">
+  <h1 class="mb-4">Жевжик API</h1>
+  <p class="text-muted mb-4">Публичная документация и быстрые ссылки. Нажмите «Копировать», чтобы скопировать URL.</p>
+  <div class="list-group">
+    {% for ep in endpoints %}
+    <div class="list-group-item d-flex justify-content-between align-items-center">
+      <div>
+        <div class="fw-bold">{{ ep.name }}</div>
+        <div class="small text-muted">{{ ep.method }} {{ ep.path }}{% if ep.desc %} — {{ ep.desc }}{% endif %}</div>
+        <a href="{{ ep.url }}" class="small">{{ ep.url }}</a>
+      </div>
+      <button class="btn btn-outline-primary btn-sm" onclick="copyToClipboard('{{ ep.url }}')">
+        <i class="fas fa-copy me-1"></i>Копировать URL
+      </button>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="mt-4">
+    <a class="btn btn-primary" href="/api/docs/"><i class="fas fa-book me-2"></i>Открыть Swagger UI</a>
+    <a class="btn btn-outline-secondary ms-2" href="/api/schema.json">Скачать schema.json</a>
+  </div>
+</div>
+
+<script>
+function copyToClipboard(text){
+  navigator.clipboard.writeText(text).then(()=>{
+    const btns = document.querySelectorAll('button');
+  }).catch(()=>{});
+}
+</script>
+{% endblock %}
+
+
+
+
+

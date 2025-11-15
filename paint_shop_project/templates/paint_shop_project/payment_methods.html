@@ -1,0 +1,79 @@
+{% extends 'paint_shop_project/base.html' %}
+{% block title %}Мои способы оплаты - Жевжик{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-3">Мои способы оплаты</h2>
+  <div class="row">
+    <div class="col-lg-6">
+      <div class="card mb-3">
+        <div class="card-header">Добавить карту (маска)</div>
+        <div class="card-body">
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add" />
+            <div class="mb-2">
+              <label class="form-label">Бренд</label>
+              <input name="brand" class="form-control" placeholder="Visa / MasterCard" />
+            </div>
+            <div class="row">
+              <div class="col-md-4 mb-2">
+                <label class="form-label">Последние 4</label>
+                <input name="last4" class="form-control" maxlength="4" required />
+              </div>
+              <div class="col-md-4 mb-2">
+                <label class="form-label">Месяц</label>
+                <input name="expiry_month" class="form-control" type="number" min="1" max="12" required />
+              </div>
+              <div class="col-md-4 mb-2">
+                <label class="form-label">Год</label>
+                <input name="expiry_year" class="form-control" type="number" min="2025" max="2099" required />
+              </div>
+            </div>
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="checkbox" id="pm_default" name="is_default" />
+              <label class="form-check-label" for="pm_default">Сделать по умолчанию</label>
+            </div>
+            <button class="btn btn-primary" type="submit">Добавить</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card mb-3">
+        <div class="card-header">Сохранённые карты</div>
+        <div class="card-body">
+          {% if methods %}
+          <ul class="list-group">
+            {% for m in methods %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <div>
+                <div><strong>{{ m.brand }}</strong> •••• {{ m.last4 }} {% if m.is_default %}<span class="badge bg-success">По умолчанию</span>{% endif %}</div>
+                <div class="text-muted small">Действительна до {{ m.expiry_month }}/{{ m.expiry_year }}</div>
+              </div>
+              <div class="d-flex gap-2">
+                <form method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="set_default" />
+                  <input type="hidden" name="payment_id" value="{{ m.id }}" />
+                  <button class="btn btn-outline-primary btn-sm" type="submit">По умолчанию</button>
+                </form>
+                <form method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="delete" />
+                  <input type="hidden" name="payment_id" value="{{ m.id }}" />
+                  <button class="btn btn-outline-danger btn-sm" type="submit">Удалить</button>
+                </form>
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <div class="text-muted">Нет сохранённых карт</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

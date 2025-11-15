@@ -1,0 +1,236 @@
+{% extends 'paint_shop_project/base.html' %}
+{% load static %}
+
+{% block title %}Заказ успешно оформлен - Жевжик{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --zhevzhik-pink: #FF6B9D;
+        --zhevzhik-dark-pink: #E91E63;
+        --zhevzhik-light-pink: #FFB3D1;
+        --zhevzhik-green: #4CAF50;
+        --zhevzhik-yellow: #FFEB3B;
+        --zhevzhik-gray: #6c757d;
+        --zhevzhik-dark-gray: #2c3e50;
+    }
+    
+    .success-hero {
+        background: linear-gradient(135deg, var(--zhevzhik-green), #20c997);
+        color: white;
+        padding: 60px 0;
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    
+    .success-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        padding: 40px;
+        max-width: 600px;
+        margin: 0 auto;
+        text-align: center;
+    }
+    
+    .success-icon {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, var(--zhevzhik-green), #20c997);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        margin: 0 auto 30px;
+        animation: bounce 2s infinite;
+    }
+    
+    @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {
+            transform: translateY(0);
+        }
+        40% {
+            transform: translateY(-10px);
+        }
+        60% {
+            transform: translateY(-5px);
+        }
+    }
+    
+    .btn-success {
+        background: var(--zhevzhik-green);
+        border-color: var(--zhevzhik-green);
+        color: white;
+        border-radius: 25px;
+        padding: 12px 30px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-success:hover {
+        background: #45a049;
+        border-color: #45a049;
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .btn-outline-success {
+        border-color: var(--zhevzhik-green);
+        color: var(--zhevzhik-green);
+        border-radius: 25px;
+        padding: 12px 30px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-outline-success:hover {
+        background: var(--zhevzhik-green);
+        border-color: var(--zhevzhik-green);
+        color: white;
+    }
+    
+    .order-details {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 25px;
+        margin: 30px 0;
+        text-align: left;
+    }
+    
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .detail-row:last-child {
+        border-bottom: none;
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: var(--zhevzhik-pink);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Заголовок успеха -->
+    <div class="success-hero">
+        <div class="container">
+            <h1 class="display-4 fw-bold mb-3">🎉 Заказ успешно оформлен!</h1>
+            <p class="lead">Спасибо за покупку в Жевжик!</p>
+        </div>
+    </div>
+    
+    <!-- Карточка успеха -->
+    <div class="success-card">
+        <div class="success-icon">
+            <i class="fas fa-check"></i>
+        </div>
+        
+        <h2 class="mb-3">Ваш заказ принят в обработку</h2>
+        <p class="text-muted mb-4">Мы получили ваш заказ и в ближайшее время свяжемся с вами для подтверждения деталей доставки.</p>
+        
+        <!-- Детали заказа -->
+        <div class="order-details">
+            <h5 class="mb-3 text-center">
+                <i class="fas fa-receipt me-2"></i>Детали заказа
+            </h5>
+            <div class="detail-row">
+                <span>Номер заказа:</span>
+                <span>#{{ order_id|default:"12345" }}</span>
+            </div>
+            <div class="detail-row">
+                <span>Способ получения:</span>
+                <span>{{ delivery_type|default:"Самовывоз" }}</span>
+            </div>
+            <div class="detail-row">
+                <span>Способ оплаты:</span>
+                <span>{{ payment_method|default:"Наличными" }}</span>
+            </div>
+            <div class="detail-row">
+                <span>Сумма заказа:</span>
+                <span>{{ total_amount|default:"1 500" }} ₽</span>
+            </div>
+            {% if payment_id %}
+            <div class="detail-row">
+                <span>ID платежа:</span>
+                <span>{{ payment_id }}</span>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Что дальше -->
+        <div class="mb-4">
+            <h5 class="mb-3">
+                <i class="fas fa-clock me-2"></i>Что дальше?
+            </h5>
+            <div class="row text-start">
+                <div class="col-md-4 mb-3">
+                    <div class="text-center">
+                        <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px;">
+                            <i class="fas fa-phone fa-sm"></i>
+                        </div>
+                        <h6>Подтверждение</h6>
+                        <small class="text-muted">Мы свяжемся с вами в течение 15 минут</small>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="text-center">
+                        <div class="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px;">
+                            <i class="fas fa-truck fa-sm"></i>
+                        </div>
+                        <h6>Подготовка</h6>
+                        <small class="text-muted">Собираем ваш заказ</small>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="text-center">
+                        <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px;">
+                            <i class="fas fa-home fa-sm"></i>
+                        </div>
+                        <h6>Доставка</h6>
+                        <small class="text-muted">Доставляем в течение 2-4 часов</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Кнопки действий -->
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+            <a href="{% url 'order_history' %}" class="btn btn-success me-md-2">
+                <i class="fas fa-history me-2"></i>История заказов
+            </a>
+            <a href="{% url 'product_list' %}" class="btn btn-outline-success">
+                <i class="fas fa-shopping-bag me-2"></i>Продолжить покупки
+            </a>
+        </div>
+        
+        <!-- Контакты -->
+        <div class="mt-4 pt-4 border-top">
+            <h6 class="mb-3">
+                <i class="fas fa-headset me-2"></i>Нужна помощь?
+            </h6>
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-1">
+                        <i class="fas fa-phone text-success me-2"></i>
+                        <a href="tel:+79803600351" class="text-decoration-none">+7 (980) 360-03-51</a>
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <p class="mb-1">
+                        <i class="fab fa-telegram text-primary me-2"></i>
+                        <a href="https://t.me/Kav2601" class="text-decoration-none">@Kav2601</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

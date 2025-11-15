@@ -1,0 +1,278 @@
+{% extends "paint_shop_project/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Детали заказа" %} #{{ order.id }} | {% trans "Жевжик" %}{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1000px; margin: 20px auto; padding: 20px;">
+    <div class="header-section" style="margin-bottom: 30px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1>{% trans "Заказ" %} #{{ order.id }}</h1>
+                <p class="help-text">{{ order.order_date|date:"d.m.Y H:i" }}</p>
+            </div>
+            <a href="{% url 'picker_dashboard' %}" style="color: #1a2a6c; text-decoration: none;">← {% trans "Назад к заказам" %}</a>
+        </div>
+    </div>
+
+    <div class="order-info-section" style="background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px;">
+        <h2 style="margin-top: 0;">{% trans "Информация о заказе" %}</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+            <div>
+                <strong>{% trans "Статус заказа" %}:</strong><br>
+                <span class="status-badge" style="
+                    display: inline-block;
+                    padding: 5px 15px;
+                    border-radius: 20px;
+                    font-size: 0.9em;
+                    background: #1a2a6c;
+                    color: white;
+                    margin-top: 5px;
+                ">
+                    {{ order.get_status_display }}
+                </span>
+            </div>
+            <div>
+                <strong>{% trans "Статус сборки" %}:</strong><br>
+                <span class="status-badge" style="
+                    display: inline-block;
+                    padding: 5px 15px;
+                    border-radius: 20px;
+                    font-size: 0.9em;
+                    background: {% if picking.status == 'in_progress' %}#f59e0b{% elif picking.status == 'completed' %}#10b981{% elif picking.status == 'missing_items' %}#ef4444{% else %}#6b7280{% endif %};
+                    color: white;
+                    margin-top: 5px;
+                ">
+                    {{ picking.get_status_display }}
+                </span>
+            </div>
+            <div>
+                <strong>{% trans "Сумма заказа" %}:</strong><br>
+                <span style="font-size: 1.2em; font-weight: bold; color: #10b981;">{{ order.total_amount|floatformat:2 }} ₽</span>
+            </div>
+            <div>
+                <strong>{% trans "Тип получения" %}:</strong><br>
+                {{ order.get_delivery_type_display }}
+            </div>
+        </div>
+    </div>
+
+    <div class="customer-info-section" style="background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px;">
+        <h2 style="margin-top: 0;">{% trans "Информация о покупателе" %}</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+            <div>
+                <strong>{% trans "Имя" %}:</strong><br>
+                {{ customer.get_full_name|default:customer.username }}
+            </div>
+            <div>
+                <strong>{% trans "Телефон" %}:</strong><br>
+                <a href="tel:{{ customer_phone }}" style="color: #1a2a6c; text-decoration: none;">{{ customer_phone }}</a>
+            </div>
+            <div>
+                <strong>{% trans "Email" %}:</strong><br>
+                <a href="mailto:{{ customer_email }}" style="color: #1a2a6c; text-decoration: none;">{{ customer_email }}</a>
+            </div>
+        </div>
+        {% if order.delivery_address %}
+        <div style="margin-top: 15px;">
+            <strong>{% trans "Адрес доставки" %}:</strong><br>
+            {{ order.delivery_address }}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="order-items-section" style="background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px;">
+        <h2 style="margin-top: 0;">{% trans "Состав заказа" %}</h2>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="border-bottom: 2px solid #e5e7eb;">
+                    <th style="padding: 10px; text-align: left;">{% trans "Товар" %}</th>
+                    <th style="padding: 10px; text-align: center;">{% trans "Количество" %}</th>
+                    <th style="padding: 10px; text-align: left;">{% trans "Партия" %}</th>
+                    <th style="padding: 10px; text-align: right;">{% trans "Цена" %}</th>
+                    <th style="padding: 10px; text-align: right;">{% trans "Сумма" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item_data in items_with_batches %}
+                {% with item=item_data.item %}
+                <tr style="border-bottom: 1px solid #e5e7eb;">
+                    <td style="padding: 15px;">
+                        <strong>{{ item.product.name }}</strong>
+                        {% if item.product.has_expiry_date %}
+                        <br><small style="color: #666;">
+                            {% trans "Товар со сроком годности" %}
+                        </small>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 15px; text-align: center;">{{ item.quantity }}</td>
+                    <td style="padding: 15px;">
+                        {% if item.batch %}
+                            <div style="background: #f0f9ff; padding: 8px; border-radius: 5px; margin-bottom: 5px;">
+                                <strong>{% trans "Партия" %}: {{ item.batch.batch_number }}</strong><br>
+                                <small>
+                                    {% trans "Срок годности" %}: {{ item.batch.expiry_date|date:"d.m.Y" }}<br>
+                                    {% if item.batch.days_until_expiry < 0 %}
+                                        <span style="color: #ef4444;">❌ {% trans "Просрочено" %}</span>
+                                    {% elif item.batch.days_until_expiry <= 3 %}
+                                        <span style="color: #f59e0b;">⚠️ {% trans "Истекает через" %} {{ item.batch.days_until_expiry }} {% trans "дн." %}</span>
+                                    {% elif item.batch.days_until_expiry <= 7 %}
+                                        <span style="color: #eab308;">🟡 {% trans "Истекает через" %} {{ item.batch.days_until_expiry }} {% trans "дн." %}</span>
+                                    {% else %}
+                                        <span style="color: #10b981;">✅ {% trans "Свежий" %} ({{ item.batch.days_until_expiry }} {% trans "дн." %})</span>
+                                    {% endif %}
+                                </small>
+                            </div>
+                            <form method="post" action="{% url 'picker_assign_batch' order.id item.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" style="padding: 5px 10px; background: #ef4444; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 0.85em;">
+                                    {% trans "Убрать партию" %}
+                                </button>
+                            </form>
+                        {% else %}
+                            {% if item_data.available_batches %}
+                                <form method="post" action="{% url 'picker_assign_batch' order.id item.id %}" style="margin-bottom: 5px;">
+                                    {% csrf_token %}
+                                    <select name="batch_id" style="padding: 5px; border: 1px solid #ccc; border-radius: 3px; width: 100%; max-width: 300px;">
+                                        <option value="">{% trans "-- Выберите партию --" %}</option>
+                                        {% for batch in item_data.available_batches %}
+                                            <option value="{{ batch.id }}">
+                                                {% trans "Партия" %} {{ batch.batch_number|default:batch.id }} - 
+                                                {% trans "Срок" %}: {{ batch.expiry_date|date:"d.m.Y" }} 
+                                                ({% if batch.days_until_expiry < 0 %}
+                                                    ❌ {% trans "Просрочено" %}
+                                                {% elif batch.days_until_expiry <= 3 %}
+                                                    ⚠️ {{ batch.days_until_expiry }} {% trans "дн." %}
+                                                {% elif batch.days_until_expiry <= 7 %}
+                                                    🟡 {{ batch.days_until_expiry }} {% trans "дн." %}
+                                                {% else %}
+                                                    ✅ {{ batch.days_until_expiry }} {% trans "дн." %}
+                                                {% endif %}) - 
+                                                {% trans "Остаток" %}: {{ batch.remaining_quantity }}
+                                                {% if batch.expiry_percent_remaining %}
+                                                    ({{ batch.expiry_percent_remaining|floatformat:0 }}% {% trans "срока" %})
+                                                {% endif %}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="submit" style="padding: 5px 10px; background: #10b981; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 0.85em; margin-top: 5px;">
+                                        {% trans "Назначить партию" %}
+                                    </button>
+                                </form>
+                            {% else %}
+                                <span style="color: #ef4444;">⚠️ {% trans "Нет доступных партий" %}</span>
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                    <td style="padding: 15px; text-align: right;">{{ item.price_per_unit|floatformat:2 }} ₽</td>
+                    <td style="padding: 15px; text-align: right;">{{ item.total_price|floatformat:2 }} ₽</td>
+                </tr>
+                {% endwith %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="actions-section" style="background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h2 style="margin-top: 0;">{% trans "Действия" %}</h2>
+        
+        {% if picking.status == 'in_progress' %}
+        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+            <form method="post" action="{% url 'picker_auto_assign_batches' order.id %}" style="margin: 0;">
+                {% csrf_token %}
+                <button type="submit" style="
+                    padding: 12px 24px;
+                    background: #3b82f6;
+                    color: white;
+                    border: none;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    font-size: 1em;
+                " title="{% trans 'Автоматически назначить партии для всех товаров (FEFO + правило 70%)' %}">
+                    🤖 {% trans "Автоподбор партий" %}
+                </button>
+            </form>
+            
+            <form method="post" action="{% url 'picker_complete_order' order.id %}" style="margin: 0;">
+                {% csrf_token %}
+                <button type="submit" style="
+                    padding: 12px 24px;
+                    background: #10b981;
+                    color: white;
+                    border: none;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    font-size: 1em;
+                ">
+                    ✅ {% trans "Завершить сборку" %}
+                </button>
+            </form>
+            
+            <button onclick="document.getElementById('missingModal').style.display='block'" style="
+                padding: 12px 24px;
+                background: #ef4444;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 1em;
+            ">
+                ⚠️ {% trans "Сообщить о недостающих товарах" %}
+            </button>
+        </div>
+        {% endif %}
+
+        {% if picking.status == 'missing_items' and picking.missing_items_comment %}
+        <div style="margin-top: 20px; padding: 15px; background: #fef3c7; border-radius: 5px; border-left: 4px solid #f59e0b;">
+            <strong>{% trans "Комментарий о недостающих товарах" %}:</strong><br>
+            {{ picking.missing_items_comment }}
+            {% if picking.notified_customer %}
+            <br><small style="color: #666;">✅ {% trans "Покупатель уведомлен" %}</small>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Модальное окно для сообщения о недостающих товарах -->
+<div id="missingModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+    <div style="background-color: #fff; margin: 10% auto; padding: 30px; border-radius: 8px; width: 90%; max-width: 600px;">
+        <h2>{% trans "Сообщить о недостающих товарах" %}</h2>
+        <form method="post" action="{% url 'picker_report_missing' order.id %}">
+            {% csrf_token %}
+            <div style="margin-bottom: 20px;">
+                <label for="comment" style="display: block; margin-bottom: 5px;">
+                    <strong>{% trans "Комментарий" %}:</strong>
+                </label>
+                <textarea name="comment" id="comment" rows="5" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;" required></textarea>
+                <small style="color: #666;">{% trans "Укажите, какие товары отсутствуют и как можно с ними связаться" %}</small>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button type="button" onclick="document.getElementById('missingModal').style.display='none'" style="
+                    padding: 10px 20px;
+                    background: #6b7280;
+                    color: white;
+                    border: none;
+                    border-radius: 5px;
+                    cursor: pointer;
+                ">
+                    {% trans "Отмена" %}
+                </button>
+                <button type="submit" style="
+                    padding: 10px 20px;
+                    background: #ef4444;
+                    color: white;
+                    border: none;
+                    border-radius: 5px;
+                    cursor: pointer;
+                ">
+                    {% trans "Отправить" %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+
+

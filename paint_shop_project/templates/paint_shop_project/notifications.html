@@ -1,0 +1,258 @@
+{% extends 'paint_shop_project/base.html' %}
+{% load static %}
+
+{% block title %}Уведомления - Жевжик{% endblock %}
+
+{% block extra_css %}
+<style>
+    .notifications-hero {
+        background: linear-gradient(135deg, var(--zhevzhik-pink), var(--zhevzhik-light-pink));
+        color: white;
+        padding: 50px 0;
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    
+    .notification-item {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+        border-left: 4px solid var(--zhevzhik-pink);
+    }
+    
+    .notification-item.unread {
+        border-left-color: var(--zhevzhik-red);
+        background: #fff5f5;
+    }
+    
+    .notification-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .notification-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    
+    .notification-title {
+        color: var(--zhevzhik-pink);
+        font-weight: 600;
+        margin-bottom: 5px;
+        font-size: 1.1rem;
+    }
+    
+    .notification-type {
+        background: var(--zhevzhik-light-pink);
+        color: var(--zhevzhik-dark-pink);
+        padding: 3px 10px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    
+    .notification-message {
+        color: var(--zhevzhik-dark-gray);
+        margin-bottom: 15px;
+        line-height: 1.5;
+    }
+    
+    .notification-date {
+        color: var(--zhevzhik-gray);
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .notification-date i {
+        margin-right: 5px;
+    }
+    
+    .notification-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+    
+    .btn-notification {
+        background: var(--zhevzhik-pink);
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 15px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+    }
+    
+    .btn-notification:hover {
+        background: var(--zhevzhik-dark-pink);
+        transform: translateY(-2px);
+    }
+    
+    .btn-mark-read {
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 15px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+    }
+    
+    .btn-mark-read:hover {
+        background: #218838;
+        transform: translateY(-2px);
+    }
+    
+    .empty-notifications {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--zhevzhik-gray);
+    }
+    
+    .empty-notifications i {
+        font-size: 4rem;
+        color: var(--zhevzhik-light-pink);
+        margin-bottom: 20px;
+    }
+    
+    .mark-all-read {
+        background: var(--zhevzhik-green);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 25px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        margin-bottom: 30px;
+    }
+    
+    .mark-all-read:hover {
+        background: #1e7e34;
+        transform: translateY(-2px);
+    }
+    
+    .unread-badge {
+        background: var(--zhevzhik-red);
+        color: white;
+        padding: 3px 8px;
+        border-radius: 10px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Заголовок уведомлений -->
+<div class="notifications-hero">
+    <div class="container">
+        <h1 class="display-4 mb-3">🔔 Уведомления</h1>
+        <p class="lead">Важные сообщения от Жевжика</p>
+        {% if unread_count > 0 %}
+            <div class="unread-badge">
+                {{ unread_count }} непрочитанных
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="container">
+    {% if notifications %}
+        <div class="text-end mb-4">
+            <button class="mark-all-read" onclick="markAllRead()">
+                <i class="fas fa-check-double me-2"></i>Отметить все как прочитанные
+            </button>
+        </div>
+        
+        <div class="row">
+            {% for notification in notifications %}
+            <div class="col-12">
+                <div class="notification-item {% if not notification.is_read %}unread{% endif %}">
+                    <div class="notification-header">
+                        <h4 class="notification-title">{{ notification.title }}</h4>
+                        <span class="notification-type">{{ notification.get_notification_type_display }}</span>
+                    </div>
+                    <div class="notification-message">{{ notification.message }}</div>
+                    <div class="notification-date">
+                        <i class="fas fa-clock"></i>
+                        {{ notification.created_at|date:"d.m.Y в H:i" }}
+                    </div>
+                    {% if not notification.is_read %}
+                    <div class="notification-actions">
+                        <button class="btn-mark-read mark-read" data-notification-id="{{ notification.id }}">
+                            <i class="fas fa-check me-2"></i>Отметить как прочитанное
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-notifications">
+            <i class="fas fa-bell"></i>
+            <h3>Нет уведомлений</h3>
+            <p>Здесь будут появляться важные сообщения о ваших заказах и акциях</p>
+            <a href="{% url 'product_list' %}" class="btn btn-zhevzhik-pink btn-lg">
+                <i class="fas fa-shopping-bag me-2"></i>Перейти к каталогу
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function markAllRead() {
+    fetch('/mark-all-notifications-read/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'all_read') {
+            location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Отметить уведомление как прочитанное
+    document.querySelectorAll('.mark-read').forEach(button => {
+        button.addEventListener('click', function() {
+            const notificationId = this.dataset.notificationId;
+            
+            fetch(`/mark-notification-read/${notificationId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'read') {
+                    this.closest('.notification-item').classList.remove('unread');
+                    this.remove();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

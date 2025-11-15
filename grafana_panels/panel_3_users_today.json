@@ -1,0 +1,73 @@
+{
+  "id": 3,
+  "type": "stat",
+  "title": "👥 Новых пользователей сегодня",
+  "description": "Количество новых пользователей, зарегистрированных сегодня",
+  "gridPos": {
+    "x": 12,
+    "y": 0,
+    "h": 4,
+    "w": 6
+  },
+  "fieldConfig": {
+    "defaults": {
+      "color": {
+        "mode": "thresholds"
+      },
+      "mappings": [],
+      "thresholds": {
+        "mode": "absolute",
+        "steps": [
+          {
+            "color": "green",
+            "value": null
+          },
+          {
+            "color": "yellow",
+            "value": 5
+          },
+          {
+            "color": "red",
+            "value": 20
+          }
+        ]
+      },
+      "unit": "short",
+      "decimals": 0
+    },
+    "overrides": []
+  },
+  "options": {
+    "reduceOptions": {
+      "values": false,
+      "calcs": [
+        "lastNotNull"
+      ],
+      "fields": ""
+    },
+    "orientation": "auto",
+    "textMode": "value_and_name",
+    "colorMode": "value",
+    "graphMode": "none",
+    "justifyMode": "auto"
+  },
+  "pluginVersion": "12.2.0",
+  "targets": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "editorMode": "code",
+      "expr": "zhevzhik_users_today",
+      "range": true,
+      "refId": "A"
+    }
+  ],
+  "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+  }
+}
+
+

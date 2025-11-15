@@ -1,0 +1,235 @@
+{% extends 'paint_shop_project/base.html' %}
+{% load static %}
+{% load math_filters %}
+
+{% block title %}История заказов - Жевжик{% endblock %}
+
+{% block extra_css %}
+<style>
+    .text-zhevzhik-pink { color: #FF6B9D !important; }
+    .bg-zhevzhik-pink { background-color: #FF6B9D !important; }
+    .btn-zhevzhik-pink { 
+        background-color: #FF6B9D; 
+        border-color: #FF6B9D; 
+        color: white; 
+    }
+    .btn-zhevzhik-pink:hover { 
+        background-color: #E91E63; 
+        border-color: #E91E63; 
+    }
+    .mini-progress{width:120px;height:6px;background:#e9ecef;border-radius:4px;overflow:hidden;display:inline-block;vertical-align:middle;margin-left:8px}
+    .mini-progress-fill{height:100%;background:linear-gradient(90deg,#FF6B9D,#4CAF50)}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">🐷 История заказов</h2>
+        </div>
+    </div>
+    
+    <!-- Статистика -->
+    <div class="row mb-4 g-3">
+        <div class="col-lg-3 col-md-6">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h3 class="text-zhevzhik-pink">{{ total_orders }}</h3>
+                    <p class="text-muted mb-0">Всего заказов</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h3 class="text-zhevzhik-pink">{{ delivered_orders_count }}</h3>
+                    <p class="text-muted mb-0">Завершено</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h3 class="text-zhevzhik-pink">{{ total_spent|floatformat:0 }} ₽</h3>
+                    <p class="text-muted mb-0">Потрачено по завершённым</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h3 class="text-zhevzhik-pink">
+                        {% if delivered_orders_count > 0 %}
+                            {{ average_spent|floatformat:0 }} ₽
+                        {% else %}
+                            0 ₽
+                        {% endif %}
+                    </h3>
+                    <p class="text-muted mb-0">Средний чек (завершён)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-zhevzhik-pink text-white">
+                    <h5 class="mb-0">Мои заказы</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Фильтры -->
+                    <form method="get" class="row g-2 mb-3">
+                        <div class="col-md-2">
+                            <input type="text" name="q" value="{{ search }}" class="form-control" placeholder="Поиск по №">
+                        </div>
+                        <div class="col-md-2">
+                            <select name="status" class="form-select">
+                                <option value="">Все статусы</option>
+                                <option value="created" {% if selected_status == 'created' %}selected{% endif %}>Создан</option>
+                                <option value="confirmed" {% if selected_status == 'confirmed' %}selected{% endif %}>Подтверждён</option>
+                                <option value="ready" {% if selected_status == 'ready' %}selected{% endif %}>Готов</option>
+                                <option value="in_transit" {% if selected_status == 'in_transit' %}selected{% endif %}>В пути</option>
+                                <option value="delivered" {% if selected_status == 'delivered' %}selected{% endif %}>Доставлен</option>
+                                <option value="cancelled" {% if selected_status == 'cancelled' %}selected{% endif %}>Отменён</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select name="delivery_type" class="form-select">
+                                <option value="">Все способы</option>
+                                <option value="pickup" {% if selected_delivery_type == 'pickup' %}selected{% endif %}>Самовывоз</option>
+                                <option value="delivery" {% if selected_delivery_type == 'delivery' %}selected{% endif %}>Доставка</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <input type="date" name="date_from" value="{{ date_from }}" class="form-control" placeholder="С даты">
+                        </div>
+                        <div class="col-md-2">
+                            <input type="date" name="date_to" value="{{ date_to }}" class="form-control" placeholder="По дату">
+                        </div>
+                        <div class="col-md-1">
+                            <input type="number" name="min_total" value="{{ min_total }}" class="form-control" placeholder=">= ₽">
+                        </div>
+                        <div class="col-md-1">
+                            <input type="number" name="max_total" value="{{ max_total }}" class="form-control" placeholder="<= ₽">
+                        </div>
+                        <div class="col-md-12 d-flex gap-2 mt-2">
+                            <button type="submit" class="btn btn-sm btn-zhevzhik-pink">Применить</button>
+                            <a href="{% url 'order_history' %}" class="btn btn-sm btn-outline-secondary">Сбросить</a>
+                        </div>
+                    </form>
+
+                    {% if orders %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>№ Заказа</th>
+                                        <th>Дата</th>
+                                        <th>Статус</th>
+                                        <th>Сумма</th>
+                                        <th>Способ получения</th>
+                                        <th>Действия</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in orders %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'order_detail' order.id %}" class="text-decoration-none">
+                                                #{{ order.id }}
+                                            </a>
+                                        </td>
+                                        <td>{{ order.order_date|date:"d.m.Y H:i" }}</td>
+                                        <td>
+                                            <span class="badge 
+                                                {% if order.status == 'created' %}bg-secondary
+                                                {% elif order.status == 'confirmed' %}bg-primary
+                                                {% elif order.status == 'ready' %}bg-warning
+                                                {% elif order.status == 'in_transit' %}bg-info
+                                                {% elif order.status == 'delivered' %}bg-success
+                                                {% elif order.status == 'cancelled' %}bg-danger
+                                                {% endif %}">
+                                                {{ order.get_status_display }}
+                                            </span>
+                                            <span class="mini-progress"><span class="mini-progress-fill" style="width: {{ order.progress|default:0 }}%"></span></span>
+                                        </td>
+                                        <td>{{ order.total_amount }} ₽</td>
+                                        <td>{{ order.get_delivery_type_display }}</td>
+                                        <td>
+                                            <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-outline-zhevzhik-pink">
+                                                <i class="fas fa-eye"></i> Подробнее
+                                            </a>
+                                            {% if order.delivery_type == 'delivery' and order.status != 'cancelled' %}
+                                                <a href="{% url 'order_tracking' order.id %}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-truck"></i> Отследить
+                                                </a>
+                                            {% endif %}
+                                            {% if order.status == 'created' or order.status == 'confirmed' %}
+                                                <button class="btn btn-sm btn-outline-danger" onclick="cancelOrder({{ order.id }})">
+                                                    <i class="fas fa-times"></i> Отменить
+                                                </button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Пагинация -->
+                        <nav aria-label="Orders pagination">
+                            <ul class="pagination justify-content-center">
+                                {% if orders.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ orders.previous_page_number }}{% if request.GET %}&{{ request.GET.urlencode|cut:'page='|cut:orders.number|cut:'&' %}{% endif %}">Назад</a>
+                                </li>
+                                {% else %}
+                                <li class="page-item disabled"><span class="page-link">Назад</span></li>
+                                {% endif %}
+                                <li class="page-item disabled"><span class="page-link">Стр. {{ orders.number }} из {{ orders.paginator.num_pages }}</span></li>
+                                {% if orders.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ orders.next_page_number }}{% if request.GET %}&{{ request.GET.urlencode|cut:'page='|cut:orders.number|cut:'&' %}{% endif %}">Вперёд</a>
+                                </li>
+                                {% else %}
+                                <li class="page-item disabled"><span class="page-link">Вперёд</span></li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-shopping-bag fa-3x text-muted mb-3"></i>
+                            <h4>У вас пока нет заказов</h4>
+                            <p class="text-muted">Сделайте свой первый заказ в нашем магазине!</p>
+                            <a href="{% url 'product_list' %}" class="btn btn-zhevzhik-pink">
+                                <i class="fas fa-shopping-bag"></i> Перейти к покупкам
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function cancelOrder(orderId) {
+    if (confirm('Вы уверены, что хотите отменить этот заказ?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/cancel-order/${orderId}/`;
+        
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+        form.appendChild(csrfInput);
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

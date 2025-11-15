@@ -1,0 +1,256 @@
+{% extends 'paint_shop_project/base.html' %}
+{% load static %}
+
+{% block title %}История кешбэка - Жевжик{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --zhevzhik-pink: #FF6B9D;
+        --zhevzhik-dark-pink: #E91E63;
+        --zhevzhik-light-pink: #FFB3D1;
+        --zhevzhik-green: #4CAF50;
+        --zhevzhik-yellow: #FFEB3B;
+        --zhevzhik-gray: #6c757d;
+        --zhevzhik-dark-gray: #2c3e50;
+    }
+    
+    .cashback-hero {
+        background: linear-gradient(135deg, var(--zhevzhik-green), #20c997);
+        color: white;
+        padding: 50px 0;
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    
+    .cashback-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+    
+    .transaction-item {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 15px;
+        border-left: 4px solid var(--zhevzhik-green);
+    }
+    
+    .transaction-item.earned {
+        border-left-color: var(--zhevzhik-green);
+    }
+    
+    .transaction-item.spent {
+        border-left-color: var(--zhevzhik-pink);
+    }
+    
+    .transaction-amount {
+        font-size: 1.2rem;
+        font-weight: 700;
+    }
+    
+    .transaction-amount.positive {
+        color: var(--zhevzhik-green);
+    }
+    
+    .transaction-amount.negative {
+        color: var(--zhevzhik-pink);
+    }
+    
+    .stats-card {
+        background: linear-gradient(135deg, var(--zhevzhik-pink), var(--zhevzhik-dark-pink));
+        color: white;
+        border-radius: 15px;
+        padding: 30px;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    
+    .stats-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--zhevzhik-gray);
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        color: #dee2e6;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Заголовок -->
+    <div class="cashback-hero">
+        <div class="container">
+            <h1 class="display-4 fw-bold mb-3">💰 История кешбэка</h1>
+            <p class="lead">Отслеживайте ваши накопления и траты</p>
+        </div>
+    </div>
+    
+    <!-- Статистика -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="stats-card">
+                <div class="stats-number">{{ total_earned|floatformat:0 }} ₽</div>
+                <p class="mb-0">Заработано всего</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stats-card">
+                <div class="stats-number">{{ total_spent|floatformat:0 }} ₽</div>
+                <p class="mb-0">Потрачено</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stats-card">
+                <div class="stats-number">{{ current_balance|floatformat:0 }} ₽</div>
+                <p class="mb-0">Доступно</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Фильтры -->
+    <form method="get" class="row g-2 mb-3">
+        <div class="col-md-2">
+            <select name="type" class="form-select">
+                <option value="">Все операции</option>
+                <option value="earned" {% if tx_type == 'earned' %}selected{% endif %}>Начисление</option>
+                <option value="spent" {% if tx_type == 'spent' %}selected{% endif %}>Списание</option>
+                <option value="expired" {% if tx_type == 'expired' %}selected{% endif %}>Истек</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <input type="date" name="date_from" value="{{ date_from }}" class="form-control" placeholder="С даты">
+        </div>
+        <div class="col-md-2">
+            <input type="date" name="date_to" value="{{ date_to }}" class="form-control" placeholder="По дату">
+        </div>
+        <div class="col-md-2">
+            <input type="number" name="min_amount" value="{{ min_amount }}" class="form-control" placeholder=">= ₽">
+        </div>
+        <div class="col-md-2">
+            <input type="number" name="max_amount" value="{{ max_amount }}" class="form-control" placeholder="<= ₽">
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-zhevzhik-pink">Применить</button>
+            <a href="{% url 'cashback_history' %}" class="btn btn-outline-secondary">Сбросить</a>
+        </div>
+    </form>
+
+    <!-- История транзакций -->
+    <div class="row">
+        <div class="col-12">
+            <div class="cashback-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="mb-0">
+                    <i class="fas fa-history me-2"></i>История операций
+                    </h3>
+                    <a class="btn btn-sm btn-outline-secondary" href="{% url 'cashback_history_export_csv' %}">
+                        <i class="fas fa-download me-1"></i>Скачать CSV
+                    </a>
+                </div>
+                
+                {% if transactions %}
+                    {% for transaction in transactions %}
+                    <div class="transaction-item {% if transaction.transaction_type == 'earned' %}earned{% else %}spent{% endif %}">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <h6 class="mb-1">{{ transaction.description }}</h6>
+                                <small class="text-muted">{{ transaction.created_at|date:"d.m.Y H:i" }}</small>
+                            </div>
+                            <div class="col-md-3">
+                                <span class="badge {% if transaction.transaction_type == 'earned' %}bg-success{% else %}bg-danger{% endif %}">
+                                    {% if transaction.transaction_type == 'earned' %}Начисление{% else %}Списание{% endif %}
+                                </span>
+                            </div>
+                            <div class="col-md-3 text-md-end">
+                                <span class="transaction-amount {% if transaction.transaction_type == 'earned' %}positive{% else %}negative{% endif %}">
+                                    {% if transaction.transaction_type == 'earned' %}+{% else %}-{% endif %}{{ transaction.amount|floatformat:0 }} ₽
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <nav aria-label="Cashback pagination">
+                        <ul class="pagination justify-content-center mt-3">
+                            {% if transactions.has_previous %}
+                            <li class="page-item"><a class="page-link" href="?page={{ transactions.previous_page_number }}&{{ request.GET.urlencode|cut:'page='|cut:transactions.number|cut:'&' }}">Назад</a></li>
+                            {% else %}
+                            <li class="page-item disabled"><span class="page-link">Назад</span></li>
+                            {% endif %}
+                            <li class="page-item disabled"><span class="page-link">Стр. {{ transactions.number }} из {{ transactions.paginator.num_pages }}</span></li>
+                            {% if transactions.has_next %}
+                            <li class="page-item"><a class="page-link" href="?page={{ transactions.next_page_number }}&{{ request.GET.urlencode|cut:'page='|cut:transactions.number|cut:'&' }}">Вперёд</a></li>
+                            {% else %}
+                            <li class="page-item disabled"><span class="page-link">Вперёд</span></li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-coins"></i>
+                        <h4>История пуста</h4>
+                        <p>У вас пока нет операций с кешбэком</p>
+                        <a href="{% url 'product_list' %}" class="btn btn-primary">
+                            <i class="fas fa-shopping-bag me-2"></i>Начать покупки
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Информация о программе лояльности -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="cashback-card">
+                <h4 class="mb-3">
+                    <i class="fas fa-info-circle me-2"></i>Как работает кешбэк?
+                </h4>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="fas fa-shopping-cart fa-lg"></i>
+                            </div>
+                            <h6>Покупайте товары</h6>
+                            <p class="text-muted small">Совершайте покупки в нашем магазине</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="fas fa-percentage fa-lg"></i>
+                            </div>
+                            <h6>Получайте кешбэк</h6>
+                            <p class="text-muted small">До 10% от суммы покупки</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <div class="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="fas fa-gift fa-lg"></i>
+                            </div>
+                            <h6>Тратьте на покупки</h6>
+                            <p class="text-muted small">Используйте накопления при оплате</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

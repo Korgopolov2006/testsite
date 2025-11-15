@@ -1,0 +1,461 @@
+{% extends 'paint_shop_project/base.html' %}
+{% load static %}
+{% load math_filters %}
+
+{% block title %}Избранные товары - Жевжик{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --zhevzhik-pink: #FF6B9D;
+        --zhevzhik-dark-pink: #E91E63;
+        --zhevzhik-light-pink: #FFB3D1;
+        --zhevzhik-green: #4CAF50;
+        --zhevzhik-yellow: #FFEB3B;
+        --zhevzhik-gray: #6c757d;
+        --zhevzhik-dark-gray: #2c3e50;
+    }
+    
+    .favorites-hero {
+        background: linear-gradient(135deg, var(--zhevzhik-pink), var(--zhevzhik-light-pink));
+        color: white;
+        padding: 50px 0;
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 24px;
+    }
+
+    .product-card {
+        background: var(--white);
+        border-radius: 20px;
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .product-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.12);
+    }
+
+    .product-image {
+        width: 100%;
+        height: 220px;
+        object-fit: cover;
+        background: #f5f5f5;
+    }
+
+    .product-badge {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        background: var(--zhevzhik-pink);
+        color: white;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        box-shadow: 0 6px 16px rgba(255, 107, 157, 0.3);
+    }
+
+    .product-content {
+        padding: 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        flex: 1;
+    }
+
+    .product-name {
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: var(--zhevzhik-dark-gray);
+        margin-bottom: 4px;
+    }
+
+    .product-name a {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .product-name a:hover {
+        color: var(--zhevzhik-pink);
+    }
+
+    .product-price {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--zhevzhik-pink);
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+    }
+
+    .product-old-price {
+        font-size: 0.95rem;
+        color: var(--zhevzhik-gray);
+        text-decoration: line-through;
+    }
+
+    .product-actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin-top: auto;
+    }
+
+    .product-actions .btn-add-cart,
+    .product-actions .cart-quantity-control {
+        flex: 1;
+    }
+
+    .btn-add-cart {
+        background: linear-gradient(135deg, var(--zhevzhik-pink), var(--zhevzhik-dark-pink));
+        color: white;
+        border: none;
+        padding: 12px 18px;
+        border-radius: 12px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-add-cart:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(255, 107, 157, 0.25);
+        color: white;
+    }
+
+    .cart-quantity-control {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #f8f9fb;
+        border-radius: 12px;
+        padding: 6px 12px;
+        gap: 10px;
+    }
+
+    .btn-quantity {
+        background: transparent;
+        border: none;
+        color: var(--zhevzhik-pink);
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s ease;
+    }
+
+    .btn-quantity:hover {
+        background: rgba(255, 107, 157, 0.12);
+    }
+
+    .cart-qty-display {
+        display: flex;
+        align-items: baseline;
+        gap: 4px;
+        font-weight: 600;
+        color: var(--zhevzhik-dark-gray);
+    }
+
+    .btn-secondary {
+        background: transparent;
+        color: var(--zhevzhik-pink);
+        border: 2px solid var(--zhevzhik-pink);
+        padding: 10px 16px;
+        border-radius: 12px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .btn-secondary:hover {
+        background: var(--zhevzhik-pink);
+        color: white;
+    }
+
+    .btn-remove-favorite {
+        border: none;
+        background: rgba(220, 53, 69, 0.12);
+        color: #dc3545;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: background 0.2s ease;
+    }
+
+    .btn-remove-favorite:hover {
+        background: #dc3545;
+        color: white;
+    }
+
+    .empty-favorites {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--zhevzhik-gray);
+    }
+
+    .empty-favorites i {
+        font-size: 4rem;
+        color: var(--zhevzhik-light-pink);
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Заголовок избранных -->
+<div class="favorites-hero">
+    <div class="container">
+        <h1 class="display-4 mb-3">❤️ Избранные товары</h1>
+        <p class="lead">Ваши любимые товары от Жевжика</p>
+    </div>
+</div>
+
+<div class="container">
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    {% if favorites %}
+        <div class="products-grid">
+            {% for favorite in favorites %}
+            {% with product=favorite.product %}
+            <div class="product-card" id="favorite-card-{{ product.id }}">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
+                {% else %}
+                    <div class="product-image d-flex align-items-center justify-content-center">
+                        <i class="fas fa-image fa-3x text-muted"></i>
+                    </div>
+                {% endif %}
+
+                {% if product.discount_percent > 0 %}
+                    <div class="product-badge">-{{ product.discount_percent }}%</div>
+                {% endif %}
+
+                <div class="product-content">
+                    <h3 class="product-name"><a href="{% url 'product_detail' product.id %}">{{ product.name }}</a></h3>
+                    <div class="product-price">
+                        {{ product.price }} ₽
+                        {% if product.old_price %}
+                            <span class="product-old-price">{{ product.old_price }} ₽</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="product-actions">
+                        {% if user.is_authenticated %}
+                            {% with qty=product_id_to_qty|get_item:product.id|default:0 %}
+                                {% if qty %}
+                                <div class="cart-quantity-control" id="fav-cart-control-{{ product.id }}">
+                                    <button class="btn-quantity" onclick="updateCartQuantityFromFavorites({{ product.id }}, -1)"><i class="fas fa-minus"></i></button>
+                                    <span class="cart-qty-display"><span class="qty" id="fav-qty-{{ product.id }}">{{ qty }}</span><small class="text-muted">шт.</small></span>
+                                    <button class="btn-quantity" onclick="updateCartQuantityFromFavorites({{ product.id }}, 1)"><i class="fas fa-plus"></i></button>
+                                </div>
+                                <button class="btn-add-cart" id="fav-add-btn-{{ product.id }}" style="display:none" onclick="addToCartFromFavorites({{ product.id }})">
+                                    <i class="fas fa-shopping-cart"></i> В корзину
+                                </button>
+                                {% else %}
+                                <button class="btn-add-cart" id="fav-add-btn-{{ product.id }}" onclick="addToCartFromFavorites({{ product.id }})">
+                                    <i class="fas fa-shopping-cart"></i> В корзину
+                                </button>
+                                <div class="cart-quantity-control" id="fav-cart-control-{{ product.id }}" style="display:none">
+                                    <button class="btn-quantity" onclick="updateCartQuantityFromFavorites({{ product.id }}, -1)"><i class="fas fa-minus"></i></button>
+                                    <span class="cart-qty-display"><span class="qty" id="fav-qty-{{ product.id }}">0</span><small class="text-muted">шт.</small></span>
+                                    <button class="btn-quantity" onclick="updateCartQuantityFromFavorites({{ product.id }}, 1)"><i class="fas fa-plus"></i></button>
+                                </div>
+                                {% endif %}
+                            {% endwith %}
+                        {% else %}
+                            <a href="{% url 'login' %}" class="btn-add-cart">
+                                <i class="fas fa-sign-in-alt"></i> Войти
+                            </a>
+                        {% endif %}
+
+                        <a href="{% url 'product_detail' product.id %}" class="btn-secondary" title="Подробнее"><i class="fas fa-eye"></i></a>
+                        <button class="btn-remove-favorite" onclick="removeFavorite({{ product.id }})" title="Удалить из избранного">
+                            <i class="fas fa-heart-broken"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endwith %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-favorites">
+            <i class="fas fa-heart"></i>
+            <h3>Пока нет избранных товаров</h3>
+            <p>Добавляйте товары в избранное, нажимая на сердечко ❤️</p>
+            <a href="{% url 'product_list' %}" class="btn btn-zhevzhik-pink btn-lg">
+                <i class="fas fa-shopping-bag me-2"></i>Перейти к каталогу
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function removeFavorite(productId) {
+    fetch(`/remove-from-favorites/${productId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCSRFToken(),
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'removed') {
+            const card = document.getElementById(`favorite-card-${productId}`);
+            if (card) card.remove();
+            showToast(data.message || 'Товар удалён из избранного', 'success');
+            if (!document.querySelectorAll('.product-card').length) {
+                location.reload();
+            }
+        } else {
+            showToast(data.message || 'Не удалось удалить товар из избранного', 'error');
+        }
+    })
+    .catch(() => showToast('Ошибка при удалении из избранного', 'error'));
+}
+
+function addToCartFromFavorites(productId) {
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', getCSRFToken());
+    fetch(`/add-to-cart/${productId}/`, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        },
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const addBtn = document.getElementById(`fav-add-btn-${productId}`);
+            const control = document.getElementById(`fav-cart-control-${productId}`);
+            const qtyEl = document.getElementById(`fav-qty-${productId}`);
+            if (addBtn && control && qtyEl) {
+                addBtn.style.display = 'none';
+                control.style.display = 'flex';
+                qtyEl.textContent = data.quantity || 1;
+            }
+            updateCartCounter();
+            showToast('Товар добавлен в корзину', 'success');
+        } else {
+            showToast(data.message || 'Ошибка при добавлении в корзину', 'error');
+        }
+    })
+    .catch(() => showToast('Ошибка при добавлении в корзину', 'error'));
+}
+
+function updateCartQuantityFromFavorites(productId, delta) {
+    fetch(`/get-cart-id/${productId}/`).then(r => r.json()).then(data => {
+        if (!data.success) {
+            if (delta > 0) {
+                addToCartFromFavorites(productId);
+            }
+            return;
+        }
+        const cartId = data.cart_id;
+        const qtyEl = document.getElementById(`fav-qty-${productId}`);
+        const currentQty = parseInt(qtyEl?.textContent || '0', 10) || 0;
+        const newQty = Math.max(0, currentQty + delta);
+
+        if (newQty === 0) {
+            fetch(`/remove-from-cart/${cartId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCSRFToken(),
+                    'Content-Type': 'application/json'
+                }
+            }).then(r => r.json()).then(res => {
+                if (res.success) {
+                    document.getElementById(`fav-cart-control-${productId}`).style.display = 'none';
+                    document.getElementById(`fav-add-btn-${productId}`).style.display = 'inline-flex';
+                    updateCartCounter();
+                }
+            });
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('quantity', newQty);
+        fetch(`/update-cart-quantity/${cartId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCSRFToken(),
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
+            body: formData
+        }).then(r => r.json()).then(res => {
+            if (res.success && qtyEl) {
+                qtyEl.textContent = res.quantity || newQty;
+                updateCartCounter();
+            }
+        });
+    });
+}
+
+function getCSRFToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]').value;
+}
+
+function updateCartCounter() {
+    fetch('/cart-count/').then(r => r.json()).then(data => {
+        const counter = document.getElementById('cart-counter');
+        if (counter) {
+            counter.textContent = data.count;
+            counter.style.display = data.count > 0 ? 'inline' : 'none';
+        }
+    });
+}
+
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} border-0`;
+    toast.setAttribute('role', 'alert');
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+                ${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'toast-container position-fixed top-0 end-0 p-3';
+        container.style.zIndex = '9999';
+        document.body.appendChild(container);
+    }
+    container.appendChild(toast);
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+    toast.addEventListener('hidden.bs.toast', () => toast.remove());
+}
+</script>
+{% endblock %}

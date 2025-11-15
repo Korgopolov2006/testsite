@@ -1,0 +1,282 @@
+{% extends 'paint_shop_project/base.html' %}
+{% load static %}
+
+{% block title %}Регистрация по телефону - Жевжик{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --zhevzhik-pink: #FF6B9D;
+        --zhevzhik-dark-pink: #E91E63;
+        --zhevzhik-light-pink: #FFB3D1;
+        --zhevzhik-green: #4CAF50;
+        --zhevzhik-yellow: #FFEB3B;
+        --zhevzhik-gray: #6c757d;
+        --zhevzhik-dark-gray: #2c3e50;
+    }
+    
+    .phone-registration-container {
+        min-height: calc(100vh - 200px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, var(--zhevzhik-light-pink), #fff);
+        padding: 40px 20px;
+        margin: 0;
+        width: 100%;
+    }
+    
+    .phone-registration-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(255, 107, 157, 0.1);
+        padding: 40px;
+        max-width: 450px;
+        width: 100%;
+        margin: 20px;
+    }
+    
+    .phone-registration-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    
+    .phone-registration-title {
+        color: var(--zhevzhik-pink);
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+    
+    .phone-registration-subtitle {
+        color: var(--zhevzhik-gray);
+        font-size: 1.1rem;
+    }
+    
+    .form-group {
+        margin-bottom: 25px;
+    }
+    
+    .form-label {
+        color: var(--zhevzhik-dark-gray);
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: block;
+    }
+    
+    .form-control {
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 15px 20px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: var(--zhevzhik-pink);
+        box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.1);
+        outline: none;
+    }
+    
+    .btn-phone-registration {
+        background: linear-gradient(135deg, var(--zhevzhik-pink), var(--zhevzhik-dark-pink));
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 15px 30px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        width: 100%;
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+    }
+    
+    .btn-phone-registration:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(255, 107, 157, 0.3);
+        color: white;
+    }
+    
+    .registration-options {
+        text-align: center;
+        margin-top: 30px;
+    }
+    
+    .registration-options a {
+        color: var(--zhevzhik-pink);
+        text-decoration: none;
+        font-weight: 600;
+        margin: 0 15px;
+        transition: color 0.3s ease;
+    }
+    
+    .registration-options a:hover {
+        color: var(--zhevzhik-dark-pink);
+    }
+    
+    .phone-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, var(--zhevzhik-pink), var(--zhevzhik-dark-pink));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        color: white;
+        font-size: 2rem;
+    }
+    
+    .benefits {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 20px;
+        margin-top: 30px;
+    }
+    
+    .benefit-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+        color: var(--zhevzhik-dark-gray);
+    }
+    
+    .benefit-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .benefit-icon {
+        color: var(--zhevzhik-green);
+        margin-right: 10px;
+        font-size: 1.2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="phone-registration-container">
+    <div class="phone-registration-card">
+        <div class="phone-registration-header">
+            <div class="phone-icon">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <h1 class="phone-registration-title">Регистрация по телефону</h1>
+            <p class="phone-registration-subtitle">Быстро и безопасно через SMS-код</p>
+        </div>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="{{ form.phone.id_for_label }}" class="form-label">
+                    <i class="fas fa-phone me-2"></i>Номер телефона
+                </label>
+                {{ form.phone }}
+                {% if form.phone.errors %}
+                    <div class="text-danger mt-2">
+                        {% for error in form.phone.errors %}
+                            <small>{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <button type="submit" class="btn btn-phone-registration">
+                <i class="fas fa-paper-plane me-2"></i>Получить SMS-код
+            </button>
+        </form>
+        
+        <div class="benefits">
+            <h6 class="fw-bold mb-3 text-center">Преимущества регистрации по телефону:</h6>
+            <div class="benefit-item">
+                <i class="fas fa-shield-alt benefit-icon"></i>
+                <span>Максимальная безопасность</span>
+            </div>
+            <div class="benefit-item">
+                <i class="fas fa-gift benefit-icon"></i>
+                <span>Скидка 500 ₽ на первый заказ</span>
+            </div>
+            <div class="benefit-item">
+                <i class="fas fa-mobile-alt benefit-icon"></i>
+                <span>Быстрая регистрация</span>
+            </div>
+        </div>
+        
+        <div class="registration-options">
+            <a href="{% url 'phone_login' %}">Уже есть аккаунт? Войти</a>
+            <a href="{% url 'register' %}">Обычная регистрация</a>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const phoneInput = document.getElementById('reg-phone-input');
+    
+    if (phoneInput) {
+        // Маска ввода телефона: +7 (999) 123-45-67
+        phoneInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, ''); // Удаляем все нецифровые символы
+            
+            // Если начинается не с 7 или 8, добавляем 7
+            if (value.length > 0 && value[0] === '8') {
+                value = '7' + value.slice(1);
+            } else if (value.length > 0 && value[0] !== '7') {
+                value = '7' + value;
+            }
+            
+            // Ограничиваем до 11 цифр (7 + 10)
+            if (value.length > 11) {
+                value = value.slice(0, 11);
+            }
+            
+            // Форматируем номер
+            let formatted = '';
+            if (value.length > 0) {
+                formatted = '+7';
+                if (value.length > 1) {
+                    formatted += ' (' + value.slice(1, 4);
+                }
+                if (value.length >= 4) {
+                    formatted += ') ' + value.slice(4, 7);
+                }
+                if (value.length >= 7) {
+                    formatted += '-' + value.slice(7, 9);
+                }
+                if (value.length >= 9) {
+                    formatted += '-' + value.slice(9, 11);
+                }
+            }
+            
+            e.target.value = formatted;
+        });
+        
+        // При фокусе устанавливаем курсор в конец
+        phoneInput.addEventListener('focus', function() {
+            if (!this.value) {
+                this.value = '+7 ';
+            }
+            setTimeout(() => {
+                this.setSelectionRange(this.value.length, this.value.length);
+            }, 0);
+        });
+    }
+});
+</script>
+{% endblock %}
+
+
+
+
+
+
+
+

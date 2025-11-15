@@ -1,0 +1,641 @@
+{% extends 'paint_shop_project/base.html' %}
+{% load static %}
+{% load math_filters %}
+
+{% block title %}Корзина - Жевжик{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Стили для корзины */
+:root {
+    --primary-color: #ff6b9d;
+    --primary-dark: #e55a8a;
+    --primary-light: #ffb3d1;
+    --secondary-color: #ffd700;
+    --accent-color: #ff4757;
+    --success-color: #2ed573;
+    --warning-color: #ffa502;
+    --info-color: #3742fa;
+    --light-gray: #f8f9fa;
+    --medium-gray: #6c757d;
+    --dark-gray: #2c3e50;
+    --white: #ffffff;
+    --shadow: 0 2px 10px rgba(0,0,0,0.1);
+    --shadow-hover: 0 4px 20px rgba(0,0,0,0.15);
+    --border-radius: 12px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.cart-header {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: var(--white);
+    padding: 40px 0;
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.cart-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+.cart-subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+.cart-item {
+    background: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    padding: 24px;
+    margin-bottom: 20px;
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.cart-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+}
+
+.cart-item-content {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.cart-item-thumb {
+    flex: 0 0 80px;
+}
+
+.cart-item-thumb img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 10px;
+    background: var(--light-gray);
+}
+
+.cart-item-thumb-placeholder {
+    width: 80px;
+    height: 80px;
+    border-radius: 10px;
+    background: var(--light-gray);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--medium-gray);
+    font-size: 1.5rem;
+}
+
+.cart-item-info {
+    flex: 1;
+    min-width: 200px;
+}
+
+.cart-item-info h5 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--dark-gray);
+    margin-bottom: 6px;
+}
+
+.cart-item-info .product-meta {
+    color: var(--medium-gray);
+    font-size: 0.9rem;
+}
+
+.cart-item-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.quantity-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--light-gray);
+    border-radius: 12px;
+    padding: 6px 10px;
+}
+
+.qty-btn {
+    background: transparent;
+    border: none;
+    color: var(--primary-color);
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+.qty-btn:hover {
+    background: rgba(255, 107, 157, 0.12);
+    color: var(--primary-dark);
+}
+
+.qty-input {
+    width: 60px;
+    text-align: center;
+    border: none;
+    background: transparent;
+    font-weight: 600;
+    color: var(--dark-gray);
+    font-size: 1rem;
+}
+
+.qty-input:focus {
+    outline: none;
+}
+
+.cart-item-total {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-left: auto;
+}
+
+.remove-btn {
+    background: rgba(255, 71, 87, 0.12);
+    color: var(--accent-color);
+    border: none;
+    padding: 8px 14px;
+    border-radius: 10px;
+    transition: var(--transition);
+    font-weight: 600;
+}
+
+.remove-btn:hover {
+    background: var(--accent-color);
+    color: #ffffff;
+}
+
+.cart-summary {
+    background: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    padding: 32px;
+    position: sticky;
+    top: 20px;
+}
+
+.summary-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--dark-gray);
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--light-gray);
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding: 8px 0;
+}
+
+.summary-label {
+    color: var(--medium-gray);
+    font-weight: 500;
+}
+
+.summary-value {
+    color: var(--dark-gray);
+    font-weight: 600;
+}
+
+.summary-total {
+    border-top: 2px solid var(--light-gray);
+    padding-top: 16px;
+    margin-top: 16px;
+}
+
+.summary-total .summary-label {
+    font-size: 1.2rem;
+    color: var(--dark-gray);
+}
+
+.summary-total .summary-value {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.checkout-btn {
+    background: var(--primary-color);
+    color: var(--white);
+    border: none;
+    padding: 16px 32px;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    font-size: 1.1rem;
+    width: 100%;
+    transition: var(--transition);
+    margin-top: 24px;
+}
+
+.checkout-btn:hover {
+    background: var(--primary-dark);
+    color: var(--white);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+}
+
+.empty-cart {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--medium-gray);
+}
+
+.empty-cart i {
+    font-size: 4rem;
+    color: var(--primary-light);
+    margin-bottom: 20px;
+}
+
+.empty-cart h3 {
+    color: var(--dark-gray);
+    margin-bottom: 16px;
+}
+
+.continue-shopping {
+    background: var(--light-gray);
+    border-radius: var(--border-radius);
+    padding: 24px;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .cart-title {
+        font-size: 2rem;
+    }
+    
+    .cart-item {
+        padding: 16px;
+    }
+    
+    .cart-item-image {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .cart-item-info {
+        padding-left: 12px;
+    }
+    
+    .cart-summary {
+        position: static;
+        margin-top: 30px;
+    }
+    
+    .cart-item-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .cart-item-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Заголовок корзины -->
+<div class="cart-header">
+    <div class="container">
+        <h1 class="cart-title">🛒 Корзина покупок</h1>
+        <p class="cart-subtitle">Проверьте выбранные товары перед оформлением заказа</p>
+    </div>
+</div>
+
+<div class="container mt-4">
+    {% csrf_token %}
+    {% if cart_items %}
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="cart-items">
+                    <h3 class="mb-4">Ваша корзина</h3>
+                    {% for item in cart_items %}
+                    <div class="cart-item">
+                        <div class="cart-item-content">
+                            <div class="cart-item-thumb">
+                                {% if item.product.image %}
+                                    <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                                {% else %}
+                                    <div class="cart-item-thumb-placeholder">
+                                        <i class="fas fa-image"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="cart-item-info">
+                                <h5>{{ item.product.name }}</h5>
+                                <div class="product-meta">
+                                    {{ item.product.unit }} · {{ item.product.price }} ₽ за единицу
+                                </div>
+                            </div>
+
+                            <div class="cart-item-actions">
+                                <div class="quantity-control">
+                                    <button class="qty-btn" onclick="decreaseQuantity({{ item.id }})" aria-label="Уменьшить количество">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <input type="number" class="qty-input" id="quantity-{{ item.id }}" value="{{ item.quantity }}" min="1" max="{{ item.product.stock_quantity|default:9999 }}" oninput="onQuantityInput({{ item.id }})">
+                                    <button class="qty-btn" onclick="increaseQuantity({{ item.id }})" aria-label="Увеличить количество">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+
+                                <div class="cart-item-total" id="total-{{ item.id }}">{{ item.total_price }} ₽</div>
+                                
+                                <button class="remove-btn" onclick="removeFromCart({{ item.id }})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    <div class="continue-shopping">
+                        <a href="{% url 'product_list' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-arrow-left"></i> Продолжить покупки
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Итоги -->
+            <div class="col-lg-4">
+                <div class="cart-summary">
+                    <h3 class="summary-title">Итого</h3>
+                    
+                    <div class="summary-row">
+                        <span class="summary-label">Товары (<span id="items-count">{{ cart_items|length }}</span>)</span>
+                        <span class="summary-value" id="subtotal">{{ cart_total }} ₽</span>
+                    </div>
+                    <div class="summary-row" id="fav-discount-row" style="display: {% if favorite_discount_amount and favorite_discount_amount > 0 %}flex{% else %}none{% endif %}; justify-content: space-between;">
+                        <span class="summary-label">Скидка любимых категорий</span>
+                        <span class="summary-value text-success" id="fav-discount-value">-{% if favorite_discount_amount %}{{ favorite_discount_amount }}{% else %}0{% endif %} ₽</span>
+                    </div>
+                    <div class="summary-row" id="promo-discount-row" style="display: {% if promotion_discount and promotion_discount > 0 %}flex{% else %}none{% endif %}; justify-content: space-between;">
+                        <span class="summary-label">Скидка по акции</span>
+                        <span class="summary-value text-success" id="promo-discount-value">-{% if promotion_discount %}{{ promotion_discount }}{% else %}0{% endif %} ₽</span>
+                    </div>
+                    <div class="summary-row" id="expected-cashback-row" style="display: {% if expected_cashback and expected_cashback > 0 %}flex{% else %}none{% endif %}; justify-content: space-between;">
+                        <span class="summary-label">Кешбэк будет начислен</span>
+                        <span class="summary-value text-success" id="expected-cashback">+{{ expected_cashback|floatformat:0 }} ₽</span>
+                    </div>
+                    
+                    <div class="summary-row summary-total">
+                        <span class="summary-label">К оплате</span>
+                        <span class="summary-value" id="total">{{ cart_total }} ₽</span>
+                    </div>
+                    
+                    <a href="{% url 'checkout' %}" class="checkout-btn">
+                        <i class="fas fa-credit-card"></i> Оформить заказ
+                    </a>
+                    
+                    <div class="mt-3 text-center">
+                        <small class="text-muted">
+                            <i class="fas fa-shield-alt"></i> Безопасная оплата
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="empty-cart">
+            <i class="fas fa-shopping-cart"></i>
+            <h3>Корзина пуста</h3>
+            <p>Добавьте товары в корзину, чтобы оформить заказ</p>
+            <a href="{% url 'product_list' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-shopping-bag"></i> Перейти к каталогу
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function onQuantityInput(cartId){
+    const input = document.getElementById(`quantity-${cartId}`);
+    const max = parseInt(input.max) || 9999;
+    const min = parseInt(input.min) || 1;
+    let val = parseInt(input.value) || min;
+    if (val > max) val = max;
+    if (val < min) val = min;
+    input.value = val;
+}
+// Увеличение количества товара
+function increaseQuantity(cartId) {
+    const input = document.getElementById(`quantity-${cartId}`);
+    const max = parseInt(input.max) || 9999;
+    const currentValue = parseInt(input.value) || 1;
+    const newValue = Math.min(max, currentValue + 1);
+    input.value = newValue;
+    if (newValue >= max && currentValue + 1 > max) {
+        // попытка превысить остаток
+        showStockModal();
+        return; // не шлём запрос, т.к. уже на максимуме
+    }
+    updateQuantity(cartId, newValue);
+}
+
+// Уменьшение количества товара
+function decreaseQuantity(cartId) {
+    const input = document.getElementById(`quantity-${cartId}`);
+    const currentValue = parseInt(input.value) || 1;
+    const newValue = Math.max(1, currentValue - 1);
+    input.value = newValue;
+    updateQuantity(cartId, newValue);
+}
+
+// Обновление количества товара
+function updateQuantity(cartId, newQuantity) {
+    if (newQuantity < 1) {
+        removeFromCart(cartId);
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('quantity', newQuantity);
+    
+    fetch(`/update-cart-quantity/${cartId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Обновляем цену товара
+            document.getElementById(`total-${cartId}`).textContent = data.total_price + ' ₽';
+            // Обновляем max из ответа сервера (если вернулся)
+            const input = document.getElementById(`quantity-${cartId}`);
+            if (data.max_quantity) input.max = data.max_quantity;
+            if (data.quantity) input.value = data.quantity;
+            
+            // Пересчитываем общую сумму
+            // Если сервер вернул max и мы упёрлись в него — покажем модальное окно
+            if (data.max_quantity && data.quantity && parseInt(data.quantity) >= parseInt(data.max_quantity)) {
+                showStockModal();
+            }
+            updateCartTotals();
+            
+            showToast(data.message || 'Количество обновлено!', 'success');
+        } else {
+            showToast(data.message || 'Ошибка при обновлении количества', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Ошибка при обновлении количества', 'error');
+    });
+}
+
+// Обновление общих сумм корзины
+function updateCartTotals() {
+    // После любых изменений корзины запросим сервер для точных сумм и кешбэка
+    fetch('/cart-summary/', { headers: { 'X-Requested-With': 'XMLHttpRequest' }})
+        .then(r => r.json())
+        .then(data => {
+            const subtotalElement = document.getElementById('subtotal');
+            const totalElement = document.getElementById('total');
+            const favRow = document.getElementById('fav-discount-row');
+            const favVal = document.getElementById('fav-discount-value');
+            const promoRow = document.getElementById('promo-discount-row');
+            const promoVal = document.getElementById('promo-discount-value');
+            const cashbackRow = document.getElementById('expected-cashback-row');
+            const cashbackVal = document.getElementById('expected-cashback');
+
+            if (subtotalElement) subtotalElement.textContent = Math.round(data.subtotal) + ' ₽';
+            if (favRow && favVal) {
+                if (data.favorite_discount_amount > 0) {
+                    favRow.style.display = 'flex';
+                    favVal.textContent = '-' + Math.round(data.favorite_discount_amount) + ' ₽';
+                } else {
+                    favRow.style.display = 'none';
+                }
+            }
+            if (promoRow && promoVal) {
+                if (data.promotion_discount > 0) {
+                    promoRow.style.display = 'flex';
+                    promoVal.textContent = '-' + Math.round(data.promotion_discount) + ' ₽';
+                } else {
+                    promoRow.style.display = 'none';
+                }
+            }
+            if (totalElement) totalElement.textContent = Math.round(data.total_after_discounts) + ' ₽';
+            if (cashbackRow && cashbackVal) {
+                if (data.expected_cashback > 0) {
+                    cashbackRow.style.display = 'flex';
+                    cashbackVal.textContent = '+' + Math.round(data.expected_cashback) + ' ₽';
+                } else {
+                    cashbackRow.style.display = 'none';
+                }
+            }
+            updateCartCounter();
+        })
+        .catch(() => {
+            // Если упало — не ломаем UX
+            updateCartCounter();
+        });
+}
+
+// Удаление товара из корзины
+function removeFromCart(cartId) {
+    if (!confirm('Удалить товар из корзины?')) {
+        return;
+    }
+    
+    fetch(`/remove-from-cart/${cartId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Удаляем элемент товара из DOM
+            const cartItem = document.querySelector(`[id="total-${cartId}"]`).closest('.cart-item');
+            cartItem.remove();
+            
+            // Пересчитываем общую сумму
+            updateCartTotals();
+            
+            showToast('Товар удален из корзины', 'success');
+        } else {
+            showToast('Ошибка при удалении товара', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Ошибка при удалении товара', 'error');
+    });
+}
+
+// Показать уведомление
+function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.className = `toast position-fixed top-0 end-0 m-3`;
+    toast.innerHTML = `
+        <div class="toast-header bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} text-white">
+            <strong class="me-auto">${message}</strong>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    document.body.appendChild(toast);
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+    
+    setTimeout(() => toast.remove(), 5000);
+}
+
+// Модалка об ограничении по складу
+function showStockModal() {
+    let modal = document.getElementById('stockModal');
+    if (!modal) {
+        const html = `
+        <div class="modal fade" id="stockModal" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Недостаточно товара</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                К сожалению, на складе недостаточно товара для выбранного количества. Количество ограничено доступным остатком.
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Понятно</button>
+              </div>
+            </div>
+          </div>
+        </div>`;
+        document.body.insertAdjacentHTML('beforeend', html);
+        modal = document.getElementById('stockModal');
+    }
+    const bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
+}
+</script>
+{% endblock %}

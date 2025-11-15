@@ -1,0 +1,189 @@
+{% extends 'paint_shop_project/base.html' %}
+{% load static %}
+
+{% block title %}История просмотров - Жевжик{% endblock %}
+
+{% block extra_css %}
+<style>
+    .history-hero {
+        background: linear-gradient(135deg, var(--zhevzhik-pink), var(--zhevzhik-light-pink));
+        color: white;
+        padding: 50px 0;
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    
+    .history-item {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+    
+    .history-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .history-image {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 10px;
+        flex-shrink: 0;
+    }
+    
+    .history-content {
+        flex: 1;
+    }
+    
+    .history-name {
+        color: var(--zhevzhik-pink);
+        font-weight: 600;
+        margin-bottom: 5px;
+        font-size: 1.1rem;
+    }
+    
+    .history-price {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: var(--zhevzhik-pink);
+        margin-bottom: 10px;
+    }
+    
+    .history-date {
+        color: var(--zhevzhik-gray);
+        font-size: 0.9rem;
+    }
+    
+    .history-actions {
+        display: flex;
+        gap: 10px;
+        flex-direction: column;
+    }
+    
+    .btn-history {
+        background: var(--zhevzhik-pink);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+    }
+    
+    .btn-history:hover {
+        background: var(--zhevzhik-dark-pink);
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .empty-history {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--zhevzhik-gray);
+    }
+    
+    .empty-history i {
+        font-size: 4rem;
+        color: var(--zhevzhik-light-pink);
+        margin-bottom: 20px;
+    }
+    
+    .clear-history {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 25px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        margin-bottom: 30px;
+    }
+    
+    .clear-history:hover {
+        background: #c82333;
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Заголовок истории -->
+<div class="history-hero">
+    <div class="container">
+        <h1 class="display-4 mb-3">👁️ История просмотров</h1>
+        <p class="lead">Товары, которые вы недавно просматривали</p>
+    </div>
+</div>
+
+<div class="container">
+    {% if view_history %}
+        <div class="text-end mb-4">
+            <button class="clear-history" onclick="clearHistory()">
+                <i class="fas fa-trash me-2"></i>Очистить историю
+            </button>
+        </div>
+        
+        <div class="row">
+            {% for item in view_history %}
+            <div class="col-12">
+                <div class="history-item">
+                    {% if item.product.image %}
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="history-image">
+                    {% else %}
+                        <div class="history-image bg-zhevzhik-light-gray d-flex align-items-center justify-content-center">
+                            <i class="fas fa-image text-zhevzhik-gray"></i>
+                        </div>
+                    {% endif %}
+                    <div class="history-content">
+                        <h4 class="history-name">{{ item.product.name }}</h4>
+                        <div class="history-price">{{ item.product.price }} ₽</div>
+                        <div class="history-date">
+                            <i class="fas fa-clock me-1"></i>
+                            Просмотрено {{ item.viewed_at|date:"d.m.Y в H:i" }}
+                        </div>
+                    </div>
+                    <div class="history-actions">
+                        <a href="{% url 'product_detail' item.product.id %}" class="btn-history">
+                            <i class="fas fa-eye me-2"></i>Смотреть
+                        </a>
+                        <a href="{% url 'add_to_cart' item.product.id %}" class="btn-history">
+                            <i class="fas fa-shopping-cart me-2"></i>В корзину
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-history">
+            <i class="fas fa-eye"></i>
+            <h3>История просмотров пуста</h3>
+            <p>Начните просматривать товары, чтобы они появились здесь</p>
+            <a href="{% url 'product_list' %}" class="btn btn-zhevzhik-pink btn-lg">
+                <i class="fas fa-shopping-bag me-2"></i>Перейти к каталогу
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function clearHistory() {
+    if (confirm('Вы уверены, что хотите очистить историю просмотров?')) {
+        // Здесь можно добавить AJAX запрос для очистки истории
+        location.reload();
+    }
+}
+</script>
+{% endblock %}

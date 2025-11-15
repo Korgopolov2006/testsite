@@ -1,0 +1,143 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }} | {% trans "Администрирование Django" %}{% endblock %}
+
+{% block extrastyle %}
+<style>
+    .export-container { padding-bottom:40px; }
+    .export-header { display:flex; flex-wrap:wrap; gap:18px; align-items:center; justify-content:space-between; margin-bottom:32px; }
+    .export-card { background:#fff; border-radius:12px; padding:24px; box-shadow:0 12px 30px rgba(0,0,0,0.05); margin-bottom:24px; }
+    .export-card h3 { margin-top:0; }
+    .export-form { display:grid; gap:16px; }
+    .form-group { display:flex; flex-direction:column; gap:8px; }
+    .form-group label { font-weight:600; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="export-container">
+    <div class="export-header">
+        <div>
+            <h1>{{ title }}</h1>
+            <p class="help">{% trans "Экспорт данных в Excel для анализа" %}</p>
+        </div>
+        <a href="{% url 'admin:index' %}" class="button">← {% trans "Вернуться" %}</a>
+    </div>
+
+    <div class="export-card">
+        <h3>{% trans "Отчет по продажам" %}</h3>
+        <form method="post" class="export-form">
+            {% csrf_token %}
+            <input type="hidden" name="report_type" value="sales">
+            <div class="form-group">
+                <label>{% trans "Период (дней)" %}</label>
+                <input type="number" name="days" value="30" min="1" max="365" required>
+            </div>
+            <button type="submit" class="button default">{% trans "📊 Экспортировать в Excel" %}</button>
+        </form>
+    </div>
+
+    <div class="export-card">
+        <h3>{% trans "Отчет по заказам" %}</h3>
+        <form method="post" class="export-form">
+            {% csrf_token %}
+            <input type="hidden" name="report_type" value="orders">
+            <div class="form-group">
+                <label>{% trans "Период (дней)" %}</label>
+                <input type="number" name="days" value="30" min="1" max="365" required>
+            </div>
+            <button type="submit" class="button default">{% trans "📊 Экспортировать в Excel" %}</button>
+        </form>
+    </div>
+
+    <div class="export-card">
+        <h3>{% trans "Отчет по товарам" %}</h3>
+        <form method="post" class="export-form">
+            {% csrf_token %}
+            <input type="hidden" name="report_type" value="products">
+            <div class="form-group">
+                <label>{% trans "Период (дней)" %}</label>
+                <input type="number" name="days" value="30" min="1" max="365" required>
+            </div>
+            <button type="submit" class="button default">{% trans "📊 Экспортировать в Excel" %}</button>
+        </form>
+    </div>
+
+    <div class="export-card">
+        <h3>{% trans "Отчет по клиентам" %}</h3>
+        <form method="post" class="export-form">
+            {% csrf_token %}
+            <input type="hidden" name="report_type" value="customers">
+            <div class="form-group">
+                <label>{% trans "Период (дней)" %}</label>
+                <input type="number" name="days" value="30" min="1" max="365" required>
+            </div>
+            <button type="submit" class="button default">{% trans "📊 Экспортировать в Excel" %}</button>
+        </form>
+    </div>
+
+    <h2 style="margin-top: 40px; margin-bottom: 20px;">{% trans "📦 Отчеты по партиям товаров" %}</h2>
+
+    <div class="export-card">
+        <h3>{% trans "Партии, истекающие в период" %}</h3>
+        <form method="post" class="export-form">
+            {% csrf_token %}
+            <input type="hidden" name="report_type" value="batches_expiring">
+            <div class="form-group">
+                <label>{% trans "Дата начала" %}</label>
+                <input type="date" name="start_date" value="{{ today|date:'Y-m-d' }}" required>
+            </div>
+            <div class="form-group">
+                <label>{% trans "Дата окончания" %}</label>
+                <input type="date" name="end_date" value="{{ next_month|date:'Y-m-d' }}" required>
+            </div>
+            <button type="submit" class="button default">{% trans "📊 Экспортировать в Excel" %}</button>
+        </form>
+    </div>
+
+    <div class="export-card">
+        <h3>{% trans "История движений по партиям" %}</h3>
+        <form method="post" class="export-form">
+            {% csrf_token %}
+            <input type="hidden" name="report_type" value="batches_history">
+            <div class="form-group">
+                <label>{% trans "Дата начала" %}</label>
+                <input type="date" name="start_date" value="{{ last_month|date:'Y-m-d' }}" required>
+            </div>
+            <div class="form-group">
+                <label>{% trans "Дата окончания" %}</label>
+                <input type="date" name="end_date" value="{{ today|date:'Y-m-d' }}" required>
+            </div>
+            <button type="submit" class="button default">{% trans "📊 Экспортировать в Excel" %}</button>
+        </form>
+    </div>
+
+    <div class="export-card">
+        <h3>{% trans "Анализ потерь от просрочки" %}</h3>
+        <form method="post" class="export-form">
+            {% csrf_token %}
+            <input type="hidden" name="report_type" value="batches_losses">
+            <div class="form-group">
+                <label>{% trans "Дата начала" %}</label>
+                <input type="date" name="start_date" value="{{ last_month|date:'Y-m-d' }}" required>
+            </div>
+            <div class="form-group">
+                <label>{% trans "Дата окончания" %}</label>
+                <input type="date" name="end_date" value="{{ today|date:'Y-m-d' }}" required>
+            </div>
+            <button type="submit" class="button default">{% trans "📊 Экспортировать в Excel" %}</button>
+        </form>
+    </div>
+
+    <div class="export-card">
+        <h3>{% trans "Остатки по категориям" %}</h3>
+        <form method="post" class="export-form">
+            {% csrf_token %}
+            <input type="hidden" name="report_type" value="batches_by_category">
+            <button type="submit" class="button default">{% trans "📊 Экспортировать в Excel" %}</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

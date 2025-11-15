@@ -1,0 +1,318 @@
+{% extends 'paint_shop_project/base.html' %}
+{% load static %}
+
+{% block title %}Контакты - Жевжик{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --zhevzhik-pink: #FF6B9D;
+        --zhevzhik-dark-pink: #E91E63;
+        --zhevzhik-light-pink: #FFB3D1;
+        --zhevzhik-green: #4CAF50;
+        --zhevzhik-yellow: #FFEB3B;
+        --zhevzhik-gray: #6c757d;
+        --zhevzhik-dark-gray: #2c3e50;
+    }
+    
+    .contacts-hero {
+        background: linear-gradient(135deg, var(--zhevzhik-pink), var(--zhevzhik-light-pink));
+        color: white;
+        padding: 50px 0;
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    
+    .contact-card {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        margin-bottom: 30px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    
+    .contact-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+    
+    .contact-icon {
+        background: var(--zhevzhik-light-pink);
+        color: var(--zhevzhik-pink);
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin: 0 auto 20px;
+    }
+    
+    .contact-title {
+        color: var(--zhevzhik-pink);
+        font-weight: 600;
+        margin-bottom: 15px;
+    }
+    
+    .contact-info {
+        color: var(--zhevzhik-dark-gray);
+        margin-bottom: 20px;
+    }
+    
+    .contact-info a {
+        color: var(--zhevzhik-pink);
+        text-decoration: none;
+    }
+    
+    .contact-info a:hover {
+        color: var(--zhevzhik-dark-pink);
+    }
+    
+    .btn-contact {
+        background: linear-gradient(135deg, var(--zhevzhik-pink), var(--zhevzhik-dark-pink));
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 30px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    
+    .btn-contact:hover {
+        background: linear-gradient(135deg, var(--zhevzhik-dark-pink), var(--zhevzhik-pink));
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .btn-contact i {
+        margin-right: 8px;
+    }
+    
+    .form-section {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    
+    .form-title {
+        color: var(--zhevzhik-pink);
+        font-weight: 600;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: var(--zhevzhik-dark-gray);
+        margin-bottom: 8px;
+    }
+    
+    .form-control {
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 12px 15px;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: var(--zhevzhik-pink);
+        box-shadow: 0 0 0 0.2rem rgba(255, 105, 180, 0.25);
+    }
+    
+    .section-title {
+        color: var(--zhevzhik-pink);
+        font-weight: 600;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .section-title i {
+        margin-right: 10px;
+    }
+    
+    .social-links {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 20px;
+    }
+    
+    .social-link {
+        background: var(--zhevzhik-light-pink);
+        color: var(--zhevzhik-pink);
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+    
+    .social-link:hover {
+        background: var(--zhevzhik-pink);
+        color: white;
+        transform: translateY(-3px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Заголовок контактов -->
+<div class="contacts-hero">
+    <div class="container">
+        <h1 class="display-4 mb-3">📞 Свяжитесь с нами</h1>
+        <p class="lead">Мы всегда рады помочь и ответить на ваши вопросы!</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <!-- Контактная информация -->
+        <div class="col-lg-8">
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <h4 class="contact-title">Телефон</h4>
+                        <div class="contact-info">
+                            <p><strong>Горячая линия:</strong><br>
+                            <a href="tel:+79803600351">+7 (980) 360-03-51</a></p>
+                            <p><strong>Telegram:</strong><br>
+                            <a href="https://t.me/Kav2601">@Kav2601</a></p>
+                        </div>
+                        <a href="tel:+79803600351" class="btn-contact">
+                            <i class="fas fa-phone"></i>Позвонить
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <h4 class="contact-title">Email</h4>
+                        <div class="contact-info">
+                            <p><strong>Email:</strong><br>
+                            <a href="mailto:ower.wolf@mail.ru">ower.wolf@mail.ru</a></p>
+                            <p><strong>Telegram:</strong><br>
+                            <a href="https://t.me/Kav2601">@Kav2601</a></p>
+                        </div>
+                        <a href="mailto:ower.wolf@mail.ru" class="btn-contact">
+                            <i class="fas fa-envelope"></i>Написать
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <h4 class="contact-title">Адрес</h4>
+                        <div class="contact-info">
+                            <p><strong>Главный офис:</strong><br>
+                            Москва, Любучанский переулок, 1к3<br>
+                            БЦ "Жевжик Плаза"</p>
+                        </div>
+                        <a href="#" class="btn-contact">
+                            <i class="fas fa-map"></i>На карте
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <h4 class="contact-title">Время работы</h4>
+                        <div class="contact-info">
+                            <p><strong>Пн-Пт:</strong> 8:00 - 22:00<br>
+                            <strong>Сб-Вс:</strong> 9:00 - 21:00<br>
+                            <strong>Доставка:</strong> круглосуточно</p>
+                        </div>
+                        <a href="{% url 'stores' %}" class="btn-contact">
+                            <i class="fas fa-store"></i>Магазины
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Форма обратной связи убрана по запросу -->
+    </div>
+    
+    <!-- Социальные сети -->
+    <div class="row">
+        <div class="col-12">
+            <div class="form-section text-center">
+                <h3 class="section-title">
+                    <i class="fas fa-share-alt"></i>Мы в социальных сетях
+                </h3>
+                <p class="text-muted mb-4">Следите за новостями и акциями в наших соцсетях</p>
+                <div class="social-links">
+                    <a href="https://t.me/Kav2601" class="social-link" target="_blank">
+                        <i class="fab fa-telegram"></i>
+                    </a>
+                    <a href="mailto:ower.wolf@mail.ru" class="social-link">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Призыв к действию -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card" style="background: linear-gradient(135deg, #ffffff, var(--zhevzhik-light-pink)); color: var(--zhevzhik-dark-gray);">
+                <div class="card-body text-center py-5">
+                    <h2 class="mb-3" style="color: var(--zhevzhik-dark-gray);">🐷 Есть вопросы?</h2>
+                    <p class="lead mb-4" style="color: var(--zhevzhik-dark-gray);">Наша служба поддержки работает 24/7</p>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <a href="tel:+79803600351" class="btn-contact w-100">
+                                <i class="fas fa-phone"></i>Позвонить
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="mailto:ower.wolf@mail.ru" class="btn-contact w-100">
+                                <i class="fas fa-envelope"></i>Написать
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="{% url 'support' %}" class="btn-contact w-100">
+                                <i class="fas fa-question-circle"></i>FAQ
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

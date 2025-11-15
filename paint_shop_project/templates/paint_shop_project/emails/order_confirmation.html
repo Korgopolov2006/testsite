@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Подтверждение заказа - Жевжик</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #ff69b4, #ffb3d9); color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f8f9fa; padding: 20px; border-radius: 0 0 10px 10px; }
+        .order-info { background: white; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        .product-list { background: white; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        .footer { text-align: center; margin-top: 20px; color: #666; }
+        .logo { font-size: 24px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🐷 Жевжик</div>
+            <h2>Подтверждение заказа</h2>
+        </div>
+        
+        <div class="content">
+            <p>Здравствуйте, {{ user.first_name|default:user.username }}!</p>
+            <p>Спасибо за ваш заказ в магазине Жевжик!</p>
+            
+            <div class="order-info">
+                <h3>Информация о заказе</h3>
+                <p><strong>Номер заказа:</strong> #{{ order.id }}</p>
+                <p><strong>Дата заказа:</strong> {{ order.order_date|date:"d.m.Y H:i" }}</p>
+                <p><strong>Сумма заказа:</strong> {{ order.total_amount }} ₽</p>
+                <p><strong>Способ получения:</strong> {{ order.get_delivery_type_display }}</p>
+                
+                {% if order.delivery_address %}
+                <p><strong>Адрес доставки:</strong> {{ order.delivery_address }}</p>
+                {% endif %}
+                
+                {% if order.pickup_point %}
+                <p><strong>Точка самовывоза:</strong> {{ order.pickup_point.name }}</p>
+                <p><strong>Адрес:</strong> {{ order.pickup_point.address }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="product-list">
+                <h3>Товары в заказе</h3>
+                {% for item in order.items.all %}
+                <p>- {{ item.product.name }} x{{ item.quantity }} = {{ item.total_price }} ₽</p>
+                {% endfor %}
+            </div>
+            
+            <p>Мы свяжемся с вами в ближайшее время для подтверждения заказа.</p>
+        </div>
+        
+        <div class="footer">
+            <p>С уважением,<br>Команда Жевжик 🐷</p>
+        </div>
+    </div>
+</body>
+</html>

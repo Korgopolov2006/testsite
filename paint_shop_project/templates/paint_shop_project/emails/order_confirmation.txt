@@ -1,0 +1,27 @@
+Здравствуйте, {{ user.first_name|default:user.username }}!
+
+Спасибо за ваш заказ в магазине Жевжик!
+
+Номер заказа: #{{ order.id }}
+Дата заказа: {{ order.order_date|date:"d.m.Y H:i" }}
+Сумма заказа: {{ order.total_amount }} ₽
+Способ получения: {{ order.get_delivery_type_display }}
+
+{% if order.delivery_address %}
+Адрес доставки: {{ order.delivery_address }}
+{% endif %}
+
+{% if order.pickup_point %}
+Точка самовывоза: {{ order.pickup_point.name }}
+Адрес: {{ order.pickup_point.address }}
+{% endif %}
+
+Товары в заказе:
+{% for item in order.items.all %}
+- {{ item.product.name }} x{{ item.quantity }} = {{ item.total_price }} ₽
+{% endfor %}
+
+Мы свяжемся с вами в ближайшее время для подтверждения заказа.
+
+С уважением,
+Команда Жевжик 🐷

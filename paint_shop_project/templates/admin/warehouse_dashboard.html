@@ -1,0 +1,373 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }} | {% trans "Администрирование Django" %}{% endblock %}
+
+{% block extrastyle %}
+<style>
+    .warehouse-dashboard { padding-bottom: 40px; }
+    .dashboard-header { 
+        display: flex; 
+        flex-wrap: wrap; 
+        gap: 18px; 
+        align-items: center; 
+        justify-content: space-between; 
+        margin-bottom: 32px; 
+    }
+    .dashboard-stats { 
+        display: grid; 
+        gap: 18px; 
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+        margin-bottom: 32px; 
+    }
+    .stat-card { 
+        background: #fff; 
+        border-radius: 12px; 
+        padding: 20px; 
+        box-shadow: 0 12px 30px rgba(0,0,0,0.05); 
+        border-left: 4px solid #1a2a6c;
+    }
+    .stat-card.warning { border-left-color: #f59e0b; }
+    .stat-card.danger { border-left-color: #ef4444; }
+    .stat-card.success { border-left-color: #10b981; }
+    .stat-card .label { 
+        font-size: 12px; 
+        text-transform: uppercase; 
+        color: #6c757d; 
+        letter-spacing: .08em; 
+        margin-bottom: 8px; 
+    }
+    .stat-card .value { 
+        font-size: 32px; 
+        font-weight: 700; 
+        color: #1a2a6c; 
+        margin-bottom: 4px; 
+    }
+    .stat-card .subvalue { 
+        font-size: 14px; 
+        color: #6c757d; 
+    }
+    .dashboard-charts { 
+        display: grid; 
+        gap: 24px; 
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); 
+        margin-bottom: 32px; 
+    }
+    .chart-card { 
+        background: #fff; 
+        border-radius: 12px; 
+        padding: 24px; 
+        box-shadow: 0 12px 30px rgba(0,0,0,0.05); 
+    }
+    .chart-card h3 { margin-top: 0; margin-bottom: 20px; }
+    .chart-container { position: relative; height: 300px; }
+    .period-selector { 
+        display: flex; 
+        gap: 8px; 
+        margin-bottom: 24px;
+    }
+    .period-selector button { 
+        padding: 8px 16px; 
+        border: 1px solid #d0d7de; 
+        background: #fff; 
+        border-radius: 6px; 
+        cursor: pointer; 
+    }
+    .period-selector button.active { 
+        background: #1a2a6c; 
+        color: #fff; 
+        border-color: #1a2a6c; 
+    }
+    .category-heatmap { 
+        display: grid; 
+        gap: 12px; 
+        margin-top: 20px;
+    }
+    .category-item { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        padding: 12px; 
+        background: #f8f9fa; 
+        border-radius: 6px; 
+    }
+    .category-item .name { font-weight: 600; }
+    .category-item .badge { 
+        padding: 4px 12px; 
+        border-radius: 12px; 
+        font-size: 12px; 
+        font-weight: 600;
+    }
+    .badge.danger { background: #fee2e2; color: #991b1b; }
+    .badge.warning { background: #fef3c7; color: #92400e; }
+    .badge.success { background: #d1fae5; color: #065f46; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="warehouse-dashboard">
+    <div class="dashboard-header">
+        <div>
+            <h1>{{ title }}</h1>
+            <p class="help">{% trans "Метрики по партиям товаров, срокам годности и остаткам" %}</p>
+        </div>
+        <div>
+            <a href="{% url 'admin:index' %}" class="button">← {% trans "Вернуться" %}</a>
+            <a href="{% url 'admin:export-reports' %}" class="button default">{% trans "📊 Экспорт отчетов" %}</a>
+        </div>
+    </div>
+
+    <div class="dashboard-stats">
+        <div class="stat-card warning">
+            <div class="label">⚠️ {% trans "Истекают через 3 дня" %}</div>
+            <div class="value">{{ expiring_3_days }}</div>
+            <div class="subvalue">{% trans "партий требуют внимания" %}</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">🟡 {% trans "Истекают через 7 дней" %}</div>
+            <div class="value">{{ expiring_7_days }}</div>
+            <div class="subvalue">{% trans "партий" %}</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">📅 {% trans "Истекают через 14 дней" %}</div>
+            <div class="value">{{ expiring_14_days }}</div>
+            <div class="subvalue">{% trans "партий" %}</div>
+        </div>
+        <div class="stat-card danger">
+            <div class="label">❌ {% trans "Просрочено" %}</div>
+            <div class="value">{{ expired_count }}</div>
+            <div class="subvalue">{{ expired_quantity }} {% trans "единиц" %}</div>
+        </div>
+        <div class="stat-card warning">
+            <div class="label">📦 {% trans "Низкий остаток" %}</div>
+            <div class="value">{{ low_stock_count }}</div>
+            <div class="subvalue">{{ low_stock_quantity }} {% trans "единиц (≤10)" %}</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">📊 {% trans "Всего партий" %}</div>
+            <div class="value">{{ total_batches }}</div>
+            <div class="subvalue">{{ total_quantity }} {% trans "единиц на складе" %}</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">📉 {% trans "Списано за 30 дней" %}</div>
+            <div class="value">{{ spoiled_count }}</div>
+            <div class="subvalue">~{{ spoiled_value|floatformat:2 }} ₽</div>
+        </div>
+        <div class="stat-card success">
+            <div class="label">✅ {% trans "Средний % срока" %}</div>
+            <div class="value">{{ avg_percent|floatformat:0 }}%</div>
+            <div class="subvalue">{% trans "осталось у партий" %}</div>
+        </div>
+    </div>
+
+    <div class="period-selector">
+        <button class="active" data-period="7">{% trans "7 дней" %}</button>
+        <button data-period="30">{% trans "30 дней" %}</button>
+        <button data-period="90">{% trans "90 дней" %}</button>
+    </div>
+
+    <div class="dashboard-charts">
+        <div class="chart-card">
+            <h3>{% trans "Списания по дням" %}</h3>
+            <div class="chart-container">
+                <canvas id="spoiledChart"></canvas>
+            </div>
+        </div>
+        <div class="chart-card">
+            <h3>{% trans "Партии, истекающие по дням (30 дней)" %}</h3>
+            <div class="chart-container">
+                <canvas id="expiringChart"></canvas>
+            </div>
+        </div>
+        <div class="chart-card">
+            <h3>{% trans "Остатки по категориям" %}</h3>
+            <div class="chart-container">
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+        <div class="chart-card">
+            <h3>{% trans "Топ товаров по скорости продаж (7 дней)" %}</h3>
+            <div class="chart-container">
+                <canvas id="topProductsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="chart-card">
+        <h3>{% trans "Карта тепла по категориям" %}</h3>
+        <p class="help">{% trans "Категории с наибольшим количеством истекающих партий" %}</p>
+        <div class="category-heatmap">
+            {% for item in batches_by_category %}
+            <div class="category-item">
+                <span class="name">{{ item.product__category__name|default:"Без категории" }}</span>
+                <div>
+                    <span class="badge {% if item.expiring_soon > 5 %}danger{% elif item.expiring_soon > 2 %}warning{% else %}success{% endif %}">
+                        ⚠️ {{ item.expiring_soon }} {% trans "истекают" %}
+                    </span>
+                    <span style="margin-left: 12px; color: #6c757d;">
+                        {{ item.total_batches }} {% trans "партий" %}, {{ item.total_quantity }} {% trans "ед." %}
+                    </span>
+                </div>
+            </div>
+            {% empty %}
+            <p>{% trans "Нет данных" %}</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const periodButtons = document.querySelectorAll('.period-selector button');
+    let currentPeriod = 30;
+    
+    // График списаний
+    const spoiledCtx = document.getElementById('spoiledChart').getContext('2d');
+    let spoiledChart = null;
+    
+    // График истекающих партий
+    const expiringCtx = document.getElementById('expiringChart').getContext('2d');
+    let expiringChart = null;
+    
+    // График по категориям
+    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+    const categoryData = {
+        labels: [{% for item in batches_by_category %}'{{ item.product__category__name|default:"Без категории" }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+        datasets: [{
+            label: '{% trans "Остаток" %}',
+            data: [{% for item in batches_by_category %}{{ item.total_quantity }}{% if not forloop.last %},{% endif %}{% endfor %}],
+            backgroundColor: 'rgba(26, 42, 108, 0.6)',
+            borderColor: 'rgba(26, 42, 108, 1)',
+            borderWidth: 1
+        }]
+    };
+    new Chart(categoryCtx, {
+        type: 'bar',
+        data: categoryData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+    
+    // График топ товаров
+    const topProductsCtx = document.getElementById('topProductsChart').getContext('2d');
+    const topProductsData = {
+        labels: [{% for item in top_products %}'{{ item.product__name|truncatewords:3 }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+        datasets: [{
+            label: '{% trans "Продано единиц" %}',
+            data: [{% for item in top_products %}{{ item.total_sold }}{% if not forloop.last %},{% endif %}{% endfor %}],
+            backgroundColor: 'rgba(16, 185, 129, 0.6)',
+            borderColor: 'rgba(16, 185, 129, 1)',
+            borderWidth: 1
+        }]
+    };
+    new Chart(topProductsCtx, {
+        type: 'bar',
+        data: topProductsData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+    
+    function loadChartData(period) {
+        fetch(`{% url 'admin:warehouse-dashboard-api' %}?period=${period}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Обновляем график списаний
+                    if (spoiledChart) spoiledChart.destroy();
+                    spoiledChart = new Chart(spoiledCtx, {
+                        type: 'line',
+                        data: {
+                            labels: data.spoiled_by_day.map(item => item.day),
+                            datasets: [{
+                                label: '{% trans "Количество списаний" %}',
+                                data: data.spoiled_by_day.map(item => item.count),
+                                borderColor: 'rgba(239, 68, 68, 1)',
+                                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                                tension: 0.4
+                            }, {
+                                label: '{% trans "Списано единиц" %}',
+                                data: data.spoiled_by_day.map(item => item.quantity || 0),
+                                borderColor: 'rgba(245, 158, 11, 1)',
+                                backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                                tension: 0.4,
+                                yAxisID: 'y1'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: { beginAtZero: true },
+                                y1: { 
+                                    position: 'right',
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                    
+                    // Обновляем график истекающих партий
+                    if (expiringChart) expiringChart.destroy();
+                    expiringChart = new Chart(expiringCtx, {
+                        type: 'line',
+                        data: {
+                            labels: data.expiring_by_day.map(item => item.expiry_date),
+                            datasets: [{
+                                label: '{% trans "Количество партий" %}',
+                                data: data.expiring_by_day.map(item => item.count),
+                                borderColor: 'rgba(245, 158, 11, 1)',
+                                backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                                tension: 0.4
+                            }, {
+                                label: '{% trans "Остаток" %}',
+                                data: data.expiring_by_day.map(item => item.quantity || 0),
+                                borderColor: 'rgba(16, 185, 129, 1)',
+                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                tension: 0.4,
+                                yAxisID: 'y1'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: { beginAtZero: true },
+                                y1: { 
+                                    position: 'right',
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                }
+            })
+            .catch(error => console.error('Ошибка загрузки данных:', error));
+    }
+    
+    periodButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            periodButtons.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentPeriod = parseInt(this.dataset.period);
+            loadChartData(currentPeriod);
+        });
+    });
+    
+    // Загружаем данные при загрузке страницы
+    loadChartData(currentPeriod);
+});
+</script>
+{% endblock %}
+
+

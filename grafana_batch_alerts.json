@@ -1,0 +1,184 @@
+{
+  "alertRules": [
+    {
+      "name": "Просроченные партии товаров",
+      "description": "Алерт срабатывает, если есть просроченные партии товаров",
+      "condition": "zhevzhik_batches_expired_total > 0",
+      "severity": "critical",
+      "evaluationInterval": "1m",
+      "forDuration": "5m",
+      "annotations": {
+        "summary": "Обнаружены просроченные партии товаров",
+        "description": "Количество просроченных партий: {{ $value }}. Требуется немедленная проверка и списание."
+      },
+      "labels": {
+        "team": "warehouse",
+        "component": "product_batches"
+      }
+    },
+    {
+      "name": "Партии истекают через 3 дня",
+      "description": "Алерт срабатывает, если есть партии, которые истекают в течение 3 дней",
+      "condition": "zhevzhik_batches_expiring_in_days{days=\"3\"} > 0",
+      "severity": "warning",
+      "evaluationInterval": "1m",
+      "forDuration": "10m",
+      "annotations": {
+        "summary": "Партии товаров истекают через 3 дня",
+        "description": "Количество партий, истекающих через 3 дня: {{ $value }}. Рекомендуется проверить и принять меры."
+      },
+      "labels": {
+        "team": "warehouse",
+        "component": "product_batches"
+      }
+    },
+    {
+      "name": "Партии истекают через 7 дней",
+      "description": "Алерт срабатывает, если есть партии, которые истекают в течение 7 дней",
+      "condition": "zhevzhik_batches_expiring_in_days{days=\"7\"} > 10",
+      "severity": "info",
+      "evaluationInterval": "5m",
+      "forDuration": "30m",
+      "annotations": {
+        "summary": "Много партий истекает через неделю",
+        "description": "Количество партий, истекающих через 7 дней: {{ $value }}. Рекомендуется планирование продаж."
+      },
+      "labels": {
+        "team": "warehouse",
+        "component": "product_batches"
+      }
+    },
+    {
+      "name": "Низкий остаток в партиях",
+      "description": "Алерт срабатывает, если много партий с низким остатком (<=10 единиц)",
+      "condition": "zhevzhik_batches_low_stock_total > 20",
+      "severity": "warning",
+      "evaluationInterval": "5m",
+      "forDuration": "15m",
+      "annotations": {
+        "summary": "Много партий с низким остатком",
+        "description": "Количество партий с остатком <=10 единиц: {{ $value }}. Рекомендуется пополнение склада."
+      },
+      "labels": {
+        "team": "warehouse",
+        "component": "product_batches"
+      }
+    },
+    {
+      "name": "Критический низкий остаток в партиях",
+      "description": "Алерт срабатывает, если критически много партий с низким остатком",
+      "condition": "zhevzhik_batches_low_stock_total > 50",
+      "severity": "critical",
+      "evaluationInterval": "1m",
+      "forDuration": "5m",
+      "annotations": {
+        "summary": "Критически низкий остаток в партиях",
+        "description": "Количество партий с остатком <=10 единиц: {{ $value }}. Требуется срочное пополнение склада!"
+      },
+      "labels": {
+        "team": "warehouse",
+        "component": "product_batches"
+      }
+    }
+  ],
+  "dashboardPanels": [
+    {
+      "title": "Просроченные партии",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "zhevzhik_batches_expired_total",
+          "legendFormat": "Просрочено"
+        }
+      ],
+      "thresholds": {
+        "steps": [
+          {"value": 0, "color": "green"},
+          {"value": 1, "color": "red"}
+        ]
+      },
+      "gridPos": {"x": 0, "y": 0, "w": 6, "h": 4}
+    },
+    {
+      "title": "Партии истекают через 3 дня",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "zhevzhik_batches_expiring_in_days{days=\"3\"}",
+          "legendFormat": "Истекает через 3 дня"
+        }
+      ],
+      "thresholds": {
+        "steps": [
+          {"value": 0, "color": "green"},
+          {"value": 1, "color": "yellow"},
+          {"value": 10, "color": "red"}
+        ]
+      },
+      "gridPos": {"x": 6, "y": 0, "w": 6, "h": 4}
+    },
+    {
+      "title": "Партии истекают через 7 дней",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "zhevzhik_batches_expiring_in_days{days=\"7\"}",
+          "legendFormat": "Истекает через 7 дней"
+        }
+      ],
+      "thresholds": {
+        "steps": [
+          {"value": 0, "color": "green"},
+          {"value": 10, "color": "yellow"},
+          {"value": 50, "color": "red"}
+        ]
+      },
+      "gridPos": {"x": 12, "y": 0, "w": 6, "h": 4}
+    },
+    {
+      "title": "Партии с низким остатком",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "zhevzhik_batches_low_stock_total",
+          "legendFormat": "Низкий остаток (<=10)"
+        }
+      ],
+      "thresholds": {
+        "steps": [
+          {"value": 0, "color": "green"},
+          {"value": 20, "color": "yellow"},
+          {"value": 50, "color": "red"}
+        ]
+      },
+      "gridPos": {"x": 0, "y": 4, "w": 6, "h": 4}
+    },
+    {
+      "title": "График просроченных партий",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "zhevzhik_batches_expired_total",
+          "legendFormat": "Просрочено"
+        }
+      ],
+      "gridPos": {"x": 0, "y": 8, "w": 12, "h": 8}
+    },
+    {
+      "title": "График истекающих партий",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "zhevzhik_batches_expiring_in_days{days=\"3\"}",
+          "legendFormat": "Истекает через 3 дня"
+        },
+        {
+          "expr": "zhevzhik_batches_expiring_in_days{days=\"7\"}",
+          "legendFormat": "Истекает через 7 дней"
+        }
+      ],
+      "gridPos": {"x": 12, "y": 8, "w": 12, "h": 8}
+    }
+  ]
+}
+
