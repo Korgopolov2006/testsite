@@ -8,8 +8,8 @@ django.setup()
 from django.core.management import call_command
 
 try:
-    print("Loading data from data.json...")
-    call_command('loaddata', 'data.json')
+    print("Loading data from data_utf8.json...")
+    call_command('loaddata', 'data_utf8.json')
     print("✅ Data loaded successfully!")
 except Exception as e:
     print(f"❌ Error loading data: {e}")
