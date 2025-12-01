@@ -24,19 +24,21 @@
     }
     
     .cashback-card {
-        background: white;
+        background: var(--card-bg, white);
         border-radius: 15px;
         box-shadow: 0 5px 20px rgba(0,0,0,0.1);
         padding: 30px;
         margin-bottom: 30px;
+        color: var(--text-color, var(--zhevzhik-dark-gray));
     }
     
     .transaction-item {
-        background: #f8f9fa;
+        background: var(--light-gray, #f8f9fa);
         border-radius: 10px;
         padding: 20px;
         margin-bottom: 15px;
         border-left: 4px solid var(--zhevzhik-green);
+        color: var(--text-color, var(--zhevzhik-dark-gray));
     }
     
     .transaction-item.earned {
@@ -78,7 +80,7 @@
     .empty-state {
         text-align: center;
         padding: 60px 20px;
-        color: var(--zhevzhik-gray);
+        color: var(--text-color, var(--zhevzhik-gray));
     }
     
     .empty-state i {

@@ -221,6 +221,11 @@ class Product(models.Model):
             return 'expires_week'
         else:
             return 'fresh'
+    
+    @property
+    def is_available(self):
+        """Проверяет, доступен ли товар для покупки (есть ли на складе)"""
+        return self.stock_quantity > 0
 
 
 # ==================== ПАРТИИ ТОВАРОВ ====================
@@ -264,6 +269,8 @@ class ProductBatch(models.Model):
     @property
     def days_until_expiry(self):
         """Возвращает количество дней до истечения срока годности"""
+        if not self.expiry_date:
+            return None
         delta = self.expiry_date - timezone.now().date()
         return delta.days
     
@@ -543,6 +550,18 @@ class Order(models.Model):
     favorite_discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Скидка любимых категорий")
     promotion_discount = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Скидка по акции")
     delivery_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Стоимость доставки")
+    cashback_used = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+        verbose_name="Списанный кешбэк"
+    )
+    amount_due = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+        verbose_name="Сумма к оплате"
+    )
     
     # Поля отслеживания доставки
     tracking_number = models.CharField(max_length=50, blank=True, verbose_name="Номер отслеживания")
@@ -824,6 +843,16 @@ class PromoCode(models.Model):
     
     def __str__(self):
         return self.code
+    
+    def is_valid(self):
+        """Проверяет, действителен ли промокод в данный момент"""
+        from django.utils import timezone
+        now = timezone.now()
+        return (
+            self.is_active and
+            self.start_date <= now <= self.end_date and
+            self.used_count < self.max_uses
+        )
 
 
 class PromoRule(models.Model):
@@ -1133,10 +1162,29 @@ class Favorite(models.Model):
 
 class FavoriteCategory(models.Model):
     """Любимые категории пользователя"""
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorite_categories', verbose_name="Пользователь")
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='favorited_by', verbose_name="Категория")
-    cashback_multiplier = models.DecimalField(max_digits=3, decimal_places=2, default=2.0, verbose_name="Множитель кешбэка")
-    discount_percent = models.PositiveIntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(50)], verbose_name="Скидка (%)")
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='favorite_categories',
+        verbose_name="Пользователь",
+    )
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.CASCADE,
+        related_name='favorited_by',
+        verbose_name="Категория",
+    )
+    cashback_multiplier = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        default=2.0,
+        verbose_name="Множитель кешбэка",
+    )
+    discount_percent = models.PositiveIntegerField(
+        default=10,
+        validators=[MinValueValidator(0), MaxValueValidator(50)],
+        verbose_name="Скидка (%)",
+    )
     is_active = models.BooleanField(default=True, verbose_name="Активна")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата добавления")
     

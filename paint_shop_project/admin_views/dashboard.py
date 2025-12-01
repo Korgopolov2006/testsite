@@ -81,7 +81,7 @@ class DashboardView(TemplateView):
             output_field=DecimalField(max_digits=16, decimal_places=2)
         )
         
-        top_products = (
+        top_products = list(
             OrderItem.objects.filter(order__status='delivered')
             .values('product__name', 'product__id')
             .annotate(
@@ -100,7 +100,7 @@ class DashboardView(TemplateView):
         )
         
         # Данные для графиков (последние 30 дней)
-        daily_data = (
+        daily_data = list(
             delivered_orders.filter(order_date__gte=last_30_days)
             .annotate(day=TruncDay('order_date'))
             .values('day')
@@ -124,7 +124,7 @@ class DashboardView(TemplateView):
             'avg_order_value': avg_order_value,
             'top_products': top_products,
             'orders_by_status': orders_by_status,
-            'daily_data': list(daily_data),
+            'daily_data': daily_data,
         })
         
         return context
@@ -221,4 +221,3 @@ def dashboard_api(request):
     }
     
     return JsonResponse(response_data)
-

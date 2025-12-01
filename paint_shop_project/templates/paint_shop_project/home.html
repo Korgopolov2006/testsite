@@ -307,7 +307,7 @@
 .section-title {
     font-size: 2rem;
     font-weight: 700;
-    color: var(--dark-gray);
+    color: var(--text-color, var(--dark-gray));
     margin-bottom: 16px;
 }
 
@@ -327,7 +327,7 @@
 }
 
 .product-card {
-    background: var(--white);
+    background: var(--card-bg, var(--white));
     border-radius: var(--border-radius);
     box-shadow: var(--shadow);
     overflow: hidden;
@@ -335,11 +335,47 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    color: var(--text-color, var(--dark-gray));
 }
 
 .product-card:hover {
     transform: translateY(-4px);
     box-shadow: var(--shadow-hover);
+}
+
+/* Стили для закончившихся товаров */
+.product-card.out-of-stock {
+    opacity: 0.5;
+    filter: grayscale(0.7);
+    pointer-events: none;
+}
+
+.product-card.out-of-stock:hover {
+    transform: none;
+    box-shadow: var(--shadow);
+}
+
+.product-card.out-of-stock .product-image {
+    opacity: 0.6;
+}
+
+.product-card.out-of-stock .product-content {
+    opacity: 0.7;
+}
+
+.out-of-stock-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(220, 53, 69, 0.95);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    z-index: 10;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .product-image {
@@ -371,7 +407,7 @@
 .product-name {
     font-size: 1.1rem;
     font-weight: 600;
-    color: var(--dark-gray);
+    color: var(--text-color, var(--dark-gray));
     margin-bottom: 8px;
     line-height: 1.4;
 }
@@ -485,14 +521,14 @@
 }
 
 .category-card {
-    background: var(--white);
+    background: var(--card-bg, var(--white));
     border-radius: var(--border-radius);
     padding: 32px 24px;
     text-align: center;
     box-shadow: var(--shadow);
     transition: var(--transition);
     text-decoration: none;
-    color: inherit;
+    color: var(--text-color, inherit);
 }
 
 .category-card:hover {
@@ -517,7 +553,7 @@
 .category-name {
     font-size: 1.1rem;
     font-weight: 600;
-    color: var(--dark-gray);
+    color: var(--text-color, var(--dark-gray));
     margin-bottom: 8px;
 }
 
@@ -539,12 +575,13 @@
 }
 
 .program-card {
-    background: var(--white);
+    background: var(--card-bg, var(--white));
     border-radius: var(--border-radius);
     padding: 32px;
     text-align: center;
     box-shadow: var(--shadow);
     transition: var(--transition);
+    color: var(--text-color, var(--dark-gray));
 }
 
 .program-card:hover {
@@ -571,7 +608,7 @@
 .program-title {
     font-size: 1.25rem;
     font-weight: 600;
-    color: var(--dark-gray);
+    color: var(--text-color, var(--dark-gray));
     margin-bottom: 12px;
 }
 
@@ -681,12 +718,18 @@
 
         <div class="products-grid">
             {% for product in featured_products %}
-            <div class="product-card">
+            <div class="product-card {% if not product.is_available %}out-of-stock{% endif %}">
                 {% if product.image %}
                     <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
                 {% else %}
                     <div class="product-image d-flex align-items-center justify-content-center">
                         <i class="fas fa-image fa-3x text-muted"></i>
+                    </div>
+                {% endif %}
+                
+                {% if not product.is_available %}
+                    <div class="out-of-stock-badge">
+                        <i class="fas fa-times-circle"></i> Нет в наличии
                     </div>
                 {% endif %}
                 
@@ -704,7 +747,12 @@
                     </div>
                     
                     <div class="product-actions">
-                        {% if user.is_authenticated %}
+                        {% if not product.is_available %}
+                            <!-- Товар закончился - показываем неактивную кнопку -->
+                            <button class="btn-add-cart" disabled style="opacity: 0.5; cursor: not-allowed;">
+                                <i class="fas fa-ban"></i> Нет в наличии
+                            </button>
+                        {% elif user.is_authenticated %}
                             {% if product_id_to_qty %}
                                 {% with qty=product_id_to_qty|get_item:product.id|default:0 %}
                                     {% if qty %}
@@ -792,12 +840,12 @@
 </section>
 
 <!-- Преимущества как у Пятёрочки -->
-<section class="section py-5" style="background: #f8f9fa;">
+<section class="section py-5" style="background: var(--bg-color, #f8f9fa);">
     <div class="container">
         <div class="row">
             <div class="col-12 text-center mb-5">
-                <h2 class="display-5 fw-bold text-dark">Почему выбирают Жевжик?</h2>
-                <p class="lead text-muted">Мы заботимся о каждом клиенте</p>
+                <h2 class="display-5 fw-bold" style="color: var(--text-color, var(--dark-gray));">Почему выбирают Жевжик?</h2>
+                <p class="lead" style="color: var(--text-color, var(--medium-gray));">Мы заботимся о каждом клиенте</p>
             </div>
         </div>
         <div class="row g-4">
@@ -806,8 +854,8 @@
                     <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
                         <i class="fas fa-truck fa-2x"></i>
                     </div>
-                    <h5 class="fw-bold">Быстрая доставка</h5>
-                    <p class="text-muted small">Доставляем за 30 минут в радиусе 5 км</p>
+                    <h5 class="fw-bold" style="color: var(--text-color, var(--dark-gray));">Быстрая доставка</h5>
+                    <p class="small" style="color: var(--text-color, var(--medium-gray));">Доставляем за 30 минут в радиусе 5 км</p>
                 </div>
             </div>
             <div class="col-md-3 col-sm-6">
@@ -815,8 +863,8 @@
                     <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
                         <i class="fas fa-leaf fa-2x"></i>
                     </div>
-                    <h5 class="fw-bold">Свежие продукты</h5>
-                    <p class="text-muted small">Ежедневно свежие поставки от проверенных фермеров</p>
+                    <h5 class="fw-bold" style="color: var(--text-color, var(--dark-gray));">Свежие продукты</h5>
+                    <p class="small" style="color: var(--text-color, var(--medium-gray));">Ежедневно свежие поставки от проверенных фермеров</p>
                 </div>
             </div>
             <div class="col-md-3 col-sm-6">
@@ -824,8 +872,8 @@
                     <div class="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
                         <i class="fas fa-ruble-sign fa-2x"></i>
                     </div>
-                    <h5 class="fw-bold">Низкие цены</h5>
-                    <p class="text-muted small">Прямые поставки без посредников</p>
+                    <h5 class="fw-bold" style="color: var(--text-color, var(--dark-gray));">Низкие цены</h5>
+                    <p class="small" style="color: var(--text-color, var(--medium-gray));">Прямые поставки без посредников</p>
                 </div>
             </div>
             <div class="col-md-3 col-sm-6">
@@ -833,8 +881,8 @@
                     <div class="bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
                         <i class="fas fa-heart fa-2x"></i>
                     </div>
-                    <h5 class="fw-bold">Забота о клиентах</h5>
-                    <p class="text-muted small">Скидки для пенсионеров и многодетных семей</p>
+                    <h5 class="fw-bold" style="color: var(--text-color, var(--dark-gray));">Забота о клиентах</h5>
+                    <p class="small" style="color: var(--text-color, var(--medium-gray));">Скидки для пенсионеров и многодетных семей</p>
                 </div>
             </div>
         </div>
@@ -854,37 +902,37 @@
         </div>
         <div class="row g-4">
             <div class="col-md-4">
-                <div class="card border-0 shadow-lg h-100">
-                    <div class="card-body text-center p-4">
+                <div class="card border-0 shadow-lg h-100" style="background: var(--card-bg, white);">
+                    <div class="card-body text-center p-4" style="color: var(--text-color, var(--dark-gray));">
                         <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
                             <i class="fas fa-seedling fa-2x"></i>
                         </div>
                         <h5 class="fw-bold text-success">Органические овощи</h5>
-                        <p class="text-muted">Свежие овощи с местных ферм без химикатов</p>
+                        <p style="color: var(--text-color, var(--medium-gray));">Свежие овощи с местных ферм без химикатов</p>
                         <span class="badge bg-success">Новинка</span>
                     </div>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card border-0 shadow-lg h-100">
-                    <div class="card-body text-center p-4">
+                <div class="card border-0 shadow-lg h-100" style="background: var(--card-bg, white);">
+                    <div class="card-body text-center p-4" style="color: var(--text-color, var(--dark-gray));">
                         <div class="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
                             <i class="fas fa-bread-slice fa-2x"></i>
                         </div>
                         <h5 class="fw-bold text-warning">Домашняя выпечка</h5>
-                        <p class="text-muted">Свежий хлеб и выпечка собственного производства</p>
+                        <p style="color: var(--text-color, var(--medium-gray));">Свежий хлеб и выпечка собственного производства</p>
                         <span class="badge bg-warning">Хит</span>
                     </div>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card border-0 shadow-lg h-100">
-                    <div class="card-body text-center p-4">
+                <div class="card border-0 shadow-lg h-100" style="background: var(--card-bg, white);">
+                    <div class="card-body text-center p-4" style="color: var(--text-color, var(--dark-gray));">
                         <div class="bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
                             <i class="fas fa-fish fa-2x"></i>
                         </div>
                         <h5 class="fw-bold text-info">Свежая рыба</h5>
-                        <p class="text-muted">Морская и речная рыба, доставленная утром</p>
+                        <p style="color: var(--text-color, var(--medium-gray));">Морская и речная рыба, доставленная утром</p>
                         <span class="badge bg-info">Свежее</span>
                     </div>
                 </div>
@@ -1070,6 +1118,97 @@ function updateCartQuantityFromHome(productId, delta){
         .then(r=>r.json()).then(res=>{
             if(res.success){ qtySpan.textContent = res.quantity || newQty; updateCartCounter(); }
         });
+    });
+}
+
+// Модальное окно после оформления заказа
+document.addEventListener('DOMContentLoaded', function() {
+    const serverOrderData = {{ recent_order_json|default:"null"|safe }};
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = urlParams.get('order_id');
+    
+    if (orderId) {
+        if (serverOrderData && serverOrderData.id === parseInt(orderId, 10)) {
+            showOrderSuccessModal(serverOrderData);
+            const newUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, newUrl);
+        } else {
+            // Получаем информацию о заказе через AJAX
+            fetch(`/api/orders/${orderId}/`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    'Authorization': 'Bearer ' + (localStorage.getItem('token') || '')
+                },
+                credentials: 'same-origin'
+            })
+            .then(r => {
+                if (!r.ok) {
+                    throw new Error('Order not found');
+                }
+                return r.json();
+            })
+            .then(data => {
+                if (data && data.id) {
+                    showOrderSuccessModal(data);
+                    const newUrl = window.location.pathname;
+                    window.history.replaceState({}, document.title, newUrl);
+                } else {
+                    showOrderSuccessModal({id: orderId});
+                }
+            })
+            .catch(() => {
+                showOrderSuccessModal({id: orderId});
+            });
+        }
+    }
+});
+
+function showOrderSuccessModal(order) {
+    const modalHtml = `
+        <div class="modal fade" id="orderSuccessModal" tabindex="-1" aria-labelledby="orderSuccessModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title" id="orderSuccessModalLabel">
+                            <i class="fas fa-check-circle me-2"></i>Заказ успешно оформлен!
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-check-circle fa-4x text-success"></i>
+                        </div>
+                        <h4 class="mb-3">Спасибо за покупку!</h4>
+                        <p class="mb-2"><strong>Номер заказа:</strong> #${order.id || 'N/A'}</p>
+                        ${order.delivery_type ? `<p class="mb-2"><strong>Способ получения:</strong> ${order.delivery_type}</p>` : ''}
+                        ${order.delivery_address ? `<p class="mb-2"><strong>Адрес доставки:</strong> ${order.delivery_address}</p>` : ''}
+                        ${order.payment_method ? `<p class="mb-2"><strong>Оплата:</strong> ${order.payment_method}</p>` : ''}
+                        ${order.cashback_used && parseFloat(order.cashback_used) > 0 ? `<p class="mb-2 text-success"><strong>Списано кешбэка:</strong> ${parseFloat(order.cashback_used).toFixed(2)} ₽</p>` : ''}
+                        <p class="mb-2"><strong>Итого к оплате:</strong> ${(order.amount_due !== undefined ? parseFloat(order.amount_due) : parseFloat(order.total_amount || 0)).toFixed(2)} ₽</p>
+                        <p class="mb-3">Ваш заказ будет доставлен в ближайшее время.</p>
+                        <p class="text-muted small mb-0">С вами свяжутся по контактному номеру для подтверждения заказа.</p>
+                    </div>
+                    <div class="modal-footer justify-content-center">
+                        <a href="/order-history/" class="btn btn-success me-2">
+                            <i class="fas fa-history me-2"></i>Мои заказы
+                        </a>
+                        <button type="button" class="btn btn-outline-success" data-bs-dismiss="modal">
+                            Продолжить покупки
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    const modal = new bootstrap.Modal(document.getElementById('orderSuccessModal'));
+    modal.show();
+    
+    // Удаляем модальное окно после закрытия
+    document.getElementById('orderSuccessModal').addEventListener('hidden.bs.modal', function() {
+        this.remove();
     });
 }
 </script>

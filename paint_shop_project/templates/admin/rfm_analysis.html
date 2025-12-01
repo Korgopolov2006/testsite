@@ -9,16 +9,16 @@
     .rfm-container { padding-bottom:40px; }
     .rfm-header { display:flex; flex-wrap:wrap; gap:18px; align-items:center; justify-content:space-between; margin-bottom:32px; }
     .rfm-segments { display:grid; gap:24px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-bottom:32px; }
-    .segment-card { background:#fff; border-radius:12px; padding:20px; box-shadow:0 12px 30px rgba(0,0,0,0.05); }
-    .segment-card h3 { margin-top:0; }
+    .segment-card { background:var(--card-bg, #fff); border-radius:12px; padding:20px; box-shadow:0 12px 30px rgba(0,0,0,0.05); color:var(--text-color, #1a2a6c); }
+    .segment-card h3 { margin-top:0; color:var(--text-color, #1a2a6c); }
     .segment-stats { display:flex; gap:16px; margin-bottom:16px; }
     .segment-stat { flex:1; text-align:center; }
-    .segment-stat .value { font-size:24px; font-weight:700; color:#1a2a6c; }
-    .segment-stat .label { font-size:12px; color:#6c757d; }
+    .segment-stat .value { font-size:24px; font-weight:700; color:var(--text-color, #1a2a6c); }
+    .segment-stat .label { font-size:12px; color:var(--text-color, #6c757d); }
     .customer-list { max-height:300px; overflow-y:auto; }
-    .customer-item { padding:8px; border-bottom:1px solid #f2f2f2; display:flex; justify-content:space-between; }
+    .customer-item { padding:8px; border-bottom:1px solid var(--border-color, #f2f2f2); display:flex; justify-content:space-between; color:var(--text-color, #1a2a6c); }
     .customer-item:last-child { border-bottom:none; }
-    .rfm-score { font-family:monospace; font-weight:600; color:#1a2a6c; }
+    .rfm-score { font-family:monospace; font-weight:600; color:var(--text-color, #1a2a6c); }
 </style>
 {% endblock %}
 

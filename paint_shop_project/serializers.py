@@ -83,7 +83,7 @@ class OrderSerializer(serializers.ModelSerializer):
             'id', 'user', 'order_date', 'status', 'status_display',
             'delivery_type', 'delivery_type_display',
             'payment_method', 'payment_method_display',
-            'total_amount', 'items', 'delivery_address',
+            'total_amount', 'amount_due', 'cashback_used', 'items', 'delivery_address',
             'comment', 'tracking_number', 'estimated_delivery_time',
             'actual_delivery_time', 'courier_name', 'courier_phone',
             'favorite_discount_amount', 'promotion_discount', 'delivery_cost',

@@ -253,7 +253,11 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container mt-4" id="checkout-root"
+     data-base-total="{{ total_without_delivery|default:0 }}"
+     data-free-threshold="{{ free_delivery_threshold|default:5000 }}"
+     data-cashback-balance="{{ cashback_balance|default:0 }}"
+     data-default-address-id="{{ default_address.id|default:'' }}">
     <div class="row">
         <div class="col-12">
             <h2 class="mb-4">🐷 Оформление заказа</h2>
@@ -303,7 +307,16 @@
                                 <select class="form-select" name="address_id" id="address_id">
                                     <option value="">Новый адрес</option>
                                     {% for a in user_addresses %}
-                                        <option value="{{ a.id }}">{{ a.label|default:'Адрес' }} — {{ a.address }}</option>
+                                        <option value="{{ a.id }}" 
+                                                data-address="{{ a.address }}"
+                                                data-entrance="{{ a.entrance|default:'' }}"
+                                                data-apartment="{{ a.apartment|default:'' }}"
+                                                data-floor="{{ a.floor|default:'' }}"
+                                                data-intercom="{{ a.intercom_code|default:'' }}"
+                                                data-comment="{{ a.comment|default:'' }}"
+                                                {% if default_address and a.id == default_address.id %}selected{% endif %}>
+                                            {{ a.label|default:'Адрес' }} — {{ a.address }}
+                                        </option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -312,36 +325,27 @@
                                  <div class="col-md-8 mb-3">
                                      <label for="delivery_address" class="form-label">Адрес <span class="text-danger">*</span></label>
                                      <input type="text" class="form-control" id="delivery_address" name="delivery_address" 
-                                            placeholder="Улица, дом, корпус" value="Москва, Любучанский переулок, 1к3">
+                                           placeholder="Улица, дом, корпус" value="{{ default_address.address|default:'' }}">
                                  </div>
                                 <div class="col-md-4 mb-3">
                                     <label for="delivery_entrance" class="form-label">Подъезд</label>
                                     <input type="text" class="form-control" id="delivery_entrance" name="delivery_entrance" 
-                                           placeholder="Номер подъезда">
+                                           placeholder="Номер подъезда" value="{{ default_address.entrance|default:'' }}">
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="delivery_apartment" class="form-label">Квартира</label>
                                     <input type="text" class="form-control" id="delivery_apartment" name="delivery_apartment" 
-                                           placeholder="Номер квартиры">
+                                           placeholder="Номер квартиры" value="{{ default_address.apartment|default:'' }}">
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="delivery_floor" class="form-label">Этаж</label>
                                     <input type="text" class="form-control" id="delivery_floor" name="delivery_floor" 
-                                           placeholder="Номер этажа">
+                                           placeholder="Номер этажа" value="{{ default_address.floor|default:'' }}">
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="delivery_slot_id" class="form-label">Время доставки</label>
-                                    <select class="form-select" id="delivery_slot_id" name="delivery_slot_id">
-                                        <option value="">Выберите слот</option>
-                                        {% for s in delivery_slots %}
-                                            <option value="{{ s.id }}">{{ s.date }} {{ s.start_time }}-{{ s.end_time }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
                                 <div class="col-md-6 mb-3 d-flex align-items-end">
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" id="save_address" name="save_address">
@@ -352,7 +356,7 @@
                             <div class="mb-3">
                                 <label for="delivery_comment" class="form-label">Комментарий к доставке</label>
                                 <textarea class="form-control" id="delivery_comment" name="delivery_comment" rows="2" 
-                                          placeholder="Дополнительная информация для курьера"></textarea>
+                                          placeholder="Дополнительная информация для курьера">{{ default_address.comment|default:'' }}</textarea>
                             </div>
                         </div>
                         
@@ -531,6 +535,14 @@
                             <textarea class="form-control" id="comment" name="comment" rows="3" placeholder="Дополнительные пожелания к заказу"></textarea>
                         </div>
                         
+                        <!-- Скрытые поля для промокода и акции -->
+                        {% if applied_promo_code %}
+                        <input type="hidden" name="promo_code" value="{{ applied_promo_code.code }}">
+                        {% endif %}
+                        {% if selected_promotion_id %}
+                        <input type="hidden" name="promotion_id" value="{{ selected_promotion_id }}">
+                        {% endif %}
+                        
                         <button type="submit" class="btn btn-zhevzhik-pink btn-lg w-100" id="submit-order-btn">
                             <i class="fas fa-credit-card"></i> Оформить заказ
                         </button>
@@ -610,7 +622,12 @@
                         <span class="text-success">-{{ favorite_products_discount|floatformat:0 }} ₽</span>
                     </div>
                     {% endif %}
-                    {% if promotion_discount and promotion_discount > 0 %}
+                    {% if applied_promo_code %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Промокод "{{ applied_promo_code.code }}":</span>
+                        <span class="text-success">-{{ promotion_discount|floatformat:0 }} ₽</span>
+                    </div>
+                    {% elif promotion_discount and promotion_discount > 0 %}
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <span>Скидка по акции:</span>
                         <span class="text-success">-{{ promotion_discount|floatformat:0 }} ₽</span>
@@ -672,28 +689,39 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const checkoutRoot = document.getElementById('checkout-root');
     const deliveryType = document.querySelectorAll('input[name="delivery_type"]');
     const paymentMethod = document.querySelectorAll('input[name="payment_method"]');
     const deliveryAddress = document.getElementById('delivery-address');
     const cardDetails = document.getElementById('card-details');
     const deliveryCost = document.getElementById('delivery-cost');
     const totalCost = document.getElementById('total-cost');
-    const baseTotal = {{ total_without_delivery|default:0 }};
-    const freeDeliveryThreshold = {{ free_delivery_threshold|default:5000 }};
+    const baseTotal = parseFloat(checkoutRoot?.dataset.baseTotal || '0');
+    const freeDeliveryThreshold = parseFloat(checkoutRoot?.dataset.freeThreshold || '5000');
+    const maxCashbackBalance = parseFloat(checkoutRoot?.dataset.cashbackBalance || '0');
+    
+    // Инициализация кешбэка при загрузке страницы
+    if (typeof toggleCashback === 'function') {
+        toggleCashback();
+    }
     
     // Функция для обновления итоговой суммы
     function updateTotalAmount() {
+        console.log('[CHECKOUT] updateTotalAmount called');
         const selectedDelivery = document.querySelector('input[name="delivery_type"]:checked');
+        console.log('[CHECKOUT] Selected delivery type:', selectedDelivery?.value);
         let finalAmount = baseTotal;
         let deliveryFee = 0;
         
         if (selectedDelivery && selectedDelivery.value === 'delivery') {
             deliveryFee = baseTotal >= freeDeliveryThreshold ? 0 : 200;
             finalAmount = baseTotal + deliveryFee;
+            console.log('[CHECKOUT] Delivery selected, fee:', deliveryFee, 'baseTotal:', baseTotal, 'freeDeliveryThreshold:', freeDeliveryThreshold);
         } else {
             // Самовывоз - доставка бесплатна
             deliveryFee = 0;
             finalAmount = baseTotal;
+            console.log('[CHECKOUT] Pickup selected, no delivery fee');
         }
         
         // Обновляем отображение стоимости доставки
@@ -705,6 +733,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 deliveryCost.textContent = '0 ₽';
                 deliveryCost.className = '';
             }
+            console.log('[CHECKOUT] Delivery cost display updated:', deliveryCost.textContent);
         }
         
         // Обновляем текст в описании способа доставки
@@ -717,16 +746,21 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Учитываем кешбэк, если используется
         const useCashback = document.getElementById('use_cashback')?.checked;
+        console.log('[CHECKOUT] use_cashback checked:', useCashback);
         let cashbackAmount = 0;
         if (useCashback) {
             const cashbackInput = document.getElementById('cashback_amount');
+            console.log('[CHECKOUT] cashback_amount input exists:', !!cashbackInput, 'value:', cashbackInput?.value);
             if (cashbackInput) {
                 cashbackAmount = parseFloat(cashbackInput.value) || 0;
-                const maxCashback = parseFloat('{{ cashback_balance|default:0 }}') || 0;
+                const maxCashback = maxCashbackBalance;
+                console.log('[CHECKOUT] cashbackAmount before limit:', cashbackAmount, 'maxCashback:', maxCashback, 'finalAmount:', finalAmount);
                 cashbackAmount = Math.min(cashbackAmount, maxCashback, finalAmount);
+                console.log('[CHECKOUT] cashbackAmount after limit:', cashbackAmount);
             }
         }
         finalAmount = Math.max(0, finalAmount - cashbackAmount);
+        console.log('[CHECKOUT] Final amount after cashback:', finalAmount);
         
         // Обновляем отображение кешбэка в итогах
         const cashbackDisplay = document.getElementById('cashback-discount');
@@ -734,14 +768,17 @@ document.addEventListener('DOMContentLoaded', function() {
             if (cashbackAmount > 0) {
                 cashbackDisplay.style.display = 'flex';
                 cashbackDisplay.querySelector('span:last-child').textContent = `-${Math.round(cashbackAmount).toLocaleString('ru-RU')} ₽`;
+                console.log('[CHECKOUT] Cashback display shown:', cashbackAmount);
             } else {
                 cashbackDisplay.style.display = 'none';
+                console.log('[CHECKOUT] Cashback display hidden');
             }
         }
         
         // Обновляем итоговую сумму с форматированием
         if (totalCost) {
             totalCost.textContent = Math.round(finalAmount).toLocaleString('ru-RU') + ' ₽';
+            console.log('[CHECKOUT] Total cost updated:', totalCost.textContent);
         }
         
         // Обновляем скрытое поле total_amount
@@ -753,22 +790,38 @@ document.addEventListener('DOMContentLoaded', function() {
             document.querySelector('form').appendChild(totalAmountInput);
         }
         totalAmountInput.value = finalAmount;
+        console.log('[CHECKOUT] total_amount hidden input updated:', totalAmountInput.value);
         
         return finalAmount;
     }
     
     // Функция для переключения кешбэка
     window.toggleCashback = function() {
+        console.log('[CHECKOUT] toggleCashback called');
         const useCashback = document.getElementById('use_cashback');
         const cashbackInput = document.getElementById('cashback-amount-input');
+        console.log('[CHECKOUT] use_cashback checkbox:', useCashback?.checked, 'cashback-amount-input exists:', !!cashbackInput);
+        
         if (cashbackInput) {
-            cashbackInput.style.display = useCashback?.checked ? 'block' : 'none';
-            if (useCashback?.checked) {
+            if (useCashback && useCashback.checked) {
+                cashbackInput.style.display = 'block';
+                console.log('[CHECKOUT] cashback input displayed');
                 const cashbackAmountInput = document.getElementById('cashback_amount');
-                if (cashbackAmountInput && !cashbackAmountInput.value) {
+                if (cashbackAmountInput) {
+                    cashbackAmountInput.focus();
+                    console.log('[CHECKOUT] cashback_amount input focused');
+                }
+            } else {
+                cashbackInput.style.display = 'none';
+                // Очищаем значение при снятии чекбокса
+                const cashbackAmountInput = document.getElementById('cashback_amount');
+                if (cashbackAmountInput) {
                     cashbackAmountInput.value = '';
                 }
+                console.log('[CHECKOUT] cashback input hidden');
             }
+        } else {
+            console.error('[CHECKOUT] CASHBACK ERROR: cashback-amount-input element not found!');
         }
         updateTotalAmount();
     }
@@ -789,18 +842,42 @@ document.addEventListener('DOMContentLoaded', function() {
         const previewDiv = document.getElementById('delivery-address-preview');
         const addressFull = document.getElementById('selected-address-full');
         
-        if (!addressSelect || !previewDiv || !addressFull) return;
+        if (!previewDiv || !addressFull) return;
         
-        const selectedOption = addressSelect.options[addressSelect.selectedIndex];
-        if (selectedOption && selectedOption.value) {
-            const address = selectedOption.dataset.address || '';
-            const entrance = selectedOption.dataset.entrance || '';
-            const floor = selectedOption.dataset.floor || '';
-            const apartment = selectedOption.dataset.apartment || '';
-            const intercom = selectedOption.dataset.intercom || '';
-            const comment = selectedOption.dataset.comment || '';
+        let addressText = '';
+        let address = '';
+        let entrance = '';
+        let floor = '';
+        let apartment = '';
+        let intercom = '';
+        let comment = '';
+        
+        // Проверяем, выбран ли сохраненный адрес
+        if (addressSelect && addressSelect.value) {
+            const selectedOption = addressSelect.options[addressSelect.selectedIndex];
+            if (selectedOption) {
+                address = selectedOption.dataset.address || '';
+                entrance = selectedOption.dataset.entrance || '';
+                floor = selectedOption.dataset.floor || '';
+                apartment = selectedOption.dataset.apartment || '';
+                intercom = selectedOption.dataset.intercom || '';
+                comment = selectedOption.dataset.comment || '';
+            }
+        } else {
+            // Используем введенные вручную данные
+            const addressInput = document.getElementById('delivery_address');
+            const entranceInput = document.getElementById('delivery_entrance');
+            const floorInput = document.getElementById('delivery_floor');
+            const apartmentInput = document.getElementById('delivery_apartment');
             
-            let addressText = address;
+            if (addressInput) address = addressInput.value.trim();
+            if (entranceInput) entrance = entranceInput.value.trim();
+            if (floorInput) floor = floorInput.value.trim();
+            if (apartmentInput) apartment = apartmentInput.value.trim();
+        }
+        
+        if (address) {
+            addressText = address;
             const details = [];
             if (entrance) details.push(`Подъезд ${entrance}`);
             if (floor) details.push(`Этаж ${floor}`);
@@ -815,15 +892,6 @@ document.addEventListener('DOMContentLoaded', function() {
             
             addressFull.textContent = addressText;
             previewDiv.style.display = 'block';
-            
-            // Заполняем поля формы
-            document.getElementById('delivery_address').value = address;
-            document.getElementById('delivery_entrance').value = entrance;
-            document.getElementById('delivery_floor').value = floor;
-            document.getElementById('delivery_apartment').value = apartment;
-            if (document.getElementById('delivery_intercom')) {
-                document.getElementById('delivery_intercom').value = intercom;
-            }
         } else {
             previewDiv.style.display = 'none';
         }
@@ -832,23 +900,49 @@ document.addEventListener('DOMContentLoaded', function() {
     // Обработка способа получения
     window.toggleDelivery = function() {
         const selected = document.querySelector('input[name="delivery_type"]:checked');
+        const deliveryAddressEl = document.getElementById('delivery-address');
+        console.log('[CHECKOUT] toggleDelivery called, selected:', selected?.value, 'deliveryAddressEl:', !!deliveryAddressEl);
+        
         if (selected && selected.value === 'delivery') {
-            if (deliveryAddress) {
-                deliveryAddress.style.display = 'block';
+            console.log('[CHECKOUT] Delivery selected, showing address fields');
+            if (deliveryAddressEl) {
+                deliveryAddressEl.style.display = 'block';
                 // Делаем адрес обязательным при доставке
-                const addressInputs = deliveryAddress.querySelectorAll('input[required], select[required]');
+                const addressInputs = deliveryAddressEl.querySelectorAll('input[required], select[required]');
                 addressInputs.forEach(input => input.setAttribute('required', 'required'));
                 // Адрес доставки обязателен
                 const deliveryAddressInput = document.getElementById('delivery_address');
-                if (deliveryAddressInput) deliveryAddressInput.setAttribute('required', 'required');
+                if (deliveryAddressInput) {
+                    deliveryAddressInput.setAttribute('required', 'required');
+                    // Проверяем, заполнен ли адрес
+                    if (!deliveryAddressInput.value || !deliveryAddressInput.value.trim()) {
+                        console.error('[CHECKOUT] DELIVERY ERROR: Адрес доставки не заполнен!');
+                        const addressSelect = document.getElementById('address_id');
+                        if (!addressSelect || !addressSelect.value) {
+                            console.error('[CHECKOUT] DELIVERY ERROR: Не выбран сохраненный адрес и не введен новый адрес!');
+                        }
+                    }
+                }
+            } else {
+                console.error('[CHECKOUT] DELIVERY ERROR: deliveryAddress element not found!');
             }
             // Показываем превью адреса, если выбран
             updateAddressPreview();
+            // Обновляем превью при изменении адреса
+            const addressInputs = ['delivery_address', 'delivery_entrance', 'delivery_floor', 'delivery_apartment'];
+            addressInputs.forEach(id => {
+                const input = document.getElementById(id);
+                if (input) {
+                    input.addEventListener('input', updateAddressPreview);
+                    input.addEventListener('change', updateAddressPreview);
+                }
+            });
         } else {
-            if (deliveryAddress) {
-                deliveryAddress.style.display = 'none';
+            console.log('[CHECKOUT] Pickup selected, hiding address fields');
+            if (deliveryAddressEl) {
+                deliveryAddressEl.style.display = 'none';
                 // Убираем обязательность при самовывозе
-                const addressInputs = deliveryAddress.querySelectorAll('input[required], select[required]');
+                const addressInputs = deliveryAddressEl.querySelectorAll('input[required], select[required]');
                 addressInputs.forEach(input => input.removeAttribute('required'));
                 const deliveryAddressInput = document.getElementById('delivery_address');
                 if (deliveryAddressInput) deliveryAddressInput.removeAttribute('required');
@@ -868,14 +962,74 @@ document.addEventListener('DOMContentLoaded', function() {
     const addressSelect = document.getElementById('address_id');
     if (addressSelect) {
         addressSelect.addEventListener('change', function() {
+            console.log('[CHECKOUT] Address select changed, value:', this.value);
             const isNew = this.value === '';
-            document.getElementById('delivery_address').readOnly = !isNew;
-            document.getElementById('delivery_entrance').readOnly = !isNew;
-            document.getElementById('delivery_apartment').readOnly = !isNew;
-            document.getElementById('delivery_floor').readOnly = !isNew;
-            document.getElementById('save_address').disabled = !isNew;
+            const selectedOption = this.options[this.selectedIndex];
+            console.log('[CHECKOUT] Selected option:', selectedOption?.text, 'isNew:', isNew);
+            
+            if (!isNew && selectedOption) {
+                // Заполняем поля адреса из выбранного адреса
+                const addressInput = document.getElementById('delivery_address');
+                const entranceInput = document.getElementById('delivery_entrance');
+                const apartmentInput = document.getElementById('delivery_apartment');
+                const floorInput = document.getElementById('delivery_floor');
+                
+                const address = selectedOption.dataset.address || '';
+                const entrance = selectedOption.dataset.entrance || '';
+                const apartment = selectedOption.dataset.apartment || '';
+                const floor = selectedOption.dataset.floor || '';
+                
+                console.log('[CHECKOUT] Setting address fields:', {address, entrance, apartment, floor});
+                
+                if (addressInput) {
+                    addressInput.value = address;
+                    addressInput.readOnly = true;
+                    console.log('[CHECKOUT] delivery_address set to:', addressInput.value, 'readOnly:', addressInput.readOnly);
+                }
+                if (entranceInput) {
+                    entranceInput.value = entrance;
+                    entranceInput.readOnly = true;
+                    console.log('[CHECKOUT] delivery_entrance set to:', entranceInput.value);
+                }
+                if (apartmentInput) {
+                    apartmentInput.value = apartment;
+                    apartmentInput.readOnly = true;
+                    console.log('[CHECKOUT] delivery_apartment set to:', apartmentInput.value);
+                }
+                if (floorInput) {
+                    floorInput.value = floor;
+                    floorInput.readOnly = true;
+                    console.log('[CHECKOUT] delivery_floor set to:', floorInput.value);
+                }
+                if (document.getElementById('save_address')) document.getElementById('save_address').disabled = true;
+            } else {
+                // Разблокируем поля для нового адреса
+                console.log('[CHECKOUT] New address selected, unlocking fields');
+                const addressInput = document.getElementById('delivery_address');
+                const entranceInput = document.getElementById('delivery_entrance');
+                const apartmentInput = document.getElementById('delivery_apartment');
+                const floorInput = document.getElementById('delivery_floor');
+                
+                if (addressInput) {
+                    addressInput.readOnly = false;
+                    console.log('[CHECKOUT] delivery_address unlocked');
+                }
+                if (entranceInput) entranceInput.readOnly = false;
+                if (apartmentInput) apartmentInput.readOnly = false;
+                if (floorInput) floorInput.readOnly = false;
+                if (document.getElementById('save_address')) document.getElementById('save_address').disabled = false;
+            }
+            
             try { localStorage.setItem('checkout_address_id', this.value || ''); } catch(e) {}
+            updateAddressPreview();
         });
+    }
+    const defaultAddressId = checkoutRoot?.dataset.defaultAddressId || '';
+    if (defaultAddressId && addressSelect) {
+        addressSelect.value = defaultAddressId;
+        addressSelect.dispatchEvent(new Event('change'));
+    } else {
+        updateAddressPreview();
     }
     
     // Обработка способа оплаты
@@ -948,33 +1102,11 @@ document.addEventListener('DOMContentLoaded', function() {
     } catch(e) {}
     toggleDelivery();
     togglePayment();
+    toggleCashback(); // Инициализируем поле кешбэка при загрузке
     
     // Инициализируем итоговую сумму сразу при загрузке
     updateTotalAmount();
 
-    // Показать модалку, если промо недоступно
-    {% if promo_message %}
-    (function(){
-        const html = `
-        <div class="modal fade" id="promoModal" tabindex="-1" aria-hidden="true">
-          <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title">Акция недоступна</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
-              <div class="modal-body">{{ promo_message }}</div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Понятно</button>
-              </div>
-            </div>
-          </div>
-        </div>`;
-        document.body.insertAdjacentHTML('beforeend', html);
-        new bootstrap.Modal(document.getElementById('promoModal')).show();
-    })();
-    {% endif %}
-    
     // Сохранение слота
     const slotSel = document.getElementById('delivery_slot_id');
     if (slotSel) slotSel.addEventListener('change', function(){ try { localStorage.setItem('checkout_delivery_slot', this.value || ''); } catch(e) {} });
@@ -1099,11 +1231,67 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Для оплаты кешбеком форма отправляется обычным способом
-        if (paymentMethod.value === 'cashback') {
-            // Форма отправится обычным способом на /create-order/
+        // Но кешбек - это не способ оплаты, а чекбокс!
+        // Проверяем, используется ли кешбек
+        const useCashbackCheckbox = document.getElementById('use_cashback');
+        const isUsingCashback = useCashbackCheckbox && useCashbackCheckbox.checked;
+        console.log('[CHECKOUT] isUsingCashback:', isUsingCashback);
+        
+        if (isUsingCashback) {
+            const cashbackAmountInput = document.getElementById('cashback_amount');
+            const cashbackAmount = cashbackAmountInput ? parseFloat(cashbackAmountInput.value) || 0 : 0;
+            console.log('[CHECKOUT] Cashback amount from input:', cashbackAmount);
+            console.log('[CHECKOUT] Cashback input element:', cashbackAmountInput, 'value:', cashbackAmountInput?.value);
+            
+            if (cashbackAmount <= 0) {
+                e.preventDefault();
+                console.error('[CHECKOUT] CASHBACK ERROR: Чекбокс кешбэка отмечен, но сумма не указана или равна 0!');
+                console.error('[CHECKOUT] CASHBACK ERROR: cashbackAmountInput exists:', !!cashbackAmountInput);
+                console.error('[CHECKOUT] CASHBACK ERROR: cashbackAmountInput value:', cashbackAmountInput?.value);
+                console.error('[CHECKOUT] CASHBACK ERROR: parsed cashbackAmount:', cashbackAmount);
+                showError('Укажите сумму кешбэка для использования');
+                return;
+            }
+            
+            const maxCashback = parseFloat('{{ cashback_balance|default:0 }}') || 0;
+            if (cashbackAmount > maxCashback) {
+                e.preventDefault();
+                console.error('[CHECKOUT] CASHBACK ERROR: Сумма кешбэка превышает доступный баланс!');
+                console.error('[CHECKOUT] CASHBACK ERROR: cashbackAmount:', cashbackAmount, 'maxCashback:', maxCashback);
+                showError(`Сумма кешбэка не может превышать ${maxCashback} ₽`);
+                return;
+            }
+        }
+        
+        // Проверка адреса при доставке
+        const deliveryType = document.querySelector('input[name="delivery_type"]:checked')?.value;
+        if (deliveryType === 'delivery') {
+            const addressId = document.getElementById('address_id')?.value;
+            const deliveryAddressInput = document.getElementById('delivery_address');
+            const deliveryAddress = deliveryAddressInput?.value || '';
+            
+            console.log('[CHECKOUT] Delivery selected, checking address:', {
+                addressId: addressId,
+                deliveryAddress: deliveryAddress,
+                addressInputExists: !!deliveryAddressInput
+            });
+            
+            if (!addressId && (!deliveryAddress || !deliveryAddress.trim())) {
+                e.preventDefault();
+                console.error('[CHECKOUT] DELIVERY ERROR: Для доставки необходимо указать адрес!');
+                console.error('[CHECKOUT] DELIVERY ERROR: addressId:', addressId, 'deliveryAddress:', deliveryAddress);
+                showError('Для доставки необходимо указать адрес');
+                return;
+            }
+        }
+        
+        // Для наличных/карты форма отправляется обычным способом
+        if (paymentMethod.value === 'cash' || paymentMethod.value === 'card') {
+            console.log('[CHECKOUT] Cash/card payment, submitting form normally');
             submitBtn.style.display = 'none';
             loadingIndicator.style.display = 'block';
-            return; // Продолжаем стандартную отправку формы
+            // Продолжаем стандартную отправку формы
+            return;
         }
         
         // Валидация при онлайн оплате (только если не disabled)
@@ -1578,5 +1766,28 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+{% if promo_message %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const promoHtml = `
+        <div class="modal fade" id="promoModal" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Акция недоступна</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">{{ promo_message|escapejs }}</div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Понятно</button>
+              </div>
+            </div>
+          </div>
+        </div>`;
+    document.body.insertAdjacentHTML('beforeend', promoHtml);
+    new bootstrap.Modal(document.getElementById('promoModal')).show();
+});
+</script>
+{% endif %}
 {% endblock %}
 

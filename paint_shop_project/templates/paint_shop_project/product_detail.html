@@ -114,6 +114,54 @@
     margin-bottom: 32px;
 }
 
+.product-actions .cart-quantity-control {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--light-gray);
+    border-radius: var(--border-radius);
+    padding: 10px 16px;
+    min-width: 220px;
+    box-shadow: var(--shadow);
+}
+
+.product-actions .btn-quantity {
+    width: 42px;
+    height: 42px;
+    border: 2px solid var(--primary-color);
+    background: var(--white);
+    color: var(--primary-color);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.product-actions .btn-quantity:hover {
+    background: var(--primary-color);
+    color: var(--white);
+}
+
+.product-actions .cart-qty-display {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    font-weight: 600;
+    color: var(--dark-gray);
+}
+
+.product-actions .cart-qty-display .qty {
+    font-size: 1.25rem;
+}
+
+.product-actions .cart-qty-display small {
+    font-size: 0.8rem;
+    color: var(--medium-gray);
+}
+
 .btn-add-cart {
     background: var(--primary-color);
     color: var(--white);
@@ -151,6 +199,11 @@
 }
 
 .btn-favorite:hover {
+    background: var(--primary-color);
+    color: var(--white);
+}
+
+.btn-favorite.active {
     background: var(--primary-color);
     color: var(--white);
 }
@@ -367,18 +420,30 @@
                     
                     <div class="product-actions">
                         {% if user.is_authenticated %}
-                            <button class="btn-add-cart" onclick="addToCart({{ product.id }})">
+                            <button class="btn-add-cart" id="detail-add-btn" onclick="addToCart({{ product.id }})" style="{% if product_qty %}display:none{% endif %}">
                                 <i class="fas fa-shopping-cart"></i>
                                 Добавить в корзину
                             </button>
+                            <div class="cart-quantity-control" id="detail-cart-control" style="gap: 12px; {% if product_qty %}display:flex{% else %}display:none{% endif %}">
+                                <button class="btn-quantity btn-minus" type="button" onclick="updateDetailCartQuantity(-1)" title="Уменьшить">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <span class="cart-qty-display">
+                                    <span class="qty" id="detail-qty">{{ product_qty|default:0 }}</span>
+                                    <small class="text-muted">шт.</small>
+                                </span>
+                                <button class="btn-quantity btn-plus" type="button" onclick="updateDetailCartQuantity(1)" title="Увеличить">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
                         {% else %}
                             <a href="{% url 'login' %}" class="btn-add-cart">
                                 <i class="fas fa-sign-in-alt"></i>
                                 Войти для покупки
                             </a>
                         {% endif %}
-                        <button class="btn-favorite" onclick="addToFavorites({{ product.id }})">
-                            <i class="fas fa-heart"></i>
+                        <button class="btn-favorite {% if is_favorite %}active{% endif %}" type="button" onclick="toggleFavoriteDetail({{ product.id }}, this)">
+                            <i class="{% if is_favorite %}fas{% else %}far{% endif %} fa-heart"></i>
                         </button>
                     </div>
                 </div>
@@ -510,6 +575,36 @@
 </div>
 
 <script>
+const PRODUCT_ID = {{ product.id }};
+
+if (typeof getCSRFToken !== 'function') {
+    function getCSRFToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+    }
+}
+
+function updateDetailControls(quantity) {
+    const addBtn = document.getElementById('detail-add-btn');
+    const control = document.getElementById('detail-cart-control');
+    const qtyEl = document.getElementById('detail-qty');
+    if (!addBtn || !control) {
+        return;
+    }
+    if (quantity && quantity > 0) {
+        control.style.display = 'flex';
+        addBtn.style.display = 'none';
+        if (qtyEl) {
+            qtyEl.textContent = quantity;
+        }
+    } else {
+        control.style.display = 'none';
+        addBtn.style.display = 'flex';
+        if (qtyEl) {
+            qtyEl.textContent = '0';
+        }
+    }
+}
+
 // Добавление в корзину
 function addToCart(productId) {
     const formData = new FormData();
@@ -524,7 +619,10 @@ function addToCart(productId) {
     .then(data => {
         if (data.success) {
             showToast(data.message, 'success');
-            updateCartCounter();
+            if (typeof updateCartCounter === 'function') {
+                updateCartCounter();
+            }
+            updateDetailControls(data.quantity || 1);
         } else {
             showToast(data.message || 'Ошибка при добавлении в корзину', 'error');
         }
@@ -535,38 +633,172 @@ function addToCart(productId) {
     });
 }
 
-// Добавление в избранное
-function addToFavorites(productId) {
-    {% if user.is_authenticated %}
-    const btn = event.target.closest('.btn-favorite');
-    const icon = btn.querySelector('i');
+function updateDetailCartQuantity(delta) {
+    const qtyEl = document.getElementById('detail-qty');
+    const currentQty = parseInt(qtyEl ? qtyEl.textContent : '0', 10) || 0;
+    const newQty = Math.max(0, currentQty + delta);
     
-    fetch(`/add-to-favorites/${productId}/`, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-            'Content-Type': 'application/json',
-        },
+    if (newQty === 0) {
+        removeFromCartDetail(PRODUCT_ID);
+        return;
+    }
+    
+    if (delta > 0) {
+        addToCart(PRODUCT_ID);
+        return;
+    }
+    
+    fetch(`/get-cart-id/${PRODUCT_ID}/`, {
+        method: 'GET',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+        credentials: 'same-origin'
     })
     .then(response => response.json())
     .then(data => {
-        if (data.status === 'added') {
-            btn.classList.add('active');
-            icon.className = 'fas fa-heart';
-            showToast('Товар добавлен в избранное', 'success');
-        } else if (data.status === 'removed') {
-            btn.classList.remove('active');
-            icon.className = 'far fa-heart';
-            showToast('Товар удален из избранного', 'info');
+        if (data.success && data.cart_id) {
+            updateCartQuantityDetail(data.cart_id, newQty);
+        } else {
+            updateDetailControls(newQty);
+        }
+    })
+    .catch(() => updateDetailControls(newQty));
+}
+
+function updateCartQuantityDetail(cartId, quantity) {
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', getCSRFToken());
+    formData.append('quantity', quantity);
+    
+    fetch(`/update-cart-quantity/${cartId}/`, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+        body: formData,
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            updateDetailControls(data.quantity || quantity);
+            if (typeof updateCartCounter === 'function') {
+                updateCartCounter();
+            }
+        }
+    })
+    .catch(error => console.error('Error updating quantity:', error));
+}
+
+function removeFromCartDetail(productId) {
+    fetch(`/get-cart-id/${productId}/`, {
+        method: 'GET',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.cart_id) {
+            const formData = new FormData();
+            formData.append('csrfmiddlewaretoken', getCSRFToken());
+            fetch(`/remove-from-cart/${data.cart_id}/`, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+                body: formData,
+                credentials: 'same-origin'
+            })
+            .then(resp => resp.json())
+            .then(() => {
+                updateDetailControls(0);
+                if (typeof updateCartCounter === 'function') {
+                    updateCartCounter();
+                }
+            });
+        } else {
+            updateDetailControls(0);
+        }
+    })
+    .catch(() => updateDetailControls(0));
+}
+
+// Работа с избранным
+function toggleFavoriteDetail(productId, btn) {
+    {% if user.is_authenticated %}
+    const button = btn || document.querySelector('.btn-favorite');
+    const icon = button ? button.querySelector('i') : null;
+    if (!button) {
+        return;
+    }
+    
+    fetch(`/api/v1/favorites/toggle/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCSRFToken(),
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({ product_id: productId })
+    })
+    .then(response => response.ok ? response.json() : response.json().then(err => Promise.reject(err)))
+    .then(data => {
+        if (data.is_favorite) {
+            button.classList.add('active');
+            if (icon) icon.className = 'fas fa-heart';
+            showToast('Товар добавлен в любимые (скидка 10%)', 'success');
+        } else {
+            button.classList.remove('active');
+            if (icon) icon.className = 'far fa-heart';
+            showToast('Товар удален из любимых', 'info');
         }
     })
     .catch(error => {
-        console.error('Error:', error);
-        showToast('Ошибка при добавлении в избранное', 'error');
+        if (error && error.error) {
+            if (error.max_reached) {
+                showFavoriteModal('Максимум 4 любимых товара', 'Удалите один из текущих любимых товаров, чтобы добавить новый.');
+                return;
+            }
+            if (error.can_modify === false) {
+                const nextDate = error.next_change_date ? new Date(error.next_change_date).toLocaleDateString('ru-RU') : 'позже';
+                showFavoriteModal('Изменение недоступно', `Следующее изменение любимых товаров возможно ${nextDate}.`);
+                return;
+            }
+            showFavoriteModal('Ошибка', error.error);
+        } else {
+            showFavoriteModal('Ошибка', 'Не удалось изменить список любимых товаров.');
+        }
     });
     {% else %}
-    showToast('Войдите в систему, чтобы добавлять товары в избранное', 'warning');
+    showToast('Войдите в систему, чтобы добавлять товары в любимые', 'warning');
     {% endif %}
+}
+
+function showFavoriteModal(title, message) {
+    let modal = document.getElementById('favoriteModal');
+    if (!modal) {
+        const modalHtml = `
+            <div class="modal fade" id="favoriteModal" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">${title}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>${message}</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-zhevzhik-pink" data-bs-dismiss="modal">Понятно</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        modal = document.getElementById('favoriteModal');
+    } else {
+        modal.querySelector('.modal-title').textContent = title;
+        modal.querySelector('.modal-body p').textContent = message;
+    }
+    const bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
 }
 
 // Отправка отзыва
@@ -575,10 +807,15 @@ document.getElementById('reviewForm')?.addEventListener('submit', function(e) {
     
     const formData = new FormData(this);
     const rating = formData.get('rating');
-    const comment = formData.get('comment');
+    const comment = formData.get('comment') || '';
     
     if (!rating) {
         showToast('Пожалуйста, выберите оценку', 'warning');
+        return;
+    }
+    
+    if (!comment || !comment.trim()) {
+        showToast('Пожалуйста, введите комментарий', 'warning');
         return;
     }
     
@@ -590,7 +827,7 @@ document.getElementById('reviewForm')?.addEventListener('submit', function(e) {
         },
         body: JSON.stringify({
             rating: rating,
-            comment: comment
+            comment: comment.trim()
         })
     })
     .then(response => response.json())

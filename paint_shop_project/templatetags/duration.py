@@ -8,11 +8,21 @@ register = template.Library()
 
 @register.filter
 def format_duration(duration):
-    """Форматирует timedelta для отображения"""
-    if not duration:
+    """Форматирует timedelta или число секунд для отображения"""
+    if duration in (None, ''):
         return "—"
     
-    total_seconds = int(duration.total_seconds())
+    try:
+        if hasattr(duration, "total_seconds"):
+            total_seconds = int(duration.total_seconds())
+        else:
+            total_seconds = int(float(duration))
+    except (ValueError, TypeError):
+        return "—"
+    
+    if total_seconds < 0:
+        total_seconds = 0
+    
     hours, remainder = divmod(total_seconds, 3600)
     minutes, seconds = divmod(remainder, 60)
     

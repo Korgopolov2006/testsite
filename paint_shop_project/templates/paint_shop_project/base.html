@@ -28,14 +28,43 @@
             --shadow-hover: 0 4px 20px rgba(0,0,0,0.15);
             --border-radius: 12px;
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            
+            /* Цвета для светлой темы (по умолчанию) */
+            --bg-color: #ffffff;
+            --text-color: #2c3e50;
+            --card-bg: #ffffff;
+            --border-color: #e9ecef;
+            --input-bg: #ffffff;
+            --header-bg: #ffffff;
+            --footer-bg: #2c3e50;
+            --footer-text: #ffffff;
+        }
+        
+        /* Тёмная тема */
+        .dark-theme {
+            --bg-color: #1a1a1a;
+            --text-color: #e0e0e0;
+            --card-bg: #2d2d2d;
+            --border-color: #404040;
+            --input-bg: #2d2d2d;
+            --header-bg: #252525;
+            --footer-bg: #1a1a1a;
+            --footer-text: #e0e0e0;
+            --light-gray: #2d2d2d;
+            --medium-gray: #a0a0a0;
+            --dark-gray: #e0e0e0;
+            --white: #2d2d2d;
+            --shadow: 0 2px 10px rgba(0,0,0,0.5);
+            --shadow-hover: 0 4px 20px rgba(0,0,0,0.7);
         }
         
         /* Базовые стили */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
-            color: var(--dark-gray);
-            background-color: var(--white);
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
         
         /* Утилитарные классы */
@@ -117,6 +146,8 @@
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
             transition: var(--transition);
+            background-color: var(--card-bg);
+            color: var(--text-color);
         }
         
         .card:hover {
@@ -126,27 +157,36 @@
         
         .card-header {
             background-color: var(--light-gray);
-            border-bottom: 1px solid #e9ecef;
+            border-bottom: 1px solid var(--border-color);
             border-radius: var(--border-radius) var(--border-radius) 0 0 !important;
             font-weight: 600;
+            color: var(--text-color);
         }
         
         /* Формы */
         .form-control {
-            border: 2px solid #e9ecef;
+            border: 2px solid var(--border-color);
             border-radius: var(--border-radius);
             padding: 12px 16px;
             transition: var(--transition);
+            background-color: var(--input-bg);
+            color: var(--text-color);
         }
         
         .form-control:focus {
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.1);
+            background-color: var(--input-bg);
+            color: var(--text-color);
+        }
+        
+        .form-control::placeholder {
+            color: var(--medium-gray);
         }
         
         .form-label {
             font-weight: 600;
-            color: var(--dark-gray);
+            color: var(--text-color);
             margin-bottom: 8px;
         }
         
@@ -173,11 +213,12 @@
 
         /* Основная навигация */
         .main-header {
-            background: var(--white);
+            background: var(--header-bg);
             box-shadow: var(--shadow);
             position: sticky;
             top: 0;
             z-index: 1000;
+            transition: background-color 0.3s ease;
         }
 
         .header-content {
@@ -231,18 +272,24 @@
         .search-input {
             width: 100%;
             padding: 12px 50px 12px 16px;
-            border: 2px solid #e9ecef;
+            border: 2px solid var(--border-color);
             border-radius: var(--border-radius);
             font-size: 1rem;
             transition: var(--transition);
-            background: var(--light-gray);
+            background: var(--input-bg);
+            color: var(--text-color);
         }
-
+        
         .search-input:focus {
             outline: none;
             border-color: var(--primary-color);
-            background: var(--white);
+            background: var(--input-bg);
             box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.1);
+            color: var(--text-color);
+        }
+        
+        .search-input::placeholder {
+            color: var(--medium-gray);
         }
 
         .search-btn {
@@ -282,14 +329,14 @@
         }
 
         .nav-link {
-            color: var(--dark-gray);
+            color: var(--text-color);
             text-decoration: none;
             font-weight: 500;
             padding: 8px 16px;
             border-radius: 8px;
             transition: var(--transition);
         }
-
+        
         .nav-link:hover {
             color: var(--primary-color);
             background: rgba(255, 107, 157, 0.1);
@@ -303,17 +350,49 @@
         }
 
         .user-action {
-            color: var(--dark-gray);
+            color: var(--text-color);
             text-decoration: none;
             padding: 8px 12px;
             border-radius: 8px;
             transition: var(--transition);
             position: relative;
         }
-
+        
         .user-action:hover {
             color: var(--primary-color);
             background: rgba(255, 107, 157, 0.1);
+        }
+        
+        /* Переключатель темы */
+        .theme-toggle {
+            background: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 1.1rem;
+        }
+        
+        .theme-toggle:hover {
+            background: var(--primary-color);
+            color: var(--white);
+            transform: scale(1.1);
+        }
+        
+        .dark-theme .theme-toggle {
+            border-color: var(--secondary-color);
+            color: var(--secondary-color);
+        }
+        
+        .dark-theme .theme-toggle:hover {
+            background: var(--secondary-color);
+            color: var(--dark-gray);
         }
 
         .cart-badge {
@@ -406,10 +485,11 @@
         
         /* Футер */
         .footer {
-            background-color: var(--dark-gray);
-            color: var(--white);
+            background-color: var(--footer-bg);
+            color: var(--footer-text);
             padding: 60px 0 30px;
             margin-top: 80px;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
         
         .footer h5 {
@@ -683,14 +763,402 @@
         }
         
         .modal-header {
-            border-bottom: 1px solid #e9ecef;
-            background-color: var(--light-gray);
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--card-bg);
             border-radius: var(--border-radius) var(--border-radius) 0 0;
         }
         
         .modal-title {
-            color: var(--dark-gray);
+            color: var(--text-color);
             font-weight: 600;
+        }
+        
+        .modal-content {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+        }
+        
+        .modal-body {
+            color: var(--text-color);
+        }
+        
+        .dropdown-menu {
+            background-color: var(--card-bg);
+            border-color: var(--border-color);
+        }
+        
+        .dropdown-item {
+            color: var(--text-color);
+        }
+        
+        .dropdown-item:hover {
+            background-color: rgba(255, 107, 157, 0.1);
+            color: var(--primary-color);
+        }
+        
+        .breadcrumb-item.active {
+            color: var(--medium-gray);
+        }
+        
+        .alert {
+            background-color: var(--card-bg);
+            border-color: var(--border-color);
+            color: var(--text-color);
+        }
+        
+        /* Глобальные стили для тёмной темы - применяются ко всем страницам */
+        .dark-theme {
+            /* Общие элементы */
+            background-color: var(--bg-color) !important;
+        }
+        
+        .dark-theme .text-muted {
+            color: var(--medium-gray) !important;
+        }
+        
+        .dark-theme h1, .dark-theme h2, .dark-theme h3, .dark-theme h4, .dark-theme h5, .dark-theme h6 {
+            color: var(--text-color) !important;
+        }
+        
+        .dark-theme p {
+            color: var(--text-color) !important;
+        }
+        
+        /* Карточки и контейнеры */
+        .dark-theme .contact-card,
+        .dark-theme .store-card,
+        .dark-theme .product-card,
+        .dark-theme .feature-card,
+        .dark-theme .form-section,
+        .dark-theme .filters-section,
+        .dark-theme .map-container,
+        .dark-theme .stores-filter,
+        .dark-theme .stores-cta,
+        .dark-theme .category-card,
+        .dark-theme .promotion-card {
+            background-color: var(--card-bg) !important;
+            color: var(--text-color) !important;
+            border-color: var(--border-color) !important;
+        }
+        
+        /* Текст в карточках */
+        .dark-theme .contact-title,
+        .dark-theme .store-name,
+        .dark-theme .product-name,
+        .dark-theme .section-title,
+        .dark-theme .form-title {
+            color: var(--text-color) !important;
+        }
+        
+        .dark-theme .contact-info,
+        .dark-theme .store-address,
+        .dark-theme .store-hours,
+        .dark-theme .store-phone {
+            color: var(--text-color) !important;
+        }
+        
+        /* Формы */
+        .dark-theme .form-control,
+        .dark-theme .filter-input,
+        .dark-theme .filter-select,
+        .dark-theme select,
+        .dark-theme textarea {
+            background-color: var(--input-bg) !important;
+            color: var(--text-color) !important;
+            border-color: var(--border-color) !important;
+        }
+        
+        .dark-theme .form-control:focus,
+        .dark-theme .filter-input:focus,
+        .dark-theme .filter-select:focus {
+            background-color: var(--input-bg) !important;
+            color: var(--text-color) !important;
+            border-color: var(--primary-color) !important;
+        }
+        
+        .dark-theme .form-label,
+        .dark-theme .filter-label {
+            color: var(--text-color) !important;
+        }
+        
+        /* Кнопки */
+        .dark-theme .btn-outline-secondary {
+            border-color: var(--border-color) !important;
+            color: var(--text-color) !important;
+            background-color: transparent !important;
+        }
+        
+        .dark-theme .btn-outline-secondary:hover {
+            background-color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+            color: var(--white) !important;
+        }
+        
+        /* Ссылки */
+        .dark-theme a:not(.btn):not(.nav-link):not(.user-action) {
+            color: var(--primary-color) !important;
+        }
+        
+        .dark-theme a:not(.btn):not(.nav-link):not(.user-action):hover {
+            color: var(--primary-light) !important;
+        }
+        
+        /* Таблицы */
+        .dark-theme table,
+        .dark-theme .table {
+            color: var(--text-color) !important;
+        }
+        
+        .dark-theme .table-striped > tbody > tr:nth-of-type(odd) {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+        }
+        
+        .dark-theme .table-bordered {
+            border-color: var(--border-color) !important;
+        }
+        
+        .dark-theme .table-bordered td,
+        .dark-theme .table-bordered th {
+            border-color: var(--border-color) !important;
+        }
+        
+        /* Списки */
+        .dark-theme ul:not(.nav-menu):not(.dropdown-menu),
+        .dark-theme ol {
+            color: var(--text-color) !important;
+        }
+        
+        /* Бейджи */
+        .dark-theme .badge {
+            color: var(--white) !important;
+        }
+        
+        /* Прогресс-бары */
+        .dark-theme .progress {
+            background-color: var(--border-color) !important;
+        }
+        
+        /* Разделители */
+        .dark-theme hr {
+            border-color: var(--border-color) !important;
+        }
+        
+        /* Инпуты и селекты Bootstrap */
+        .dark-theme .form-select {
+            background-color: var(--input-bg) !important;
+            color: var(--text-color) !important;
+            border-color: var(--border-color) !important;
+        }
+        
+        .dark-theme .form-check-label {
+            color: var(--text-color) !important;
+        }
+        
+        /* Кастомные элементы страниц */
+        .dark-theme .page-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)) !important;
+        }
+        
+        .dark-theme .contacts-hero,
+        .dark-theme .stores-hero,
+        .dark-theme .catalog-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)) !important;
+        }
+        
+        /* Пустые состояния */
+        .dark-theme .stores-empty {
+            color: var(--text-color) !important;
+        }
+        
+        /* Специальные градиенты */
+        .dark-theme .stores-cta {
+            background: linear-gradient(135deg, var(--card-bg), rgba(255, 107, 157, 0.1)) !important;
+        }
+        
+        .dark-theme .stores-cta h2,
+        .dark-theme .stores-cta p {
+            color: var(--text-color) !important;
+        }
+        
+        /* Иконки и изображения */
+        .dark-theme .contact-icon,
+        .dark-theme .feature-icon {
+            background-color: rgba(255, 107, 157, 0.2) !important;
+        }
+        
+        /* Тени для тёмной темы */
+        .dark-theme .card,
+        .dark-theme .contact-card,
+        .dark-theme .store-card,
+        .dark-theme .product-card {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5) !important;
+        }
+        
+        .dark-theme .card:hover,
+        .dark-theme .contact-card:hover,
+        .dark-theme .store-card:hover,
+        .dark-theme .product-card:hover {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7) !important;
+        }
+        
+        /* Bootstrap компоненты */
+        .dark-theme .list-group-item {
+            background-color: var(--card-bg) !important;
+            color: var(--text-color) !important;
+            border-color: var(--border-color) !important;
+        }
+        
+        .dark-theme .list-group-item-action:hover {
+            background-color: rgba(255, 107, 157, 0.1) !important;
+            color: var(--primary-color) !important;
+        }
+        
+        .dark-theme .nav-tabs .nav-link {
+            color: var(--text-color) !important;
+            border-color: var(--border-color) !important;
+        }
+        
+        .dark-theme .nav-tabs .nav-link.active {
+            background-color: var(--card-bg) !important;
+            border-color: var(--border-color) var(--border-color) var(--card-bg) !important;
+            color: var(--primary-color) !important;
+        }
+        
+        .dark-theme .nav-pills .nav-link {
+            color: var(--text-color) !important;
+        }
+        
+        .dark-theme .nav-pills .nav-link.active {
+            background-color: var(--primary-color) !important;
+        }
+        
+        /* Текст и заголовки */
+        .dark-theme .lead {
+            color: var(--text-color) !important;
+        }
+        
+        .dark-theme .display-1,
+        .dark-theme .display-2,
+        .dark-theme .display-3,
+        .dark-theme .display-4,
+        .dark-theme .display-5,
+        .dark-theme .display-6 {
+            color: var(--text-color) !important;
+        }
+        
+        /* Блоки кода */
+        .dark-theme code,
+        .dark-theme pre {
+            background-color: var(--card-bg) !important;
+            color: var(--text-color) !important;
+            border-color: var(--border-color) !important;
+        }
+        
+        /* Блоки цитат */
+        .dark-theme blockquote {
+            border-left-color: var(--primary-color) !important;
+            color: var(--text-color) !important;
+        }
+        
+        /* Пагинация */
+        .dark-theme .pagination .page-link {
+            background-color: var(--card-bg) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-color) !important;
+        }
+        
+        .dark-theme .pagination .page-link:hover {
+            background-color: var(--primary-color) !important;
+            color: var(--white) !important;
+        }
+        
+        .dark-theme .pagination .page-item.active .page-link {
+            background-color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+        }
+        
+        /* Аккордеоны */
+        .dark-theme .accordion-item {
+            background-color: var(--card-bg) !important;
+            border-color: var(--border-color) !important;
+        }
+        
+        .dark-theme .accordion-button {
+            background-color: var(--card-bg) !important;
+            color: var(--text-color) !important;
+        }
+        
+        .dark-theme .accordion-button:not(.collapsed) {
+            background-color: var(--card-bg) !important;
+            color: var(--primary-color) !important;
+        }
+        
+        .dark-theme .accordion-body {
+            background-color: var(--card-bg) !important;
+            color: var(--text-color) !important;
+        }
+        
+        /* Тултипы и поповеры */
+        .dark-theme .tooltip-inner {
+            background-color: var(--card-bg) !important;
+            color: var(--text-color) !important;
+        }
+        
+        .dark-theme .popover {
+            background-color: var(--card-bg) !important;
+            border-color: var(--border-color) !important;
+        }
+        
+        .dark-theme .popover-header {
+            background-color: var(--card-bg) !important;
+            border-bottom-color: var(--border-color) !important;
+            color: var(--text-color) !important;
+        }
+        
+        .dark-theme .popover-body {
+            color: var(--text-color) !important;
+        }
+        
+        /* Карусели */
+        .dark-theme .carousel-item {
+            color: var(--text-color) !important;
+        }
+        
+        /* Jumbotron */
+        .dark-theme .jumbotron {
+            background-color: var(--card-bg) !important;
+            color: var(--text-color) !important;
+        }
+        
+        /* Все элементы с белым фоном по умолчанию */
+        .dark-theme [style*="background: white"],
+        .dark-theme [style*="background-color: white"],
+        .dark-theme [style*="background: #fff"],
+        .dark-theme [style*="background-color: #fff"],
+        .dark-theme [style*="background: #ffffff"],
+        .dark-theme [style*="background-color: #ffffff"] {
+            background-color: var(--card-bg) !important;
+        }
+        
+        /* Все элементы с белым текстом, которые должны быть видимы */
+        .dark-theme [style*="color: white"]:not(.btn):not(.badge):not(.text-white) {
+            color: var(--text-color) !important;
+        }
+        
+        /* Контейнеры и обёртки */
+        .dark-theme .container,
+        .dark-theme .container-fluid {
+            color: var(--text-color) !important;
+        }
+        
+        /* Секции */
+        .dark-theme .section {
+            color: var(--text-color) !important;
+        }
+        
+        /* Все div с белым фоном */
+        .dark-theme div[style*="background"] {
+            /* Применяется через более специфичные селекторы выше */
         }
     </style>
     
@@ -758,6 +1226,15 @@
 
                 <!-- Пользовательские действия -->
                 <div class="user-actions">
+                    <!-- Кнопка помощи с горячими клавишами -->
+                    <button class="theme-toggle" id="helpButton" title="Горячие клавиши" aria-label="Горячие клавиши" data-bs-toggle="modal" data-bs-target="#hotkeysModal">
+                        <i class="fas fa-question-circle"></i>
+                    </button>
+                    <!-- Переключатель темы -->
+                    <button class="theme-toggle" id="themeToggle" title="Переключить тему" aria-label="Переключить тему">
+                        <i class="fas fa-moon" id="themeIcon"></i>
+                    </button>
+                    
                     {% if user.is_authenticated %}
                         <div class="dropdown">
                             <a href="#" class="user-action dropdown-toggle" data-bs-toggle="dropdown">
@@ -824,8 +1301,8 @@
                             {% endif %}
                         </a>
                     {% else %}
-                        <a href="{% url 'phone_login' %}" class="user-action">
-                            <i class="fas fa-mobile-alt"></i>
+                        <a href="{% url 'login' %}" class="user-action">
+                            <i class="fas fa-sign-in-alt"></i>
                             <span class="d-none d-md-inline">Войти</span>
                         </a>
                         <a href="{% url 'register' %}" class="user-action">
@@ -1125,7 +1602,7 @@
                         <li><kbd>g</kbd> + <kbd>h</kbd> — Главная</li>
                         <li><kbd>g</kbd> + <kbd>c</kbd> — Корзина</li>
                         <li><kbd>g</kbd> + <kbd>o</kbd> — Мои заказы</li>
-                        <li><kbd>g</kbd> + <kbd>p</kbd> — Профиль</li>
+                        <li><kbd>g</kbd> + <kbd>p</kbd> — Профиль (enhanced)</li>
                     </ul>
                 </div>
                 <div class="col-6">
@@ -1165,7 +1642,7 @@
             if (e.key === 'h') { e.preventDefault(); go('{% url "home" %}'); }
             if (e.key === 'c') { e.preventDefault(); go('{% url "cart" %}'); }
             if (e.key === 'o') { e.preventDefault(); go('{% url "order_history" %}'); }
-            if (e.key === 'p') { e.preventDefault(); go('{% url "profile" %}'); }
+            if (e.key === 'p') { e.preventDefault(); go('{% url "enhanced_profile" %}'); }
             if (e.key === 'n') { e.preventDefault(); go('{% url "notifications" %}'); }
             if (e.key === 'd') {
                 e.preventDefault();
@@ -1216,6 +1693,38 @@
             observer.observe(card);
         });
         
+        // Переключение темы
+        (function() {
+            const themeToggle = document.getElementById('themeToggle');
+            const themeIcon = document.getElementById('themeIcon');
+            const html = document.documentElement;
+            
+            // Загружаем сохранённую тему
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            if (savedTheme === 'dark') {
+                html.classList.add('dark-theme');
+                if (themeIcon) {
+                    themeIcon.className = 'fas fa-sun';
+                }
+            }
+            
+            // Обработчик переключения темы
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function() {
+                    html.classList.toggle('dark-theme');
+                    const isDark = html.classList.contains('dark-theme');
+                    
+                    // Сохраняем выбор пользователя
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                    
+                    // Меняем иконку
+                    if (themeIcon) {
+                        themeIcon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+                    }
+                });
+            }
+        })();
+        
         // Автоматическое скрытие уведомлений
         setTimeout(() => {
             const alerts = document.querySelectorAll('.alert');
@@ -1245,7 +1754,353 @@
                 }, 2000);
             });
         });
+        
+        // Обработка горячих клавиш
+        document.addEventListener('keydown', function(e) {
+            // Проверяем, что фокус не в поле ввода
+            const activeElement = document.activeElement;
+            const isInputFocused = activeElement && (
+                activeElement.tagName === 'INPUT' || 
+                activeElement.tagName === 'TEXTAREA' || 
+                activeElement.isContentEditable
+            );
+            
+            if (isInputFocused) {
+                return; // Не обрабатываем горячие клавиши, если пользователь вводит текст
+            }
+            
+            // Shift + ? для открытия модального окна с горячими клавишами
+            if (e.shiftKey && e.key === '?') {
+                e.preventDefault();
+                const helpButton = document.getElementById('helpButton');
+                if (helpButton) {
+                    const modal = new bootstrap.Modal(document.getElementById('hotkeysModal'));
+                    modal.show();
+                }
+            }
+            
+            // T - переключение темы
+            if (e.key === 't' || e.key === 'T') {
+                e.preventDefault();
+                const themeToggle = document.getElementById('themeToggle');
+                if (themeToggle) {
+                    themeToggle.click();
+                }
+            }
+            
+            // H - главная страница
+            if (e.key === 'h' || e.key === 'H') {
+                e.preventDefault();
+                window.location.href = '{% url "home" %}';
+            }
+            
+            // C - каталог
+            if (e.key === 'c' || e.key === 'C') {
+                e.preventDefault();
+                window.location.href = '{% url "product_list" %}';
+            }
+            
+            // P - акции
+            if (e.key === 'p' || e.key === 'P') {
+                e.preventDefault();
+                window.location.href = '{% url "promotions" %}';
+            }
+            
+            // B - корзина (Ctrl+B)
+            if (e.ctrlKey && (e.key === 'b' || e.key === 'B')) {
+                e.preventDefault();
+                window.location.href = '{% url "cart" %}';
+            }
+            
+            // U - профиль
+            if (e.key === 'u' || e.key === 'U') {
+                e.preventDefault();
+                {% if user.is_authenticated %}
+                window.location.href = '{% url "enhanced_profile" %}';
+                {% else %}
+                window.location.href = '{% url "login" %}';
+                {% endif %}
+            }
+            
+            // O - заказы
+            if (e.key === 'o' || e.key === 'O') {
+                e.preventDefault();
+                {% if user.is_authenticated %}
+                window.location.href = '{% url "order_history" %}';
+                {% else %}
+                window.location.href = '{% url "login" %}';
+                {% endif %}
+            }
+            
+            // K или / - поиск (Ctrl+K)
+            if ((e.ctrlKey && (e.key === 'k' || e.key === 'K')) || e.key === '/') {
+                e.preventDefault();
+                const searchInput = document.querySelector('.search-input');
+                if (searchInput) {
+                    searchInput.focus();
+                }
+            }
+        });
+        
+        // Обработка AJAX запросов для показа модального окна с недоступными товарами
+        document.addEventListener('DOMContentLoaded', function() {
+            // Перехватываем все формы, которые отправляют заказы
+            const orderForms = document.querySelectorAll('form[action*="create-order"], form[action*="create_order"]');
+            orderForms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    // Если это не AJAX форма, не перехватываем
+                    if (!form.hasAttribute('data-ajax')) {
+                        return;
+                    }
+                    
+                    e.preventDefault();
+                    const formData = new FormData(form);
+                    
+                    fetch(form.action || '/create-order/', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.success && data.show_modal && data.unavailable_products) {
+                            // Показываем модальное окно с недоступными товарами
+                            showUnavailableProductsModal(data.unavailable_products);
+                        } else if (data.success) {
+                            // Перенаправляем на страницу успеха
+                            window.location.href = data.redirect_url || '/order-success/';
+                        } else {
+                            alert(data.message || 'Ошибка при оформлении заказа');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Ошибка при оформлении заказа');
+                    });
+                });
+            });
+        });
+        
+        // Функция для показа модального окна с недоступными товарами
+        function showUnavailableProductsModal(products) {
+            // Удаляем старое модальное окно и backdrop, если есть
+            const oldModal = document.getElementById('unavailableProductsModal');
+            if (oldModal) {
+                const bsModal = bootstrap.Modal.getInstance(oldModal);
+                if (bsModal) {
+                    bsModal.dispose();
+                }
+                oldModal.remove();
+            }
+            
+            // Удаляем все backdrop элементы
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(backdrop => backdrop.remove());
+            
+            // Удаляем класс modal-open с body
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+            
+            const modalHtml = `
+                <div class="modal fade" id="unavailableProductsModal" tabindex="-1" aria-labelledby="unavailableProductsModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header bg-danger text-white">
+                                <h5 class="modal-title" id="unavailableProductsModalLabel">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>Товары закончились
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>К сожалению, следующие товары закончились и недоступны для заказа:</p>
+                                <ul class="list-group">
+                                    ${products.map(product => `<li class="list-group-item">${product}</li>`).join('')}
+                                </ul>
+                                <p class="mt-3 mb-0">Пожалуйста, удалите эти товары из корзины и попробуйте оформить заказ снова.</p>
+                            </div>
+                            <div class="modal-footer">
+                                <a href="{% url 'cart' %}" class="btn btn-primary">Перейти в корзину</a>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Добавляем новое модальное окно
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // Получаем элемент модального окна
+            const modalElement = document.getElementById('unavailableProductsModal');
+            
+            // Обработчик закрытия модального окна
+            modalElement.addEventListener('hidden.bs.modal', function cleanup() {
+                // Удаляем модальное окно из DOM
+                if (modalElement && modalElement.parentNode) {
+                    modalElement.remove();
+                }
+                
+                // Агрессивная очистка всех backdrop элементов
+                const backdrops = document.querySelectorAll('.modal-backdrop');
+                backdrops.forEach(backdrop => {
+                    if (backdrop && backdrop.parentNode) {
+                        backdrop.remove();
+                    }
+                });
+                
+                // Восстанавливаем body - удаляем все классы и стили
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
+                document.body.style.paddingLeft = '';
+                
+                // Удаляем обработчик после использования
+                modalElement.removeEventListener('hidden.bs.modal', cleanup);
+            });
+            
+            // Дополнительный обработчик для кнопки закрытия
+            const closeButtons = modalElement.querySelectorAll('[data-bs-dismiss="modal"]');
+            closeButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    setTimeout(() => {
+                        // Дополнительная очистка через небольшую задержку
+                        const backdrops = document.querySelectorAll('.modal-backdrop');
+                        backdrops.forEach(backdrop => backdrop.remove());
+                        document.body.classList.remove('modal-open');
+                        document.body.style.overflow = '';
+                        document.body.style.paddingRight = '';
+                    }, 100);
+                });
+            });
+            
+            // Показываем модальное окно
+            const modal = new bootstrap.Modal(modalElement, {
+                backdrop: true,
+                keyboard: true
+            });
+            modal.show();
+        }
     </script>
+    
+    <!-- Модальное окно с горячими клавишами -->
+    <div class="modal fade" id="hotkeysModal" tabindex="-1" aria-labelledby="hotkeysModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="hotkeysModalLabel">
+                        <i class="fas fa-keyboard me-2"></i>Горячие клавиши
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h6 class="text-primary mb-3"><i class="fas fa-search me-2"></i>Навигация</h6>
+                            <div class="hotkey-item mb-2">
+                                <kbd>Ctrl</kbd> + <kbd>K</kbd> или <kbd>/</kbd>
+                                <span class="ms-2">Открыть поиск</span>
+                            </div>
+                            <div class="hotkey-item mb-2">
+                                <kbd>Esc</kbd>
+                                <span class="ms-2">Закрыть модальное окно</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6 class="text-primary mb-3"><i class="fas fa-shopping-cart me-2"></i>Корзина</h6>
+                            <div class="hotkey-item mb-2">
+                                <kbd>Ctrl</kbd> + <kbd>B</kbd>
+                                <span class="ms-2">Открыть корзину</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6 class="text-primary mb-3"><i class="fas fa-home me-2"></i>Быстрый доступ</h6>
+                            <div class="hotkey-item mb-2">
+                                <kbd>H</kbd>
+                                <span class="ms-2">Перейти на главную</span>
+                            </div>
+                            <div class="hotkey-item mb-2">
+                                <kbd>C</kbd>
+                                <span class="ms-2">Открыть каталог</span>
+                            </div>
+                            <div class="hotkey-item mb-2">
+                                <kbd>P</kbd>
+                                <span class="ms-2">Открыть акции</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6 class="text-primary mb-3"><i class="fas fa-user me-2"></i>Профиль</h6>
+                            <div class="hotkey-item mb-2">
+                                <kbd>U</kbd>
+                                <span class="ms-2">Открыть профиль</span>
+                            </div>
+                            <div class="hotkey-item mb-2">
+                                <kbd>O</kbd>
+                                <span class="ms-2">Мои заказы</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6 class="text-primary mb-3"><i class="fas fa-question-circle me-2"></i>Справка</h6>
+                            <div class="hotkey-item mb-2">
+                                <kbd>Shift</kbd> + <kbd>?</kbd>
+                                <span class="ms-2">Показать это окно</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6 class="text-primary mb-3"><i class="fas fa-palette me-2"></i>Интерфейс</h6>
+                            <div class="hotkey-item mb-2">
+                                <kbd>T</kbd>
+                                <span class="ms-2">Переключить тему (светлая/тёмная)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Совет:</strong> Горячие клавиши работают только когда фокус находится на странице (не в полях ввода).
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <style>
+        .hotkey-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border-radius: 8px;
+            background-color: var(--light-gray);
+            transition: var(--transition);
+        }
+        
+        .hotkey-item:hover {
+            background-color: rgba(255, 107, 157, 0.1);
+        }
+        
+        .hotkey-item kbd {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-width: 30px;
+            text-align: center;
+            display: inline-block;
+        }
+        
+        .hotkey-item span {
+            color: var(--text-color);
+            font-size: 0.9rem;
+        }
+    </style>
     
     {% block extra_js %}{% endblock %}
 </body>

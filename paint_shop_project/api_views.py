@@ -278,42 +278,49 @@ class FavoriteViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'])
     def toggle(self, request):
         """Добавить/удалить товар из избранного (любимые товары - максимум 4, изменение раз в неделю)"""
+        import logging
+        logger = logging.getLogger('paint_shop_project')
+        
         product_id = request.data.get('product_id')
+        logger.info("favorites/toggle called: user=%s product_id=%s", request.user.id, product_id)
+        
         if not product_id:
+            logger.warning("favorites/toggle: product_id missing")
             return Response({'error': 'product_id обязателен'}, status=status.HTTP_400_BAD_REQUEST)
         
         from .models import Product
         try:
             product = Product.objects.get(id=product_id)
+            logger.info("favorites/toggle: product found id=%s name=%s", product.id, product.name)
         except Product.DoesNotExist:
+            logger.warning("favorites/toggle: product not found id=%s", product_id)
             return Response({'error': 'Товар не найден'}, status=status.HTTP_404_NOT_FOUND)
         
         # Проверяем, существует ли уже этот товар в избранном
         existing_favorite = Favorite.objects.filter(user=request.user, product=product).first()
+        logger.info("favorites/toggle: existing_favorite=%s", existing_favorite is not None)
         
         if existing_favorite:
-            # Удаление - проверяем ограничение на изменение
-            can_modify, next_change_date = Favorite.can_user_modify_favorites(request.user)
-            if not can_modify:
-                from django.utils import timezone
-                from datetime import timedelta
-                # Если это удаление существующего товара, разрешаем (но не добавляем новый)
+            # Удаление - всегда разрешаем удаление
+            logger.info("favorites/toggle: deleting favorite id=%s", existing_favorite.id)
+            try:
                 existing_favorite.delete()
+                logger.info("favorites/toggle: favorite deleted successfully")
                 return Response({
                     'message': 'Товар удален из любимых',
-                    'is_favorite': False,
-                    'can_modify': False,
-                    'next_change_date': next_change_date.isoformat() if next_change_date else None
+                    'is_favorite': False
                 })
-            existing_favorite.delete()
-            return Response({
-                'message': 'Товар удален из любимых',
-                'is_favorite': False
-            })
+            except Exception as e:
+                logger.exception("favorites/toggle: error deleting favorite: %s", e)
+                return Response({
+                    'error': f'Ошибка при удалении товара из любимых: {str(e)}'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
             # Добавление - проверяем ограничения
             can_modify, next_change_date = Favorite.can_user_modify_favorites(request.user)
+            logger.info("favorites/toggle: can_modify=%s next_change_date=%s", can_modify, next_change_date)
             if not can_modify:
+                logger.warning("favorites/toggle: user cannot modify favorites, next_change_date=%s", next_change_date)
                 return Response({
                     'error': f'Любимые товары можно изменять раз в неделю. Следующее изменение возможно {next_change_date.strftime("%d.%m.%Y") if next_change_date else "позже"}.',
                     'can_modify': False,
@@ -322,23 +329,32 @@ class FavoriteViewSet(viewsets.ModelViewSet):
             
             # Проверяем максимальное количество (4)
             favorites_count = Favorite.get_user_favorites_count(request.user)
+            logger.info("favorites/toggle: current favorites_count=%s", favorites_count)
             if favorites_count >= 4:
+                logger.warning("favorites/toggle: max favorites reached, count=%s", favorites_count)
                 return Response({
                     'error': 'Максимум 4 любимых товара. Удалите один из существующих, чтобы добавить новый.',
                     'max_reached': True
                 }, status=status.HTTP_400_BAD_REQUEST)
             
-            favorite = Favorite.objects.create(
-                user=request.user,
-                product=product
-            )
-            
-            serializer = self.get_serializer(favorite)
-            return Response({
-                'message': 'Товар добавлен в любимые (скидка 10%)',
-                'is_favorite': True,
-                'data': serializer.data
-            })
+            try:
+                favorite = Favorite.objects.create(
+                    user=request.user,
+                    product=product
+                )
+                logger.info("favorites/toggle: favorite created id=%s", favorite.id)
+                
+                serializer = self.get_serializer(favorite)
+                return Response({
+                    'message': 'Товар добавлен в любимые (скидка 10%)',
+                    'is_favorite': True,
+                    'data': serializer.data
+                })
+            except Exception as e:
+                logger.exception("favorites/toggle: error creating favorite: %s", e)
+                return Response({
+                    'error': f'Ошибка при добавлении товара в любимые: {str(e)}'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class LoyaltyCardViewSet(viewsets.ReadOnlyModelViewSet):

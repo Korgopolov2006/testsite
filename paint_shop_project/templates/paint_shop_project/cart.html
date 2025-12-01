@@ -391,11 +391,15 @@
                     </div>
                     <div class="summary-row" id="fav-discount-row" style="display: {% if favorite_discount_amount and favorite_discount_amount > 0 %}flex{% else %}none{% endif %}; justify-content: space-between;">
                         <span class="summary-label">Скидка любимых категорий</span>
-                        <span class="summary-value text-success" id="fav-discount-value">-{% if favorite_discount_amount %}{{ favorite_discount_amount }}{% else %}0{% endif %} ₽</span>
+                        <span class="summary-value text-success" id="fav-discount-value">-{% if favorite_discount_amount %}{{ favorite_discount_amount|floatformat:0 }}{% else %}0{% endif %} ₽</span>
+                    </div>
+                    <div class="summary-row" id="fav-products-discount-row" style="display: {% if favorite_products_discount and favorite_products_discount > 0 %}flex{% else %}none{% endif %}; justify-content: space-between;">
+                        <span class="summary-label">Скидка на любимые товары (10%)</span>
+                        <span class="summary-value text-success" id="fav-products-discount-value">-{% if favorite_products_discount %}{{ favorite_products_discount|floatformat:0 }}{% else %}0{% endif %} ₽</span>
                     </div>
                     <div class="summary-row" id="promo-discount-row" style="display: {% if promotion_discount and promotion_discount > 0 %}flex{% else %}none{% endif %}; justify-content: space-between;">
                         <span class="summary-label">Скидка по акции</span>
-                        <span class="summary-value text-success" id="promo-discount-value">-{% if promotion_discount %}{{ promotion_discount }}{% else %}0{% endif %} ₽</span>
+                        <span class="summary-value text-success" id="promo-discount-value">-{% if promotion_discount %}{{ promotion_discount|floatformat:0 }}{% else %}0{% endif %} ₽</span>
                     </div>
                     <div class="summary-row" id="expected-cashback-row" style="display: {% if expected_cashback and expected_cashback > 0 %}flex{% else %}none{% endif %}; justify-content: space-between;">
                         <span class="summary-label">Кешбэк будет начислен</span>
@@ -404,7 +408,7 @@
                     
                     <div class="summary-row summary-total">
                         <span class="summary-label">К оплате</span>
-                        <span class="summary-value" id="total">{{ cart_total }} ₽</span>
+                        <span class="summary-value" id="total">{% if total_after_discounts %}{{ total_after_discounts|floatformat:0 }}{% else %}{{ cart_total|floatformat:0 }}{% endif %} ₽</span>
                     </div>
                     
                     <a href="{% url 'checkout' %}" class="checkout-btn">
@@ -520,6 +524,8 @@ function updateCartTotals() {
             const totalElement = document.getElementById('total');
             const favRow = document.getElementById('fav-discount-row');
             const favVal = document.getElementById('fav-discount-value');
+            const favProductsRow = document.getElementById('fav-products-discount-row');
+            const favProductsVal = document.getElementById('fav-products-discount-value');
             const promoRow = document.getElementById('promo-discount-row');
             const promoVal = document.getElementById('promo-discount-value');
             const cashbackRow = document.getElementById('expected-cashback-row');
@@ -532,6 +538,14 @@ function updateCartTotals() {
                     favVal.textContent = '-' + Math.round(data.favorite_discount_amount) + ' ₽';
                 } else {
                     favRow.style.display = 'none';
+                }
+            }
+            if (favProductsRow && favProductsVal) {
+                if (data.favorite_products_discount > 0) {
+                    favProductsRow.style.display = 'flex';
+                    favProductsVal.textContent = '-' + Math.round(data.favorite_products_discount) + ' ₽';
+                } else {
+                    favProductsRow.style.display = 'none';
                 }
             }
             if (promoRow && promoVal) {

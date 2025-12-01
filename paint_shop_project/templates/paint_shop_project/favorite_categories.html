@@ -148,16 +148,22 @@
     <div class="categories-hero">
         <div class="container">
             <h1 class="display-4 fw-bold mb-3">❤️ Любимые категории</h1>
-            <p class="lead">Выберите интересующие вас категории для персонализированных рекомендаций</p>
+            <p class="lead mb-3">Выберите категории, чтобы получать +{{ favorite_category_discount }}% скидку на товары из них и персональные рекомендации</p>
+            <p class="mb-0">Можно выбрать до {{ max_categories }} категорий. Сейчас свободно слотов: {{ remaining_slots }}.</p>
         </div>
     </div>
     
     <!-- Выбранные категории -->
     {% if selected_categories %}
     <div class="selected-categories">
-        <h4 class="mb-3">
-            <i class="fas fa-heart me-2"></i>Ваши любимые категории ({{ selected_categories.count }})
-        </h4>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="mb-0">
+                    <i class="fas fa-heart me-2"></i>Ваши любимые категории ({{ selected_categories.count }} / {{ max_categories }})
+                </h4>
+                <span class="badge bg-zhevzhik-pink text-white">
+                    Доступно ещё {{ remaining_slots }}
+                </span>
+            </div>
         <div id="selected-categories-list">
             {% for fav_cat in selected_categories %}
             <span class="category-tag" data-category-id="{{ fav_cat.category.id }}">
@@ -199,14 +205,24 @@
                     <h5 class="mb-3">{{ category.name }}</h5>
                     <p class="text-muted small mb-3">{{ category.description|truncatewords:10 }}</p>
                     
-                    <button class="btn btn-toggle {% if category.id in selected_category_ids %}selected{% endif %}" 
-                            onclick="toggleCategory({{ category.id }}, '{{ category.name }}')">
-                        {% if category.id in selected_category_ids %}
-                            <i class="fas fa-heart-broken me-2"></i>Убрать
-                        {% else %}
+                    {% if category.id in selected_category_ids %}
+                        {% for fav_cat in selected_categories %}
+                            {% if fav_cat.category.id == category.id %}
+                                <button class="btn btn-toggle selected" onclick="toggleCategory({{ category.id }}, '{{ category.name }}')">
+                                    <i class="fas fa-heart-broken me-2"></i>Убрать
+                                </button>
+                                <div class="mt-2">
+                                    <small class="text-muted">Скидка: {{ fav_cat.discount_percent }}%</small>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <button class="btn btn-toggle" 
+                                onclick="showDiscountModal({{ category.id }}, '{{ category.name }}')"
+                                {% if selected_categories.count >= max_categories %}disabled{% endif %}>
                             <i class="fas fa-heart me-2"></i>Добавить
-                        {% endif %}
-                    </button>
+                        </button>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -256,18 +272,74 @@
     </div>
 </div>
 
+<!-- Модальное окно для выбора скидки -->
+<div class="modal fade" id="discountModal" tabindex="-1" aria-labelledby="discountModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="discountModalLabel">Выберите скидку для категории</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Категория: <strong id="modalCategoryName"></strong></p>
+                <div class="mb-3">
+                    <label for="discountInput" class="form-label">Скидка (%):</label>
+                    <input type="number" class="form-control" id="discountInput" min="0" max="50" value="{{ favorite_category_discount }}" required>
+                    <small class="form-text text-muted">Можно выбрать скидку от 0% до 50%</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" onclick="confirmAddCategory()">Добавить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
+const MAX_CATEGORIES = {{ max_categories }};
+const initialSelectedCount = {{ selected_categories.count }};
+let currentCategoryId = null;
+let currentCategoryName = null;
+
+function showDiscountModal(categoryId, categoryName) {
+    if (initialSelectedCount >= MAX_CATEGORIES) {
+        alert(`Нельзя выбрать больше ${MAX_CATEGORIES} категорий`);
+        return;
+    }
+    currentCategoryId = categoryId;
+    currentCategoryName = categoryName;
+    document.getElementById('modalCategoryName').textContent = categoryName;
+    document.getElementById('discountInput').value = {{ favorite_category_discount }};
+    const modal = new bootstrap.Modal(document.getElementById('discountModal'));
+    modal.show();
+}
+
+function confirmAddCategory() {
+    const discount = parseInt(document.getElementById('discountInput').value);
+    if (isNaN(discount) || discount < 0 || discount > 50) {
+        alert('Скидка должна быть от 0% до 50%');
+        return;
+    }
+    addCategory(currentCategoryId, currentCategoryName, discount);
+    const modal = bootstrap.Modal.getInstance(document.getElementById('discountModal'));
+    modal.hide();
+}
+
 function toggleCategory(categoryId, categoryName) {
     const isSelected = document.getElementById(`category-${categoryId}`).classList.contains('selected');
     
     if (isSelected) {
         removeCategory(categoryId);
     } else {
-        addCategory(categoryId, categoryName);
+        showDiscountModal(categoryId, categoryName);
     }
 }
 
-function addCategory(categoryId, categoryName) {
+function addCategory(categoryId, categoryName, discountPercent) {
+    const formData = new URLSearchParams();
+    formData.append('discount_percent', discountPercent);
+    
     fetch(`/add-favorite-category/${categoryId}/`, {
         method: 'POST',
         headers: {
@@ -275,7 +347,8 @@ function addCategory(categoryId, categoryName) {
             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
             'X-Requested-With': 'XMLHttpRequest',
             'Accept': 'application/json'
-        }
+        },
+        body: formData
     })
     .then(response => response.json())
     .then(data => {
@@ -284,6 +357,10 @@ function addCategory(categoryId, categoryName) {
         } else {
             alert('Ошибка: ' + data.message);
         }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Ошибка при добавлении категории');
     });
 }
 
@@ -304,11 +381,12 @@ function removeCategory(categoryId) {
         } else {
             alert('Ошибка: ' + data.message);
         }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Ошибка при удалении категории');
     });
 }
-
-function addToSelectedList() {}
-function removeFromSelectedList() {}
 </script>
 {% endblock %}
 

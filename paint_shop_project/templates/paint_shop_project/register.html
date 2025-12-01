@@ -15,23 +15,20 @@
         --zhevzhik-dark-gray: #2c3e50;
     }
     
-    .register-container {
-        min-height: 80vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(135deg, var(--zhevzhik-light-pink), #fff);
-        padding: 40px 0;
+    .register-section {
+        background: linear-gradient(120deg, rgba(26, 42, 108, 0.05), rgba(255, 107, 157, 0.08));
+        padding: 60px 0;
     }
     
     .register-card {
-        background: white;
+        background: var(--card-bg, white);
         border-radius: 20px;
         box-shadow: 0 20px 40px rgba(255, 107, 157, 0.1);
         padding: 40px;
         max-width: 500px;
         width: 100%;
         margin: 20px;
+        color: var(--text-color, var(--zhevzhik-dark-gray));
     }
     
     .register-header {
@@ -40,7 +37,7 @@
     }
     
     .register-title {
-        color: var(--zhevzhik-pink);
+        color: var(--zhevzhik-dark-gray);
         font-size: 2rem;
         font-weight: 700;
         margin-bottom: 10px;
@@ -51,17 +48,30 @@
         font-size: 1.1rem;
     }
     
+    .register-hero {
+        background: var(--card-bg, white);
+        border-radius: 24px;
+        padding: 40px;
+        box-shadow: 0 20px 45px rgba(26, 42, 108, 0.08);
+        height: 100%;
+        color: var(--text-color, var(--zhevzhik-dark-gray));
+    }
+    
+    .register-hero h2 {
+        color: var(--text-color, var(--zhevzhik-dark-gray));
+        font-weight: 700;
+    }
+    
     .user-icon {
-        width: 80px;
-        height: 80px;
+        width: 70px;
+        height: 70px;
         background: linear-gradient(135deg, var(--zhevzhik-pink), var(--zhevzhik-dark-pink));
-        border-radius: 50%;
-        display: flex;
+        border-radius: 18px;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
-        margin: 0 auto 20px;
         color: white;
-        font-size: 2rem;
+        font-size: 1.5rem;
     }
     
     .form-group {
@@ -76,17 +86,21 @@
     }
     
     .form-control {
-        border: 2px solid #e9ecef;
+        border: 2px solid var(--border-color, #e9ecef);
         border-radius: 12px;
         padding: 15px 20px;
         font-size: 1rem;
         transition: all 0.3s ease;
+        background-color: var(--input-bg, white);
+        color: var(--text-color, var(--zhevzhik-dark-gray));
     }
     
     .form-control:focus {
         border-color: var(--zhevzhik-pink);
         box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.1);
         outline: none;
+        background-color: var(--input-bg, white);
+        color: var(--text-color, var(--zhevzhik-dark-gray));
     }
     
     .btn-register {
@@ -169,205 +183,220 @@
         color: var(--zhevzhik-pink);
     }
     
-    .benefits {
-        background: #f8f9fa;
-        border-radius: 15px;
-        padding: 20px;
-        margin-top: 30px;
-    }
-    
-    .benefit-item {
-        display: flex;
-        align-items: center;
-        margin-bottom: 15px;
+    .benefits-list li {
+        margin-bottom: 12px;
         color: var(--zhevzhik-dark-gray);
     }
     
-    .benefit-item:last-child {
-        margin-bottom: 0;
-    }
-    
-    .benefit-icon {
+    .benefits-list li i {
         color: var(--zhevzhik-green);
-        margin-right: 10px;
-        font-size: 1.2rem;
+        margin-right: 8px;
     }
     
 </style>
 {% endblock %}
 {% block content %}
-<div class="register-container">
-    <div class="register-card">
-        <div class="register-header">
-            <div class="user-icon">
-                <i class="fas fa-user-plus"></i>
-            </div>
-            <h1 class="register-title">Регистрация</h1>
-            <p class="register-subtitle">Создайте аккаунт в Жевжик</p>
-        </div>
-        
-        
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}
-        {% endif %}
-        
-        <!-- Форма регистрации -->
-        <form method="post" id="registerForm">
-            {% csrf_token %}
-            
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="{{ form.first_name.id_for_label }}" class="form-label">
-                            <i class="fas fa-user me-2"></i>Имя <span class="required">*</span>
-                        </label>
-                        {{ form.first_name }}
-                        {% if form.first_name.errors %}
-                            <div class="text-danger mt-2">
-                                {% for error in form.first_name.errors %}
-                                    <small>{{ error }}</small>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
+<section class="register-section">
+    <div class="container">
+        <div class="row g-4 align-items-start">
+            <div class="col-lg-6">
+                <div class="register-hero">
+                    <div class="user-icon mb-3">
+                        <i class="fas fa-user-plus"></i>
                     </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="{{ form.last_name.id_for_label }}" class="form-label">
-                            <i class="fas fa-user me-2"></i>Фамилия <span class="required">*</span>
-                        </label>
-                        {{ form.last_name }}
-                        {% if form.last_name.errors %}
-                            <div class="text-danger mt-2">
-                                {% for error in form.last_name.errors %}
-                                    <small>{{ error }}</small>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
+                    <p class="text-uppercase text-muted mb-2" style="letter-spacing: .2em;">Жевжик</p>
+                    <h2 class="mb-3">Присоединяйтесь к клубу любимых покупателей</h2>
+                    <p class="text-muted mb-4">Управляйте адресами доставки, кешбэком и любимыми товарами в одной удобной панели.</p>
+                    <ul class="benefits-list list-unstyled">
+                        <li><i class="fas fa-check"></i>Бонус 500 ₽ на первый заказ</li>
+                        <li><i class="fas fa-check"></i>Расширенный контроль доставки и уведомления</li>
+                        <li><i class="fas fa-check"></i>Синхронизация адреса с Яндекс Картами</li>
+                        <li><i class="fas fa-check"></i>Кешбэк и персональные промо</li>
+                    </ul>
                 </div>
             </div>
-            
-            <div class="form-group">
-                <label for="{{ form.phone.id_for_label }}" class="form-label">
-                    <i class="fas fa-phone me-2"></i>Телефон (необязательно)
-                </label>
-                {{ form.phone }}
-                {% if form.phone.errors %}
-                    <div class="text-danger mt-2">
-                        {% for error in form.phone.errors %}
-                            <small>{{ error }}</small>
+            <div class="col-lg-6">
+                <div class="register-card">
+                    <div class="register-header">
+                        <h1 class="register-title">Регистрация</h1>
+                        <p class="register-subtitle">Создайте аккаунт в Жевжик</p>
+                    </div>
+                    
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
                         {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
-            
-            <div class="form-group">
-                <label for="{{ form.email.id_for_label }}" class="form-label">
-                    <i class="fas fa-envelope me-2"></i>Email <span class="required">*</span>
-                </label>
-                {{ form.email }}
-                {% if form.email.errors %}
-                    <div class="text-danger mt-2">
-                        {% for error in form.email.errors %}
-                            <small>{{ error }}</small>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
-            
-            <div class="form-group">
-                <label for="{{ form.username.id_for_label }}" class="form-label">
-                    <i class="fas fa-at me-2"></i>Имя пользователя <span class="required">*</span>
-                </label>
-                {{ form.username }}
-                {% if form.username.errors %}
-                    <div class="text-danger mt-2">
-                        {% for error in form.username.errors %}
-                            <small>{{ error }}</small>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
-            
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="{{ form.password1.id_for_label }}" class="form-label">
-                            <i class="fas fa-lock me-2"></i>Пароль <span class="required">*</span>
-                        </label>
-                        {{ form.password1 }}
-                        {% if form.password1.errors %}
-                            <div class="text-danger mt-2">
-                                {% for error in form.password1.errors %}
-                                    <small>{{ error }}</small>
-                                {% endfor %}
+                    {% endif %}
+                    
+                    <form method="post" id="registerForm">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                                        <i class="fas fa-user me-2"></i>Имя <span class="required">*</span>
+                                    </label>
+                                    {{ form.first_name }}
+                                    {% if form.first_name.errors %}
+                                        <div class="text-danger mt-2">
+                                            {% for error in form.first_name.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
                             </div>
-                        {% endif %}
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                                        <i class="fas fa-user me-2"></i>Фамилия <span class="required">*</span>
+                                    </label>
+                                    {{ form.last_name }}
+                                    {% if form.last_name.errors %}
+                                        <div class="text-danger mt-2">
+                                            {% for error in form.last_name.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.phone.id_for_label }}" class="form-label">
+                                <i class="fas fa-phone me-2"></i>Телефон (необязательно)
+                            </label>
+                            {{ form.phone }}
+                            {% if form.phone.errors %}
+                                <div class="text-danger mt-2">
+                                    {% for error in form.phone.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">
+                                <i class="fas fa-envelope me-2"></i>Email <span class="required">*</span>
+                            </label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="text-danger mt-2">
+                                    {% for error in form.email.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.username.id_for_label }}" class="form-label">
+                                <i class="fas fa-at me-2"></i>Имя пользователя <span class="required">*</span>
+                            </label>
+                            {{ form.username }}
+                            {% if form.username.errors %}
+                                <div class="text-danger mt-2">
+                                    {% for error in form.username.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.password1.id_for_label }}" class="form-label">
+                                        <i class="fas fa-lock me-2"></i>Пароль <span class="required">*</span>
+                                    </label>
+                                    {{ form.password1 }}
+                                    {% if form.password1.errors %}
+                                        <div class="text-danger mt-2">
+                                            {% for error in form.password1.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.password2.id_for_label }}" class="form-label">
+                                        <i class="fas fa-lock me-2"></i>Подтверждение <span class="required">*</span>
+                                    </label>
+                                    {{ form.password2 }}
+                                    {% if form.password2.errors %}
+                                        <div class="text-danger mt-2">
+                                            {% for error in form.password2.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="agree_terms" name="agree_terms" required>
+                            <label class="form-check-label" for="agree_terms">
+                                Я согласен с <a href="#" target="_blank">условиями обработки персональных данных</a> и <a href="#" target="_blank">политикой конфиденциальности</a> <span class="required">*</span>
+                            </label>
+                            {% if form.agree_terms.errors %}
+                                <div class="text-danger mt-2">
+                                    {% for error in form.agree_terms.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <button type="submit" class="btn btn-register" id="registerBtn">
+                            <i class="fas fa-user-plus me-2"></i>Создать аккаунт
+                        </button>
+                    </form>
+                    
+                    <div class="registration-options">
+                        <a href="{% url 'login' %}">Уже есть аккаунт? Войти</a>
+                        <a href="{% url 'home' %}">На главную</a>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="{{ form.password2.id_for_label }}" class="form-label">
-                            <i class="fas fa-lock me-2"></i>Подтверждение <span class="required">*</span>
-                        </label>
-                        {{ form.password2 }}
-                        {% if form.password2.errors %}
-                            <div class="text-danger mt-2">
-                                {% for error in form.password2.errors %}
-                                    <small>{{ error }}</small>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
             </div>
-            
-            <button type="submit" class="btn btn-register" id="registerBtn">
-                <i class="fas fa-user-plus me-2"></i>Создать аккаунт
-            </button>
-        </form>
-        
-        <div class="benefits">
-            <h6 class="fw-bold mb-3 text-center">Преимущества регистрации:</h6>
-            <div class="benefit-item">
-                <i class="fas fa-gift benefit-icon"></i>
-                <span>Скидка 500 ₽ на первый заказ</span>
-            </div>
-            <div class="benefit-item">
-                <i class="fas fa-heart benefit-icon"></i>
-                <span>Программа лояльности</span>
-            </div>
-            <div class="benefit-item">
-                <i class="fas fa-truck benefit-icon"></i>
-                <span>Быстрая доставка</span>
-            </div>
-            <div class="benefit-item">
-                <i class="fas fa-bell benefit-icon"></i>
-                <span>Уведомления об акциях</span>
-            </div>
-        </div>
-        
-        <div class="registration-options">
-            <a href="{% url 'login' %}">Уже есть аккаунт? Войти</a>
-            <a href="{% url 'phone_registration_start' %}">Регистрация по телефону</a>
-            <a href="{% url 'home' %}">На главную</a>
         </div>
     </div>
-</div>
+</section>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('registerForm');
     const registerBtn = document.getElementById('registerBtn');
+    const agreeTerms = document.getElementById('agree_terms');
+    
+    function updateButtonState() {
+        if (agreeTerms && agreeTerms.checked) {
+            registerBtn.disabled = false;
+        } else {
+            registerBtn.disabled = true;
+        }
+    }
+    
+    if (agreeTerms) {
+        agreeTerms.addEventListener('change', updateButtonState);
+        updateButtonState();
+    }
     
     // Обработка отправки формы
     form.addEventListener('submit', function(e) {
+        if (agreeTerms && !agreeTerms.checked) {
+            e.preventDefault();
+            alert('Необходимо согласиться с условиями обработки персональных данных и политикой конфиденциальности');
+            return;
+        }
         registerBtn.disabled = true;
         registerBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Создание аккаунта...';
     });

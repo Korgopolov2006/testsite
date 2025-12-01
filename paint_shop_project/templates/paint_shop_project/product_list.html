@@ -26,11 +26,12 @@
 }
 
 .filters-section {
-    background: var(--white);
+    background: var(--card-bg, var(--white));
     border-radius: var(--border-radius);
     box-shadow: var(--shadow);
     padding: 24px;
     margin-bottom: 30px;
+    color: var(--text-color, var(--dark-gray));
 }
 
 .filter-group {
@@ -39,7 +40,7 @@
 
 .filter-label {
     font-weight: 600;
-    color: var(--dark-gray);
+    color: var(--text-color, var(--dark-gray));
     margin-bottom: 8px;
     display: block;
 }
@@ -47,24 +48,29 @@
 .filter-input {
     width: 100%;
     padding: 12px 16px;
-    border: 2px solid #e9ecef;
+    border: 2px solid var(--border-color, #e9ecef);
     border-radius: var(--border-radius);
     transition: var(--transition);
+    background-color: var(--input-bg, var(--white));
+    color: var(--text-color, var(--dark-gray));
 }
 
 .filter-input:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.1);
+    background-color: var(--input-bg, var(--white));
+    color: var(--text-color, var(--dark-gray));
 }
 
 .filter-select {
     width: 100%;
     padding: 12px 16px;
-    border: 2px solid #e9ecef;
+    border: 2px solid var(--border-color, #e9ecef);
     border-radius: var(--border-radius);
-    background: var(--white);
+    background: var(--input-bg, var(--white));
     transition: var(--transition);
+    color: var(--text-color, var(--dark-gray));
 }
 
 .filter-select:focus {
@@ -81,7 +87,7 @@
 }
 
 .product-card {
-    background: var(--white);
+    background: var(--card-bg, var(--white));
     border-radius: var(--border-radius);
     box-shadow: var(--shadow);
     overflow: hidden;
@@ -89,11 +95,47 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    color: var(--text-color, var(--dark-gray));
 }
 
 .product-card:hover {
     transform: translateY(-4px);
     box-shadow: var(--shadow-hover);
+}
+
+/* Стили для закончившихся товаров */
+.product-card.out-of-stock {
+    opacity: 0.5;
+    filter: grayscale(0.7);
+    pointer-events: none;
+}
+
+.product-card.out-of-stock:hover {
+    transform: none;
+    box-shadow: var(--shadow);
+}
+
+.product-card.out-of-stock .product-image {
+    opacity: 0.6;
+}
+
+.product-card.out-of-stock .product-content {
+    opacity: 0.7;
+}
+
+.out-of-stock-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(220, 53, 69, 0.95);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    z-index: 10;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .product-image {
@@ -163,7 +205,7 @@
 .product-name {
     font-size: 1.1rem;
     font-weight: 600;
-    color: var(--dark-gray);
+    color: var(--text-color, var(--dark-gray));
     margin-bottom: 8px;
     line-height: 1.4;
     display: -webkit-box;
@@ -591,12 +633,18 @@
     {% if products %}
         <div class="products-grid" id="productsGrid">
             {% for product in products %}
-            <div class="product-card">
+            <div class="product-card {% if not product.is_available %}out-of-stock{% endif %}" data-product-id="{{ product.id }}">
                 {% if product.image %}
                     <a href="{% url 'product_detail' product.id %}"><img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image"></a>
                 {% else %}
                     <div class="product-image d-flex align-items-center justify-content-center">
                         <i class="fas fa-image fa-3x text-muted"></i>
+                    </div>
+                {% endif %}
+                
+                {% if not product.is_available %}
+                    <div class="out-of-stock-badge">
+                        <i class="fas fa-times-circle"></i> Нет в наличии
                     </div>
                 {% endif %}
                 
@@ -653,7 +701,13 @@
                     {% endif %}
                     
                     <div class="product-actions">
-                        {% if user.is_authenticated %}
+                        {% if not product.is_available %}
+                            <!-- Товар закончился - показываем неактивную кнопку -->
+                            <button class="btn-add-cart" disabled style="opacity: 0.5; cursor: not-allowed;">
+                                <i class="fas fa-ban"></i>
+                                Нет в наличии
+                            </button>
+                        {% elif user.is_authenticated %}
                             {% if product_id_to_qty %}
                                 {% with qty=product_id_to_qty|get_item:product.id|default:0 %}
                                     {% if qty %}
@@ -843,6 +897,16 @@ function addToCart(productId) {
 
 // Обновление количества товара в корзине из каталога
 function updateCartQuantityFromCatalog(productId, delta) {
+    // Проверяем, не закончился ли товар (если увеличиваем количество)
+    if (delta > 0) {
+        const productCard = document.querySelector(`.product-card[data-product-id="${productId}"]`) || 
+                           document.querySelector(`#add-btn-${productId}`)?.closest('.product-card');
+        if (productCard && productCard.classList.contains('out-of-stock')) {
+            showToast('Товар закончился и недоступен для заказа', 'error');
+            return;
+        }
+    }
+    
     // Находим текущее количество товара в корзине
     const qtyEl = document.getElementById(`qty-${productId}`);
     const currentQty = parseInt(qtyEl ? qtyEl.textContent : '0', 10) || 0;
@@ -990,11 +1054,19 @@ function toggleView(view) {
 
 // Добавление в избранное (любимые товары)
 function toggleFavorite(productId) {
+    console.log('[FAVORITES] toggleFavorite called for productId:', productId);
     {% if user.is_authenticated %}
     const btn = event.target.closest('.btn-favorite');
     const icon = btn.querySelector('i');
+    console.log('[FAVORITES] Button found:', !!btn, 'Icon found:', !!icon);
     
-    fetch(`/api/favorites/toggle/`, {
+    if (!btn) {
+        console.error('[FAVORITES] Button not found!');
+        return;
+    }
+    
+    console.log('[FAVORITES] Sending request to /api/v1/favorites/toggle/');
+    fetch(`/api/v1/favorites/toggle/`, {
         method: 'POST',
         headers: {
             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
@@ -1003,24 +1075,31 @@ function toggleFavorite(productId) {
         body: JSON.stringify({ product_id: productId })
     })
     .then(response => {
+        console.log('[FAVORITES] Response status:', response.status, 'ok:', response.ok);
         if (!response.ok) {
-            return response.json().then(errData => Promise.reject({ response, errData }));
+            return response.json().then(errData => {
+                console.error('[FAVORITES] Error response:', errData);
+                return Promise.reject({ response, errData });
+            });
         }
         return response.json();
     })
     .then(data => {
+        console.log('[FAVORITES] Success response:', data);
         if (data.is_favorite) {
             btn.classList.add('active');
             icon.className = 'fas fa-heart';
             showToast('Товар добавлен в любимые (скидка 10%)', 'success');
+            console.log('[FAVORITES] Product added to favorites');
         } else {
             btn.classList.remove('active');
             icon.className = 'far fa-heart';
             showToast('Товар удален из любимых', 'info');
+            console.log('[FAVORITES] Product removed from favorites');
         }
     })
     .catch(error => {
-        console.error('Error:', error);
+        console.error('[FAVORITES] Error:', error);
         // Обработка ошибок из API
         if (error.errData) {
             const errData = error.errData;

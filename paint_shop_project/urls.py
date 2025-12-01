@@ -1,5 +1,7 @@
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
+from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
+from .views import CustomPasswordResetView
 from django.shortcuts import render
 from .views import *
 from .metrics_views import prometheus_metrics_view
@@ -60,11 +62,18 @@ urlpatterns = [
     path('info/', info_view, name='info'),
     path('register/', register_view, name='register'),
     path('login/', login_view, name='login'),
-    path('phone-login/', phone_login_view, name='phone_login'),
-    path('phone-registration-start/', phone_registration_start_view, name='phone_registration_start'),
-    path('phone-verification/<str:verification_type>/', phone_verification_view, name='phone_verification'),
-    path('phone-registration/', phone_registration_view, name='phone_registration'),
-    path('resend-sms/', resend_sms_view, name='resend_sms'),
+    # Восстановление пароля
+    path('password-reset/', CustomPasswordResetView.as_view(), name='password_reset'),
+    path('password-reset/done/', PasswordResetDoneView.as_view(
+        template_name='paint_shop_project/password_reset_done.html'
+    ), name='password_reset_done'),
+    path('password-reset-confirm/<uidb64>/<token>/', PasswordResetConfirmView.as_view(
+        template_name='paint_shop_project/password_reset_confirm.html',
+        success_url='/password-reset/complete/'
+    ), name='password_reset_confirm'),
+    path('password-reset/complete/', PasswordResetCompleteView.as_view(
+        template_name='paint_shop_project/password_reset_complete.html'
+    ), name='password_reset_complete'),
     path('logout/', logout_view, name='logout'),
     path('cart/', cart_view, name='cart'),
     path('cart-count/', cart_count_view, name='cart_count'),
@@ -95,6 +104,9 @@ urlpatterns = [
     path('stores/', stores_view, name='stores'),
     path('contacts/', contacts_view, name='contacts'),
     path('support/', support_view, name='support'),
+    path('favorite-categories/', favorite_categories_view, name='favorite_categories'),
+    path('add-favorite-category/<int:category_id>/', add_favorite_category_view, name='add_favorite_category'),
+    path('remove-favorite-category/<int:category_id>/', remove_favorite_category_view, name='remove_favorite_category'),
     path('favorites/', favorites_view, name='favorites'),
     path('add-to-favorites/<int:product_id>/', add_to_favorites, name='add_to_favorites'),
     path('remove-from-favorites/<int:product_id>/', remove_from_favorites, name='remove_from_favorites'),

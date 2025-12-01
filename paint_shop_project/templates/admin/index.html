@@ -12,15 +12,80 @@
     .admin-dashboard__banner .button { background:#fff; color:#1a2a6c; border:none; font-weight:600; }
     .admin-dashboard__quick-actions { display:flex; gap:12px; flex-wrap:wrap; }
     .admin-dashboard__apps { display:grid; gap:20px; }
-    .admin-app-card { background:#fff; border-radius:14px; padding:20px; box-shadow:0 12px 28px rgba(0,0,0,0.05); }
-    .admin-app-card h2 { margin-top:0; }
+    .admin-app-card { background:var(--card-bg, #fff); border-radius:14px; padding:20px; box-shadow:0 12px 28px rgba(0,0,0,0.05); color:var(--text-color, #1a2a6c); }
+    .admin-app-card h2 { margin-top:0; color:var(--text-color, #1a2a6c); }
     .admin-app-card ul { list-style:none; margin:0; padding:0; display:grid; gap:12px; }
-    .admin-app-card li { display:flex; justify-content:space-between; gap:12px; align-items:center; }
-    .admin-app-card li a { font-weight:600; color:#1a2a6c; text-decoration:none; }
+    .admin-app-card li { display:flex; justify-content:space-between; gap:12px; align-items:center; color:var(--text-color, #1a2a6c); }
+    .admin-app-card li a { font-weight:600; color:var(--text-color, #1a2a6c); text-decoration:none; }
     .admin-app-card li .actions { display:flex; gap:8px; }
-    .admin-app-card li .actions a { font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:#6c757d; text-decoration:none; }
-    .admin-app-card li .actions a:hover { color:#1a2a6c; }
-    .admin-empty { color:#6c757d; font-style:italic; }
+    .admin-app-card li .actions a { font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--medium-gray, #6c757d); text-decoration:none; }
+    .admin-app-card li .actions a:hover { color:var(--primary-color, #1a2a6c); }
+    .admin-empty { color:var(--text-color, #6c757d); font-style:italic; }
+    
+    /* Тёмная тема для админ панели */
+    .dark-theme #header,
+    .dark-theme #content,
+    .dark-theme #content-main,
+    .dark-theme .module,
+    .dark-theme .module table,
+    .dark-theme .form-row,
+    .dark-theme .submit-row,
+    .dark-theme .inline-group,
+    .dark-theme .dashboard-container,
+    .dark-theme .dashboard-stats,
+    .dark-theme .stat-card,
+    .dark-theme .chart-card,
+    .dark-theme .db-card,
+    .dark-theme .db-stat,
+    .dark-theme .db-table,
+    .dark-theme .segment-card,
+    .dark-theme .warehouse-dashboard,
+    .dark-theme .rfm-container {
+        background-color: var(--card-bg, #2d2d2d) !important;
+        color: var(--text-color, #e0e0e0) !important;
+    }
+    
+    .dark-theme #header { background-color: var(--header-bg, #252525) !important; border-bottom-color: var(--border-color, #404040) !important; }
+    .dark-theme #content { background-color: var(--bg-color, #1a1a1a) !important; }
+    .dark-theme .module h2,
+    .dark-theme .module h3,
+    .dark-theme h1,
+    .dark-theme h2,
+    .dark-theme h3,
+    .dark-theme .stat-card .value,
+    .dark-theme .stat-card .label,
+    .dark-theme .chart-card h3 {
+        color: var(--text-color, #e0e0e0) !important;
+    }
+    .dark-theme .module table th,
+    .dark-theme .module table td,
+    .dark-theme .db-table th,
+    .dark-theme .db-table td {
+        background-color: var(--card-bg, #2d2d2d) !important;
+        color: var(--text-color, #e0e0e0) !important;
+        border-color: var(--border-color, #404040) !important;
+    }
+    .dark-theme input[type="text"],
+    .dark-theme input[type="email"],
+    .dark-theme input[type="password"],
+    .dark-theme input[type="number"],
+    .dark-theme input[type="date"],
+    .dark-theme select,
+    .dark-theme textarea {
+        background-color: var(--input-bg, #2d2d2d) !important;
+        color: var(--text-color, #e0e0e0) !important;
+        border-color: var(--border-color, #404040) !important;
+    }
+    .dark-theme .button,
+    .dark-theme input[type="submit"],
+    .dark-theme .submit-row input {
+        background-color: var(--primary-color, #ff6b9d) !important;
+        color: var(--white, #fff) !important;
+    }
+    .dark-theme .button:hover,
+    .dark-theme input[type="submit"]:hover {
+        background-color: var(--primary-dark, #e55a8a) !important;
+    }
 </style>
 {% endblock %}
 

@@ -7,11 +7,18 @@
 <style>
     .export-container { padding-bottom:40px; }
     .export-header { display:flex; flex-wrap:wrap; gap:18px; align-items:center; justify-content:space-between; margin-bottom:32px; }
-    .export-card { background:#fff; border-radius:12px; padding:24px; box-shadow:0 12px 30px rgba(0,0,0,0.05); margin-bottom:24px; }
-    .export-card h3 { margin-top:0; }
+    .export-card { background:var(--card-bg, #fff); border-radius:12px; padding:24px; box-shadow:0 12px 30px rgba(0,0,0,0.05); margin-bottom:24px; color:var(--text-color, #1a2a6c); }
+    .export-card h3 { margin-top:0; color:var(--text-color, #1a2a6c); }
     .export-form { display:grid; gap:16px; }
     .form-group { display:flex; flex-direction:column; gap:8px; }
-    .form-group label { font-weight:600; }
+    .form-group label { font-weight:600; color:var(--text-color, #1a2a6c); }
+    .export-card input[type="number"],
+    .export-card input[type="date"],
+    .export-card select {
+        background-color: var(--input-bg, #fff) !important;
+        color: var(--text-color, #1a2a6c) !important;
+        border-color: var(--border-color, #d0d7de) !important;
+    }
 </style>
 {% endblock %}
 
@@ -77,6 +84,36 @@
         </form>
     </div>
 
+    <h2 style="margin-top: 40px; margin-bottom: 20px;">{% trans "📊 Расширенные отчеты" %}</h2>
+
+    <div class="export-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <h3 style="color: white;">{% trans "📄 Полный отчет дашборда в PDF" %}</h3>
+        <p style="color: rgba(255,255,255,0.9);">{% trans "Экспорт всех графиков дашборда в PDF: выручка по дням, количество заказов, статусы заказов, топ-10 товаров" %}</p>
+        <form method="post" class="export-form">
+            {% csrf_token %}
+            <input type="hidden" name="report_type" value="dashboard_pdf">
+            <div class="form-group">
+                <label style="color: white;">{% trans "Период (дней)" %}</label>
+                <input type="number" name="period" value="30" min="1" max="365" required>
+            </div>
+            <button type="submit" class="button" style="background: white; color: #667eea; font-weight: bold;">{% trans "📄 Скачать PDF отчет" %}</button>
+        </form>
+    </div>
+
+    <div class="export-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+        <h3 style="color: white;">{% trans "📊 Экспорт всех метрик" %}</h3>
+        <p style="color: rgba(255,255,255,0.9);">{% trans "Экспорт всех метрик в один Excel файл: продажи, товары, клиенты" %}</p>
+        <form method="post" class="export-form">
+            {% csrf_token %}
+            <input type="hidden" name="report_type" value="all_metrics_export">
+            <div class="form-group">
+                <label style="color: white;">{% trans "Период (дней)" %}</label>
+                <input type="number" name="days" value="30" min="1" max="365" required>
+            </div>
+            <button type="submit" class="button" style="background: white; color: #f5576c; font-weight: bold;">{% trans "📊 Экспортировать все метрики" %}</button>
+        </form>
+    </div>
+
     <h2 style="margin-top: 40px; margin-bottom: 20px;">{% trans "📦 Отчеты по партиям товаров" %}</h2>
 
     <div class="export-card">
@@ -136,6 +173,18 @@
             {% csrf_token %}
             <input type="hidden" name="report_type" value="batches_by_category">
             <button type="submit" class="button default">{% trans "📊 Экспортировать в Excel" %}</button>
+        </form>
+    </div>
+
+    <h2 style="margin-top: 40px; margin-bottom: 20px;">{% trans "🎨 Дополнительные инструменты" %}</h2>
+
+    <div class="export-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <h3 style="color: white;">{% trans "📄 Экспорт CSS стилей" %}</h3>
+        <p style="color: rgba(255,255,255,0.9);">{% trans "Скачайте CSS файл со всеми стилями, используемыми в Excel и PDF экспортах. Полезно для кастомизации и понимания форматирования." %}</p>
+        <form method="post" class="export-form">
+            {% csrf_token %}
+            <input type="hidden" name="report_type" value="export_styles">
+            <button type="submit" class="button" style="background: white; color: #667eea; font-weight: bold;">{% trans "📄 Скачать CSS стили" %}</button>
         </form>
     </div>
 </div>

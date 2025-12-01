@@ -287,7 +287,11 @@ class ProductBatchAdmin(admin.ModelAdmin):
     
     def days_until_expiry_display(self, obj):
         """Отображает количество дней до истечения срока годности"""
+        if obj is None:
+            return "—"
         days = obj.days_until_expiry
+        if days is None:
+            return "—"
         if days < 0:
             return f"❌ Просрочено ({abs(days)} дн. назад)"
         return f"{days} дн."
@@ -295,9 +299,13 @@ class ProductBatchAdmin(admin.ModelAdmin):
     
     def expiry_status_display(self, obj):
         """Отображает статус срока годности"""
+        if obj is None:
+            return "—"
         if obj.is_expired:
             return "❌ Просрочено"
         days = obj.days_until_expiry
+        if days is None:
+            return "—"
         if days <= 3:
             return f"⚠️ Истекает через {days} дн."
         elif days <= 7:

@@ -9,24 +9,24 @@
     .db-maintenance { padding-bottom: 40px; }
     .db-maintenance__header { display:flex; flex-direction:column; gap:12px; margin-bottom:32px; }
     .db-maintenance__actions { display:grid; gap:24px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); margin-bottom:32px; }
-    .db-card { background:#fff; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.06); padding:24px; }
-    .db-card h2 { margin-top:0; margin-bottom:16px; }
+    .db-card { background:var(--card-bg, #fff); border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.06); padding:24px; color:var(--text-color, #1a2a6c); }
+    .db-card h2 { margin-top:0; margin-bottom:16px; color:var(--text-color, #1a2a6c); }
     .db-card form .form-row { margin-bottom:14px; }
     .db-card .radio { margin-bottom:6px; display:block; }
-    .db-card small { color:#666; }
+    .db-card small { color:var(--text-color, #666); }
     .db-badges { display:flex; gap:12px; flex-wrap:wrap; }
-    .db-badge { display:flex; align-items:center; gap:8px; padding:10px 14px; border-radius:10px; background:#f5f5f5; font-weight:600; }
+    .db-badge { display:flex; align-items:center; gap:8px; padding:10px 14px; border-radius:10px; background:var(--light-gray, #f5f5f5); font-weight:600; color:var(--text-color, #1a2a6c); }
     .db-section { margin-bottom:40px; }
-    .db-section h2 { margin-bottom:18px; }
+    .db-section h2 { margin-bottom:18px; color:var(--text-color, #1a2a6c); }
     .db-two-col { display:grid; gap:24px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
-    .db-table { width:100%; border-collapse:collapse; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 10px 25px rgba(0,0,0,0.04); }
-    .db-table th { background:#f0f4ff; color:#1a2a6c; text-transform:uppercase; font-size:12px; letter-spacing:.05em; padding:12px 16px; }
-    .db-table td { padding:12px 16px; border-bottom:1px solid #f2f2f2; }
+    .db-table { width:100%; border-collapse:collapse; background:var(--card-bg, #fff); border-radius:12px; overflow:hidden; box-shadow:0 10px 25px rgba(0,0,0,0.04); }
+    .db-table th { background:var(--light-gray, #f0f4ff); color:var(--text-color, #1a2a6c); text-transform:uppercase; font-size:12px; letter-spacing:.05em; padding:12px 16px; }
+    .db-table td { padding:12px 16px; border-bottom:1px solid var(--border-color, #f2f2f2); color:var(--text-color, #1a2a6c); }
     .db-table tr:last-child td { border-bottom:none; }
     .db-stats { display:grid; gap:18px; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); margin-bottom:24px; }
-    .db-stat { background:#fff; border-radius:12px; padding:18px; box-shadow:0 12px 30px rgba(0,0,0,0.05); }
-    .db-stat .label { font-size:12px; text-transform:uppercase; color:#6c757d; letter-spacing:.08em; }
-    .db-stat .value { font-size:24px; font-weight:700; margin-top:6px; }
+    .db-stat { background:var(--card-bg, #fff); border-radius:12px; padding:18px; box-shadow:0 12px 30px rgba(0,0,0,0.05); color:var(--text-color, #1a2a6c); }
+    .db-stat .label { font-size:12px; text-transform:uppercase; color:var(--text-color, #6c757d); letter-spacing:.08em; }
+    .db-stat .value { font-size:24px; font-weight:700; margin-top:6px; color:var(--text-color, #1a2a6c); }
     .db-stat .note { font-size:12px; color:#999; margin-top:4px; }
     .db-link { display:inline-flex; align-items:center; gap:6px; }
     .db-metrics-grid { display:grid; gap:18px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-bottom:24px; }
@@ -57,16 +57,27 @@
                 <input type="hidden" name="action" value="test-connection">
                 <button type="submit" class="button">{% trans "Проверить соединение" %}</button>
             </form>
-            <form method="post" style="display:inline;">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="run-manual-backup">
-                <button type="submit" class="button default">🚀 {% trans "Запустить бэкап вручную" %}</button>
-            </form>
+            <a href="?export_sql=1" class="button" style="background-color: #4CAF50; color: white;">
+                <i class="fas fa-download" style="margin-right: 5px;"></i>{% trans "Экспорт SQL скрипта" %}
+            </a>
         </div>
         <h1>{{ title }}</h1>
         <p class="help">
             {% blocktrans %}Резервные копии по умолчанию сохраняются в каталоге {{ backup_root }}. Создавайте отдельные подпапки для каждой копии и при необходимости скачивайте их на локальный компьютер.{% endblocktrans %}
         </p>
+        <div class="db-alert">
+            {% if auto_backup_enabled %}
+                {% if auto_backup_triggered %}
+                    {% trans "Автоматический бэкап только что выполнен." %}
+                {% elif last_backup %}
+                    {% blocktrans with last=last_backup.started_at|date:"d.m.Y H:i" next=next_backup|date:"d.m.Y H:i" %}Последний автоматический бэкап выполнен {{ last }}. Следующий запланирован примерно на {{ next }}.{% endblocktrans %}
+                {% else %}
+                    {% trans "Автоматические ежедневные бэкапы включены. Первый будет создан в течение ближайшего часа." %}
+                {% endif %}
+            {% else %}
+                {% trans "Автоматические бэкапы отключены в настройках." %}
+            {% endif %}
+        </div>
     </div>
 
     <div class="db-maintenance__actions">
@@ -206,7 +217,7 @@
                     <tr>
                         <th>{% trans "Операция" %}</th>
                         <th>{% trans "Статус" %}</th>
-                        <th>{% trans "Создал" %}</th>
+                        <th>{% trans "Комментарий" %}</th>
                         <th>{% trans "Размер" %}</th>
                         <th>{% trans "Начало" %}</th>
                         <th>{% trans "Окончание" %}</th>
@@ -227,7 +238,7 @@
                                     <span style="color:orange;">⏳ {% trans "В процессе" %}</span>
                                 {% endif %}
                             </td>
-                            <td data-label="{% trans "Создал" %}">{{ record.created_by.username|default:"—" }}</td>
+                            <td data-label="{% trans "Комментарий" %}">{{ record.comment|default:"—" }}</td>
                             <td data-label="{% trans "Размер" %}">{{ record.format_file_size }}</td>
                             <td data-label="{% trans "Начало" %}">{{ record.started_at|date:"d.m.Y H:i" }}</td>
                             <td data-label="{% trans "Окончание" %}">

@@ -131,12 +131,11 @@
                             </form>
                         {% else %}
                             {% if item_data.available_batches %}
-                                <form method="post" action="{% url 'picker_assign_batch' order.id item.id %}" style="margin-bottom: 5px;">
-                                    {% csrf_token %}
-                                    <select name="batch_id" style="padding: 5px; border: 1px solid #ccc; border-radius: 3px; width: 100%; max-width: 300px;">
-                                        <option value="">{% trans "-- Выберите партию --" %}</option>
+                                <div style="color: #666; font-size: 0.9em;">
+                                    {% trans "Доступные партии:" %}
+                                    <ul style="margin: 5px 0; padding-left: 20px;">
                                         {% for batch in item_data.available_batches %}
-                                            <option value="{{ batch.id }}">
+                                            <li>
                                                 {% trans "Партия" %} {{ batch.batch_number|default:batch.id }} - 
                                                 {% trans "Срок" %}: {{ batch.expiry_date|date:"d.m.Y" }} 
                                                 ({% if batch.days_until_expiry < 0 %}
@@ -149,16 +148,11 @@
                                                     ✅ {{ batch.days_until_expiry }} {% trans "дн." %}
                                                 {% endif %}) - 
                                                 {% trans "Остаток" %}: {{ batch.remaining_quantity }}
-                                                {% if batch.expiry_percent_remaining %}
-                                                    ({{ batch.expiry_percent_remaining|floatformat:0 }}% {% trans "срока" %})
-                                                {% endif %}
-                                            </option>
+                                            </li>
                                         {% endfor %}
-                                    </select>
-                                    <button type="submit" style="padding: 5px 10px; background: #10b981; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 0.85em; margin-top: 5px;">
-                                        {% trans "Назначить партию" %}
-                                    </button>
-                                </form>
+                                    </ul>
+                                    <small style="color: #999;">{% trans "Используйте автоподбор партий для автоматического назначения" %}</small>
+                                </div>
                             {% else %}
                                 <span style="color: #ef4444;">⚠️ {% trans "Нет доступных партий" %}</span>
                             {% endif %}

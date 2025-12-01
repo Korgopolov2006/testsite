@@ -21,11 +21,12 @@
         margin-bottom: 32px; 
     }
     .stat-card { 
-        background: #fff; 
+        background: var(--card-bg, #fff); 
         border-radius: 12px; 
         padding: 20px; 
         box-shadow: 0 12px 30px rgba(0,0,0,0.05); 
         border-left: 4px solid #1a2a6c;
+        color: var(--text-color, #1a2a6c);
     }
     .stat-card.warning { border-left-color: #f59e0b; }
     .stat-card.danger { border-left-color: #ef4444; }
@@ -33,19 +34,19 @@
     .stat-card .label { 
         font-size: 12px; 
         text-transform: uppercase; 
-        color: #6c757d; 
+        color: var(--text-color, #6c757d); 
         letter-spacing: .08em; 
         margin-bottom: 8px; 
     }
     .stat-card .value { 
         font-size: 32px; 
         font-weight: 700; 
-        color: #1a2a6c; 
+        color: var(--text-color, #1a2a6c); 
         margin-bottom: 4px; 
     }
     .stat-card .subvalue { 
         font-size: 14px; 
-        color: #6c757d; 
+        color: var(--text-color, #6c757d); 
     }
     .dashboard-charts { 
         display: grid; 
@@ -54,10 +55,11 @@
         margin-bottom: 32px; 
     }
     .chart-card { 
-        background: #fff; 
+        background: var(--card-bg, #fff); 
         border-radius: 12px; 
         padding: 24px; 
         box-shadow: 0 12px 30px rgba(0,0,0,0.05); 
+        color: var(--text-color, #1a2a6c);
     }
     .chart-card h3 { margin-top: 0; margin-bottom: 20px; }
     .chart-container { position: relative; height: 300px; }

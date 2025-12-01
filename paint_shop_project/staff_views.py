@@ -32,9 +32,13 @@ def is_delivery_person(user):
 
 def is_manager(user):
     """Проверка, может ли пользователь управлять магазином (по флагу роли)"""
-    return (user.is_authenticated and 
-            user.role and 
-            user.role.can_manage_store)
+    return (
+        user.is_authenticated and
+        (
+            user.is_superuser or
+            (user.role and user.role.can_manage_store)
+        )
+    )
 
 
 @login_required
@@ -127,6 +131,32 @@ def manager_dashboard(request):
     active_promotions = Promotion.objects.filter(is_active=True, end_date__gte=now).count()
     active_promocodes = PromoCode.objects.filter(is_active=True, end_date__gte=now).count()
     
+    # Дополнительные показатели для бордов
+    status_totals = {entry['status']: entry['count'] for entry in orders_by_status}
+    pending_orders = status_totals.get('created', 0) + status_totals.get('confirmed', 0)
+    in_transit_orders = status_totals.get('ready', 0) + status_totals.get('in_transit', 0)
+    delivered_orders_count = status_totals.get('delivered', 0)
+    cancelled_orders = status_totals.get('cancelled', 0)
+
+    stores_for_stats = managed_stores if managed_stores.exists() else Store.objects.filter(is_active=True)[:3]
+    store_statistics = []
+    for store in stores_for_stats:
+        store_orders = Order.objects.filter(
+            Q(fulfillment_store=store) | Q(pickup_point=store)
+        )
+        store_delivered = store_orders.filter(status='delivered')
+        store_stats = {
+            'name': store.name,
+            'address': store.address,
+            'orders_total': store_orders.count(),
+            'orders_today': store_orders.filter(order_date__date=today).count(),
+            'revenue': store_delivered.aggregate(total=Sum('total_amount'))['total'] or 0,
+            'pending': store_orders.filter(status__in=['created', 'confirmed']).count(),
+            'in_transit': store_orders.filter(status__in=['ready', 'in_transit']).count(),
+            'delivered': store_delivered.count(),
+        }
+        store_statistics.append(store_stats)
+
     context = {
         'manager_name': request.user.get_full_name() or request.user.username,
         'managed_stores': managed_stores,
@@ -155,6 +185,11 @@ def manager_dashboard(request):
         'recent_orders': recent_orders,
         'active_promotions': active_promotions,
         'active_promocodes': active_promocodes,
+        'pending_orders': pending_orders,
+        'in_transit_orders': in_transit_orders,
+        'delivered_orders_count': delivered_orders_count,
+        'cancelled_orders': cancelled_orders,
+        'store_statistics': store_statistics,
     }
     
     return render(request, 'paint_shop_project/staff/manager_dashboard.html', context)
@@ -170,17 +205,20 @@ def picker_dashboard(request):
     # Получаем заказы, ожидающие сборки или в процессе
     # Для самовывоза - заказы собираются в магазине
     # Для доставки - заказы собираются в магазине комплектации
+    # Включаем заказы со статусом "missing_items" (Недостаточно товаров)
     orders = Order.objects.filter(
         Q(picking__status='pending') | Q(picking__status='in_progress') | Q(picking__status='missing_items'),
         status__in=['created', 'confirmed']
     ).select_related('user', 'picking', 'fulfillment_store').prefetch_related('items').order_by('-order_date')
     
-    # Заказы, которые собирает текущий сборщик
-    my_pickings = orders.filter(picking__picker=request.user)
+    # Заказы, которые собирает текущий сборщик (включая missing_items)
+    my_pickings = orders.filter(
+        Q(picking__picker=request.user) | Q(picking__status='missing_items', picking__picker=request.user)
+    )
     
-    # Доступные заказы для взятия в работу (еще не назначены сборщику)
+    # Доступные заказы для взятия в работу (еще не назначены сборщику, включая missing_items)
     available_orders = orders.filter(
-        Q(picking__picker__isnull=True) | Q(picking__status='pending')
+        Q(picking__picker__isnull=True) | Q(picking__status='pending') | Q(picking__status='missing_items', picking__picker__isnull=True)
     )
     
     # Завершенные сборки сегодня

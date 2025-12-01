@@ -23,12 +23,13 @@
     }
     
     .store-card {
-        background: white;
+        background: var(--card-bg, white);
         border-radius: 15px;
         overflow: hidden;
         box-shadow: 0 5px 20px rgba(0,0,0,0.1);
         transition: all 0.3s ease;
         margin-bottom: 30px;
+        color: var(--text-color, var(--zhevzhik-dark-gray));
     }
     
     .store-card:hover {
@@ -54,7 +55,7 @@
     }
     
     .store-address {
-        color: var(--zhevzhik-dark-gray);
+        color: var(--text-color, var(--zhevzhik-dark-gray));
         margin-bottom: 15px;
         display: flex;
         align-items: center;
@@ -78,7 +79,7 @@
     }
     
     .store-phone {
-        color: var(--zhevzhik-dark-gray);
+        color: var(--text-color, var(--zhevzhik-dark-gray));
         margin-bottom: 20px;
         display: flex;
         align-items: center;
@@ -119,10 +120,11 @@
     }
     
     .map-container {
-        background: #f8f9fa;
+        background: var(--card-bg, #f8f9fa);
         border-radius: 15px;
         padding: 30px;
         margin-bottom: 30px;
+        color: var(--text-color, var(--zhevzhik-dark-gray));
     }
     
     .map-embed {
@@ -166,10 +168,11 @@
     .feature-card {
         text-align: center;
         padding: 20px;
-        background: white;
+        background: var(--card-bg, white);
         border-radius: 15px;
         box-shadow: 0 3px 15px rgba(0,0,0,0.1);
         transition: all 0.3s ease;
+        color: var(--text-color, var(--zhevzhik-dark-gray));
     }
     
     .feature-card:hover {
@@ -178,14 +181,14 @@
     }
 
     .stores-cta {
-        background: linear-gradient(135deg, #ffffff, var(--zhevzhik-light-pink));
-        color: var(--zhevzhik-dark-gray);
+        background: linear-gradient(135deg, var(--card-bg, #ffffff), var(--zhevzhik-light-pink));
+        color: var(--text-color, var(--zhevzhik-dark-gray));
         border: none;
     }
 
     .stores-cta h2,
     .stores-cta p {
-        color: var(--zhevzhik-dark-gray);
+        color: var(--text-color, var(--zhevzhik-dark-gray));
     }
 
     .stores-cta .btn-cta {
@@ -202,6 +205,75 @@
         background: var(--zhevzhik-dark-pink);
         color: #ffffff;
         transform: translateY(-2px);
+    }
+
+    .stores-filter {
+        background: var(--card-bg, white);
+        border-radius: 18px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        padding: 24px;
+        margin-bottom: 30px;
+        color: var(--text-color, var(--zhevzhik-dark-gray));
+    }
+
+    .stores-filter .form-control {
+        border: 2px solid var(--border-color, #f1f2f6);
+        border-radius: 14px;
+        padding: 14px 18px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+        background-color: var(--input-bg, white);
+        color: var(--text-color, var(--zhevzhik-dark-gray));
+    }
+
+    .stores-filter .form-control:focus {
+        border-color: var(--zhevzhik-pink);
+        box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.1);
+    }
+
+    .btn-outline-zhevzhik-pink {
+        border: 2px solid var(--zhevzhik-pink);
+        color: var(--zhevzhik-pink);
+        border-radius: 999px;
+        padding: 10px 22px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        background: transparent;
+    }
+
+    .btn-outline-zhevzhik-pink:hover,
+    .btn-outline-zhevzhik-pink:focus {
+        background: var(--zhevzhik-pink);
+        color: #fff;
+    }
+
+    .btn-filter {
+        border: 1px solid var(--border-color, rgba(26, 42, 108, 0.1));
+        background: var(--input-bg, rgba(26, 42, 108, 0.04));
+        color: var(--text-color, var(--zhevzhik-dark-gray));
+        border-radius: 999px;
+        padding: 8px 18px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+
+    .btn-filter:hover {
+        background: var(--zhevzhik-pink);
+        color: #fff;
+        border-color: var(--zhevzhik-pink);
+    }
+
+    .stores-empty {
+        display: none;
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--zhevzhik-gray);
+    }
+
+    .stores-empty i {
+        font-size: 3rem;
+        color: var(--zhevzhik-light-pink);
+        margin-bottom: 15px;
     }
 </style>
 {% endblock %}
@@ -221,8 +293,8 @@
         <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between mb-3">
             <div>
                 <h3 class="section-title mb-0">
-                    <i class="fas fa-map-marker-alt"></i>Расположение магазинов
-                </h3>
+            <i class="fas fa-map-marker-alt"></i>Расположение магазинов
+        </h3>
                 <p class="text-muted mb-0">На карте отмечены наши актуальные точки продаж и пункты самовывоза</p>
             </div>
             <a href="https://yandex.ru/maps/?um=constructor%3Afb4a9069499ed32b2008342da6f7807421006e52adfad87390169edc29a0ad4a&source=constructorLink" target="_blank" class="btn btn-outline-zhevzhik-pink mt-3 mt-lg-0">
@@ -231,6 +303,27 @@
         </div>
         <div class="map-embed">
             <script type="text/javascript" charset="utf-8" async src="https://api-maps.yandex.ru/services/constructor/1.0/js/?um=constructor%3Afb4a9069499ed32b2008342da6f7807421006e52adfad87390169edc29a0ad4a&amp;width=100%25&amp;height=420&amp;lang=ru_RU&amp;scroll=true"></script>
+        </div>
+    </div>
+    
+    <!-- Фильтр магазинов -->
+    <div class="stores-filter">
+        <div class="row align-items-center g-3">
+            <div class="col-lg-6">
+                <label for="storesSearchInput" class="form-label fw-semibold text-uppercase text-muted" style="letter-spacing:.18em;">Поиск магазина</label>
+                <input type="text" class="form-control" id="storesSearchInput" placeholder="Введите название, адрес или телефон">
+                <small class="text-muted d-block mt-2">Найдено <span id="storesVisibleCounter">{{ stores|length }}</span> {{ stores|length|pluralize:"магазин,магазина,магазинов" }}</small>
+            </div>
+            <div class="col-lg-6">
+                <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
+                    <button type="button" class="btn-filter" data-suggest="центр">Центр</button>
+                    <button type="button" class="btn-filter" data-suggest="магазин">Магазин</button>
+                    <button type="button" class="btn-filter" data-suggest="улица">Улица</button>
+                    <button type="button" class="btn-filter" id="storesSearchReset">
+                        <i class="fas fa-times me-1"></i>Сбросить
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -243,9 +336,12 @@
         </div>
     </div>
     
-    <div class="row">
+    <div class="row" id="storesList">
         {% for store in stores %}
-        <div class="col-lg-4 col-md-6">
+        <div class="col-lg-4 col-md-6 store-column"
+             data-store-name="{{ store.name|default:''|lower|escape }}"
+             data-store-address="{{ store.address|default:''|lower|escape }}"
+             data-store-phone="{{ store.phone|default:''|lower|escape }}">
             <div class="store-card">
                 {% if store.image %}
                     <img src="{{ store.image.url }}" alt="{{ store.name }}" class="store-image">
@@ -296,6 +392,12 @@
             <p class="text-muted">Мы работаем над открытием новых точек</p>
         </div>
         {% endfor %}
+    </div>
+    
+    <div class="stores-empty" id="storesEmptyState">
+        <i class="fas fa-map-marked-alt mb-3"></i>
+        <h4>Не нашли подходящий магазин</h4>
+        <p>Попробуйте изменить запрос или нажмите «Сбросить»</p>
     </div>
     
     <!-- Преимущества -->
@@ -369,6 +471,10 @@
 // Добавляем интерактивность для карточек магазинов
 document.addEventListener('DOMContentLoaded', function() {
     const storeCards = document.querySelectorAll('.store-card');
+    const storeColumns = document.querySelectorAll('.store-column');
+    const searchInput = document.getElementById('storesSearchInput');
+    const visibleCounter = document.getElementById('storesVisibleCounter');
+    const emptyState = document.getElementById('storesEmptyState');
     
     storeCards.forEach(card => {
         card.addEventListener('mouseenter', function() {
@@ -396,6 +502,53 @@ document.addEventListener('DOMContentLoaded', function() {
         card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
         observer.observe(card);
     });
+
+    function applyStoreFilter(query = '') {
+        const normalizedQuery = query.trim().toLowerCase();
+        let visibleCount = 0;
+        storeColumns.forEach(col => {
+            const haystack = `${col.dataset.storeName} ${col.dataset.storeAddress} ${col.dataset.storePhone}`.trim();
+            const isMatch = haystack.includes(normalizedQuery);
+            col.style.display = isMatch ? '' : 'none';
+            if (isMatch) {
+                visibleCount += 1;
+            }
+        });
+        if (visibleCounter) {
+            visibleCounter.textContent = visibleCount;
+        }
+        if (emptyState) {
+            emptyState.style.display = visibleCount ? 'none' : 'block';
+        }
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener('input', (event) => {
+            applyStoreFilter(event.target.value);
+        });
+    }
+
+    document.querySelectorAll('.btn-filter[data-suggest]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const value = btn.dataset.suggest || '';
+            if (searchInput) {
+                searchInput.value = value;
+                searchInput.focus();
+            }
+            applyStoreFilter(value);
+        });
+    });
+
+    document.getElementById('storesSearchReset')?.addEventListener('click', () => {
+        if (searchInput) {
+            searchInput.value = '';
+            searchInput.focus();
+        }
+        applyStoreFilter('');
+    });
+
+    // Применяем фильтр по умолчанию при загрузке
+    applyStoreFilter('');
 });
 
 // Функция для копирования адреса в буфер обмена

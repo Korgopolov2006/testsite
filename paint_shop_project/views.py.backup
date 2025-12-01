@@ -43,30 +43,6 @@ class CustomUserCreationForm(UserCreationForm):
         model = User
         fields = ("username", "first_name", "last_name", "email", "phone", "password1", "password2", "agree_terms")
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        field_placeholders = {
-            'first_name': 'Ваше имя',
-            'last_name': 'Ваша фамилия',
-            'phone': '+7 (___) ___-__-__',
-            'email': 'name@example.com',
-            'username': 'Никнейм в системе',
-            'password1': 'Придумайте пароль',
-            'password2': 'Повторите пароль',
-        }
-        for field_name, placeholder in field_placeholders.items():
-            if field_name in self.fields:
-                field = self.fields[field_name]
-                existing_classes = field.widget.attrs.get('class', '')
-                base_classes = f"{existing_classes} form-control form-control-lg".strip()
-                field.widget.attrs.update({
-                    'class': base_classes,
-                    'placeholder': placeholder,
-                })
-        # Checkbox already has class but гарантируем единый стиль
-        self.fields['agree_terms'].widget.attrs.setdefault('class', 'form-check-input')
-        self.fields['agree_terms'].widget.attrs.setdefault('id', 'agree_terms')
-
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data["email"]
@@ -86,53 +62,34 @@ def logout_view(request):
 
 def phone_login_view(request):
     """Вход по номеру телефона (автоматически создает пользователя если его нет)"""
-    if request.method == 'POST':
-        form = PhoneLoginForm(request.POST)
-        if form.is_valid():
-            phone = form.cleaned_data['phone']
-            # Отправляем SMS-код (пользователь будет создан автоматически при подтверждении кода)
-            send_sms_code(phone, 'login')
-            request.session['phone_for_verification'] = phone
-            messages.success(request, f'SMS-код отправлен на номер {phone}')
-            return redirect('phone_verification', verification_type='login')
-    else:
-        form = PhoneLoginForm()
-    
-    return render(request, 'paint_shop_project/phone_login.html', {'form': form})
+    # Отключаем функцию входа по телефону
+    return render(request, 'paint_shop_project/feature_disabled.html')
+
 
 def phone_registration_start_view(request):
     """Начало регистрации по номеру телефона - отправка SMS"""
-    if request.method == 'POST':
-        form = PhoneLoginForm(request.POST)
-        if form.is_valid():
-            phone = form.cleaned_data['phone']
-            # Проверяем, не зарегистрирован ли уже этот номер
-            if User.objects.filter(phone=phone).exists():
-                messages.error(request, 'Пользователь с таким номером уже зарегистрирован. Войдите в систему.')
-                return redirect('phone_login')
-            else:
-                # Отправляем SMS-код для регистрации
-                send_sms_code(phone, 'registration')
-                request.session['phone_for_verification'] = phone
-                messages.success(request, f'SMS-код отправлен на номер {phone}')
-                return redirect('phone_verification', verification_type='registration')
-    else:
-        form = PhoneLoginForm()
-    
-    return render(request, 'paint_shop_project/phone_registration_start.html', {'form': form})
+    # Отключаем функцию регистрации по телефону
+    return render(request, 'paint_shop_project/feature_disabled.html')
+
 
 def phone_verification_view(request, verification_type='login'):
     """Верификация SMS-кода"""
-    phone = request.session.get('phone_for_verification')
-    if not phone:
-        return redirect('phone_login')
-    
-    if request.method == 'POST':
-        # Собираем код из отдельных полей
-        code_parts = [
-            request.POST.get('code1', ''),
-            request.POST.get('code2', ''),
-            request.POST.get('code3', ''),
+    # Отключаем функцию верификации по SMS
+    return render(request, 'paint_shop_project/feature_disabled.html')
+
+
+def phone_registration_view(request):
+    """Регистрация по номеру телефона"""
+    # Отключаем функцию регистрации по телефону
+    return render(request, 'paint_shop_project/feature_disabled.html')
+
+
+def resend_sms_view(request):
+    """Повторная отправка SMS-кода"""
+    # Отключаем функцию повторной отправки SMS
+    return render(request, 'paint_shop_project/feature_disabled.html')
+
+
             request.POST.get('code4', ''),
             request.POST.get('code5', ''),
             request.POST.get('code6', '')
@@ -185,6 +142,7 @@ def phone_verification_view(request, verification_type='login'):
         'verification_type': verification_type
     })
 
+
 def phone_registration_view(request):
     """Регистрация по номеру телефона"""
     phone = request.session.get('phone_for_verification')
@@ -219,6 +177,7 @@ def phone_registration_view(request):
         form = PhoneRegistrationForm(initial={'phone': phone})
     
     return render(request, 'paint_shop_project/phone_registration.html', {'form': form})
+
 
 def resend_sms_view(request):
     """Повторная отправка SMS-кода"""
@@ -304,30 +263,18 @@ def add_favorite_category_view(request, category_id):
         current_count = FavoriteCategory.objects.filter(user=request.user).count()
         if current_count >= FAVORITE_CATEGORY_LIMIT:
             return JsonResponse({'success': False, 'message': f'Нельзя выбрать больше {FAVORITE_CATEGORY_LIMIT} категорий'})
-        
-        # Получаем скидку из запроса или используем значение по умолчанию
-        discount_percent = int(request.POST.get('discount_percent', FAVORITE_CATEGORY_DISCOUNT))
-        # Ограничиваем скидку от 0 до 50%
-        discount_percent = max(0, min(50, discount_percent))
-        
         favorite_category, created = FavoriteCategory.objects.get_or_create(
             user=request.user,
-            category=category,
-            defaults={
-                'discount_percent': discount_percent,
-                'cashback_multiplier': FAVORITE_CATEGORY_CASHBACK_MULTIPLIER
-            }
+            category=category
         )
         
-        if not created:
-            # Обновляем скидку если категория уже была в избранном
-            favorite_category.discount_percent = discount_percent
-            favorite_category.save(update_fields=['discount_percent'])
-        
-        return JsonResponse({
-            'success': True, 
-            'message': f'Категория "{category.name}" добавлена в избранное со скидкой {discount_percent}%'
-        })
+        if created:
+            favorite_category.discount_percent = FAVORITE_CATEGORY_DISCOUNT
+            favorite_category.cashback_multiplier = FAVORITE_CATEGORY_CASHBACK_MULTIPLIER
+            favorite_category.save(update_fields=['discount_percent', 'cashback_multiplier'])
+            return JsonResponse({'success': True, 'message': f'Категория "{category.name}" добавлена в избранное'})
+        else:
+            return JsonResponse({'success': False, 'message': 'Категория уже в избранном'})
     
     return JsonResponse({'success': False, 'message': 'Неверный запрос'})
 
@@ -779,12 +726,6 @@ def add_to_cart(request, product_id):
     if request.method == 'POST':
         try:
             product = get_object_or_404(Product, id=product_id)
-            
-            # Проверяем доступность товара
-            if not product.is_available:
-                logger.warning(f"Попытка добавления закончившегося товара {product.name} пользователем {request.user.username}")
-                return JsonResponse({'success': False, 'message': 'Товар закончился и недоступен для заказа'}, status=400)
-            
             logger.info(f"Пользователь {request.user.username} добавляет товар {product.name} в корзину")
             
             cart_item, created = Cart.objects.get_or_create(
@@ -1095,25 +1036,6 @@ def create_order(request):
         if not cart_items.exists():
             messages.warning(request, 'Ваша корзина пуста!')
             return redirect('cart')
-        
-        # Проверяем доступность товаров в корзине
-        unavailable_products = []
-        for item in cart_items:
-            if not item.product.is_available:
-                unavailable_products.append(item.product.name)
-        
-        # Если есть недоступные товары, возвращаем JSON с информацией для модального окна
-        if unavailable_products:
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.content_type == 'application/json':
-                return JsonResponse({
-                    'success': False,
-                    'message': 'Некоторые товары закончились',
-                    'unavailable_products': unavailable_products,
-                    'show_modal': True
-                }, status=400)
-            else:
-                messages.error(request, f'Следующие товары закончились: {", ".join(unavailable_products)}')
-                return redirect('cart')
         
         subtotal = sum(item.total_price for item in cart_items)
         delivery_type = request.POST.get('delivery_type', 'pickup')
@@ -1647,21 +1569,8 @@ def product_list_view(request):
 
 def product_detail_view(request, product_id):
     product = get_object_or_404(Product, id=product_id, is_active=True)
-    
-    product_qty = 0
-    is_favorite = False
-    try:
-        if request.user.is_authenticated:
-            product_qty = Cart.objects.filter(user=request.user, product=product).values_list('quantity', flat=True).first() or 0
-            is_favorite = Favorite.objects.filter(user=request.user, product=product).exists()
-    except Exception:
-        product_qty = 0
-        is_favorite = False
-    
     context = {
         'product': product,
-        'product_qty': product_qty,
-        'is_favorite': is_favorite,
     }
     return render(request, 'paint_shop_project/product_detail.html', context)
 
@@ -2957,12 +2866,12 @@ def cashback_history_view(request):
     total_earned = CashbackTransaction.objects.filter(
         user=user, 
         transaction_type='earned'
-    ).aggregate(total=Sum('amount'))['total'] or 0
+    ).aggregate(total=models.Sum('amount'))['total'] or 0
     
     total_spent = CashbackTransaction.objects.filter(
         user=user, 
         transaction_type='spent'
-    ).aggregate(total=Sum('amount'))['total'] or 0
+    ).aggregate(total=models.Sum('amount'))['total'] or 0
     
     current_balance = total_earned - total_spent
     

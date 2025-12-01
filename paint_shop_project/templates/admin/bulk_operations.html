@@ -7,12 +7,12 @@
 <style>
     .bulk-container { padding-bottom:40px; }
     .bulk-header { display:flex; flex-wrap:wrap; gap:18px; align-items:center; justify-content:space-between; margin-bottom:32px; }
-    .bulk-card { background:#fff; border-radius:12px; padding:24px; box-shadow:0 12px 30px rgba(0,0,0,0.05); margin-bottom:24px; }
-    .bulk-card h3 { margin-top:0; }
+    .bulk-card { background:var(--card-bg, #fff); border-radius:12px; padding:24px; box-shadow:0 12px 30px rgba(0,0,0,0.05); margin-bottom:24px; color:var(--text-color, #1a2a6c); }
+    .bulk-card h3 { margin-top:0; color:var(--text-color, #1a2a6c); }
     .search-box { margin-bottom:16px; }
-    .search-box input { width:100%; padding:12px; border:1px solid #d0d7de; border-radius:6px; }
-    .users-list { max-height:400px; overflow-y:auto; border:1px solid #d0d7de; border-radius:6px; padding:12px; }
-    .user-item { display:flex; align-items:center; gap:12px; padding:8px; border-bottom:1px solid #f2f2f2; }
+    .search-box input { width:100%; padding:12px; border:1px solid var(--border-color, #d0d7de); border-radius:6px; background-color:var(--input-bg, #fff); color:var(--text-color, #1a2a6c); }
+    .users-list { max-height:400px; overflow-y:auto; border:1px solid var(--border-color, #d0d7de); border-radius:6px; padding:12px; background-color:var(--card-bg, #fff); }
+    .user-item { display:flex; align-items:center; gap:12px; padding:8px; border-bottom:1px solid var(--border-color, #f2f2f2); color:var(--text-color, #1a2a6c); }
     .user-item:last-child { border-bottom:none; }
     .user-item input[type="checkbox"] { margin:0; }
     .bulk-actions { display:grid; gap:16px; }

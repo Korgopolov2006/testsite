@@ -5,40 +5,189 @@
 
 {% block extrastyle %}
 <style>
-    .dashboard-container { padding-bottom:40px; }
-    .dashboard-header { display:flex; flex-wrap:wrap; gap:18px; align-items:center; justify-content:space-between; margin-bottom:32px; }
-    .dashboard-stats { display:grid; gap:18px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom:32px; }
-    .stat-card { background:#fff; border-radius:12px; padding:20px; box-shadow:0 12px 30px rgba(0,0,0,0.05); }
-    .stat-card .label { font-size:12px; text-transform:uppercase; color:#6c757d; letter-spacing:.08em; margin-bottom:8px; }
-    .stat-card .value { font-size:32px; font-weight:700; color:#1a2a6c; margin-bottom:4px; }
-    .stat-card .change { font-size:14px; }
-    .stat-card .change.positive { color:#10b981; }
-    .stat-card .change.negative { color:#ef4444; }
-    .dashboard-charts { display:grid; gap:24px; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); margin-bottom:32px; }
-    .chart-card { background:#fff; border-radius:12px; padding:24px; box-shadow:0 12px 30px rgba(0,0,0,0.05); }
-    .chart-card h3 { margin-top:0; margin-bottom:20px; }
-    .chart-container { position:relative; height:300px; }
-    .dashboard-actions { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:24px; }
-    .period-selector { display:flex; gap:8px; }
-    .period-selector button { padding:8px 16px; border:1px solid #d0d7de; background:#fff; border-radius:6px; cursor:pointer; }
-    .period-selector button.active { background:#1a2a6c; color:#fff; border-color:#1a2a6c; }
+    .dashboard-container { 
+        padding: 20px; 
+        max-width: 100%;
+    }
+    .dashboard-header { 
+        display: flex; 
+        flex-wrap: wrap; 
+        gap: 18px; 
+        align-items: center; 
+        justify-content: space-between; 
+        margin-bottom: 32px; 
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .dashboard-stats { 
+        display: grid; 
+        gap: 20px; 
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
+        margin-bottom: 32px; 
+    }
+    .stat-card { 
+        background: var(--card-bg, #fff); 
+        border-radius: 12px; 
+        padding: 24px; 
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+        color: var(--text-color, #1a2a6c); 
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid #e0e0e0;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    .stat-card .label { 
+        font-size: 14px; 
+        text-transform: uppercase; 
+        color: var(--text-color, #6c757d); 
+        letter-spacing: 0.08em; 
+        margin-bottom: 8px; 
+        font-weight: 600;
+    }
+    .stat-card .value { 
+        font-size: 36px; 
+        font-weight: 700; 
+        color: var(--text-color, #1a2a6c); 
+        margin-bottom: 4px; 
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .stat-card .change { 
+        font-size: 14px; 
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .stat-card .change.positive { 
+        color: #10b981; 
+    }
+    .stat-card .change.negative { 
+        color: #ef4444; 
+    }
+    .dashboard-charts { 
+        display: grid; 
+        gap: 24px; 
+        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); 
+        margin-bottom: 32px; 
+    }
+    .chart-card { 
+        background: var(--card-bg, #fff); 
+        border-radius: 12px; 
+        padding: 24px; 
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+        color: var(--text-color, #1a2a6c); 
+        border: 1px solid #e0e0e0;
+    }
+    .chart-card h3 { 
+        margin-top: 0; 
+        margin-bottom: 20px; 
+        color: var(--text-color, #1a2a6c); 
+        font-size: 20px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .chart-container { 
+        position: relative; 
+        height: 350px; 
+        width: 100%;
+    }
+    .dashboard-actions { 
+        display: flex; 
+        gap: 12px; 
+        flex-wrap: wrap; 
+        margin-bottom: 24px; 
+    }
+    .period-selector { 
+        display: flex; 
+        gap: 8px; 
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+    }
+    .period-selector button { 
+        padding: 10px 20px; 
+        border: 1px solid var(--border-color, #d0d7de); 
+        background: var(--input-bg, #fff); 
+        border-radius: 8px; 
+        cursor: pointer; 
+        color: var(--text-color, #1a2a6c); 
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+    .period-selector button:hover {
+        background: #f5f5f5;
+    }
+    .period-selector button.active { 
+        background: var(--primary-color, #1a2a6c); 
+        color: #fff; 
+        border-color: var(--primary-color, #1a2a6c); 
+    }
+    .alert {
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 20px;
+    }
+    .alert-danger {
+        background-color: #fee2e2;
+        border: 1px solid #fecaca;
+        color: #991b1b;
+    }
+    .btn-close {
+        float: right;
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+    }
+    .table-container {
+        overflow-x: auto;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+    th, td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        color: #495057;
+    }
+    tr:hover {
+        background-color: #f8f9fa;
+    }
+    .chart-icon {
+        font-size: 24px;
+    }
+    /* Chart.js specific styles */
+    canvas {
+        display: block;
+        width: 100% !important;
+        height: 100% !important;
+    }
 </style>
+<!-- Load Chart.js and plugins -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js"></script>
 {% endblock %}
 
 {% block content %}
 <div class="dashboard-container">
+    <div id="dashboard-alerts"></div>
     <div class="dashboard-header">
         <div>
             <h1>{{ title }}</h1>
             <p class="help">{% trans "Аналитика продаж и ключевые метрики магазина" %}</p>
         </div>
         <div class="dashboard-actions">
-            <a href="{% url 'admin:index' %}" class="button">← {% trans "Вернуться" %}</a>
+            <a href="{% url 'admin:index' %}" class="button">{% trans "← Вернуться" %}</a>
             <a href="{% url 'admin:export-reports' %}" class="button default">{% trans "📊 Экспорт отчетов" %}</a>
-            <button id="exportDashboard" class="button default">{% trans "📥 Экспорт данных" %}</button>
-            <button id="importDashboard" class="button">{% trans "📤 Импорт данных" %}</button>
-            <input type="file" id="importFile" accept=".json" style="display:none;">
         </div>
     </div>
 
@@ -74,25 +223,25 @@
 
     <div class="dashboard-charts">
         <div class="chart-card">
-            <h3>{% trans "Выручка по дням" %}</h3>
+            <h3>📈 {% trans "Выручка по дням" %}</h3>
             <div class="chart-container">
                 <canvas id="revenueChart"></canvas>
             </div>
         </div>
         <div class="chart-card">
-            <h3>{% trans "Количество заказов" %}</h3>
+            <h3>📦 {% trans "Количество заказов" %}</h3>
             <div class="chart-container">
                 <canvas id="ordersChart"></canvas>
             </div>
         </div>
         <div class="chart-card">
-            <h3>{% trans "Статусы заказов" %}</h3>
+            <h3>📊 {% trans "Статусы заказов" %}</h3>
             <div class="chart-container">
                 <canvas id="statusChart"></canvas>
             </div>
         </div>
         <div class="chart-card">
-            <h3>{% trans "Топ-10 товаров по выручке" %}</h3>
+            <h3>🏆 {% trans "Топ-10 товаров по выручке" %}</h3>
             <div class="chart-container">
                 <canvas id="productsChart"></canvas>
             </div>
@@ -101,106 +250,365 @@
 
     {% if top_products %}
     <div class="chart-card">
-        <h3>{% trans "Детализация топ-товаров" %}</h3>
-        <table style="width:100%; border-collapse:collapse;">
-            <thead>
-                <tr style="background:#f0f4ff; border-bottom:2px solid #1a2a6c;">
-                    <th style="padding:12px; text-align:left;">{% trans "Товар" %}</th>
-                    <th style="padding:12px; text-align:right;">{% trans "Выручка" %}</th>
-                    <th style="padding:12px; text-align:right;">{% trans "Количество" %}</th>
-                    <th style="padding:12px; text-align:right;">{% trans "Заказов" %}</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for product in top_products %}
-                <tr style="border-bottom:1px solid #f2f2f2;">
-                    <td style="padding:12px;">{{ product.product__name|default:"—" }}</td>
-                    <td style="padding:12px; text-align:right;">{{ product.revenue|floatformat:2 }} ₽</td>
-                    <td style="padding:12px; text-align:right;">{{ product.quantity }}</td>
-                    <td style="padding:12px; text-align:right;">{{ product.orders }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <h3>📋 {% trans "Детализация топ-товаров" %}</h3>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>{% trans "Товар" %}</th>
+                        <th style="text-align: right;">{% trans "Выручка" %}</th>
+                        <th style="text-align: right;">{% trans "Количество" %}</th>
+                        <th style="text-align: right;">{% trans "Заказов" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in top_products %}
+                    <tr>
+                        <td>{{ product.product__name|default:"—" }}</td>
+                        <td style="text-align: right;">{{ product.revenue|floatformat:2 }} ₽</td>
+                        <td style="text-align: right;">{{ product.quantity }}</td>
+                        <td style="text-align: right;">{{ product.orders }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
     {% endif %}
 </div>
+
+{{ daily_data|json_script:"dashboard-daily-data" }}
+{{ orders_by_status|json_script:"dashboard-orders-by-status" }}
+{{ top_products|json_script:"dashboard-top-products" }}
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     let currentPeriod = 30;
     let revenueChart, ordersChart, statusChart, productsChart;
+    const alertsContainer = document.getElementById('dashboard-alerts');
+    const initialDailyDataElement = document.getElementById('dashboard-daily-data');
+    const initialDailyData = initialDailyDataElement ? JSON.parse(initialDailyDataElement.textContent) : [];
+    
+    // Parse status data
+    const ordersByStatusElement = document.getElementById('dashboard-orders-by-status');
+    const ordersByStatus = ordersByStatusElement ? JSON.parse(ordersByStatusElement.textContent) : [];
+    
+    // Parse top products data
+    const topProductsElement = document.getElementById('dashboard-top-products');
+    const topProducts = topProductsElement ? JSON.parse(topProductsElement.textContent) : [];
+
+    // Register the plugin
+    if (typeof Chart !== 'undefined' && typeof ChartDataLabels !== 'undefined') {
+        Chart.register(ChartDataLabels);
+        console.log('[DASHBOARD] Chart.js and plugins loaded successfully');
+    } else {
+        console.error('[DASHBOARD] Chart.js or plugins not loaded properly');
+    }
 
     // Инициализация графиков
     function initCharts() {
+        // Проверяем наличие Chart.js
+        if (typeof Chart === 'undefined') {
+            console.error('[CHART] Chart.js не загружен! Ожидание загрузки...');
+            setTimeout(initCharts, 500);
+            return;
+        }
+        
         const ctxRevenue = document.getElementById('revenueChart');
         const ctxOrders = document.getElementById('ordersChart');
         const ctxStatus = document.getElementById('statusChart');
         const ctxProducts = document.getElementById('productsChart');
 
+        if (!ctxRevenue || !ctxOrders || !ctxStatus || !ctxProducts) {
+            console.error('[CHART] Canvas elements not found!', {
+                revenue: !!ctxRevenue,
+                orders: !!ctxOrders,
+                status: !!ctxStatus,
+                products: !!ctxProducts
+            });
+            return;
+        }
+
         console.log('[CHART] Initializing revenue chart...');
+        // Destroy existing chart if it exists
+        if (revenueChart) {
+            revenueChart.destroy();
+        }
         revenueChart = new Chart(ctxRevenue, {
-            type: 'bar',
-            data: { labels: [], datasets: [] },
+            type: 'line',
+            data: { 
+                labels: [], 
+                datasets: [{
+                    label: 'Выручка',
+                    data: [],
+                    borderColor: '#1a2a6c',
+                    backgroundColor: 'rgba(26, 42, 108, 0.1)',
+                    tension: 0.4,
+                    borderWidth: 3,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#1a2a6c',
+                    pointBorderColor: '#fff',
+                    pointHoverRadius: 6,
+                    pointHoverBackgroundColor: '#1a2a6c',
+                    fill: true
+                }]
+            },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { display: true }
+                    legend: { 
+                        display: true, 
+                        position: 'top',
+                        labels: {
+                            font: {
+                                size: 14
+                            }
+                        }
+                    },
+                    tooltip: { 
+                        enabled: true,
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleFont: {
+                            size: 14
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        padding: 12,
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y.toLocaleString('ru-RU') + ' ₽';
+                            }
+                        }
+                    }
                 },
                 scales: {
-                    y: { beginAtZero: true }
+                    y: { 
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: { 
+                            callback: function(value) { 
+                                return value.toLocaleString('ru-RU') + ' ₽'; 
+                            },
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
                 }
             }
         });
         console.log('[CHART] Revenue chart initialized:', revenueChart ? 'OK' : 'FAILED');
 
         console.log('[CHART] Initializing orders chart...');
+        // Destroy existing chart if it exists
+        if (ordersChart) {
+            ordersChart.destroy();
+        }
         ordersChart = new Chart(ctxOrders, {
-            type: 'line',
-            data: { labels: [], datasets: [] },
+            type: 'bar',
+            data: { 
+                labels: [], 
+                datasets: [{
+                    label: 'Заказы',
+                    data: [],
+                    backgroundColor: '#4f63d8',
+                    borderColor: '#1a2a6c',
+                    borderWidth: 1,
+                    borderRadius: 6,
+                    borderSkipped: false
+                }]
+            },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { display: false }
+                    legend: { display: false },
+                    tooltip: { 
+                        enabled: true,
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleFont: {
+                            size: 14
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        padding: 12
+                    }
                 },
                 scales: {
-                    y: { beginAtZero: true }
+                    y: { 
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    }
                 }
             }
         });
         console.log('[CHART] Orders chart initialized:', ordersChart ? 'OK' : 'FAILED');
 
+        // Destroy existing chart if it exists
+        if (statusChart) {
+            statusChart.destroy();
+        }
         statusChart = new Chart(ctxStatus, {
             type: 'doughnut',
-            data: { labels: [], datasets: [] },
+            data: { 
+                labels: [], 
+                datasets: [{
+                    data: [],
+                    backgroundColor: [
+                        '#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'
+                    ],
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { position: 'bottom' }
-                }
+                    legend: { 
+                        position: 'bottom',
+                        labels: {
+                            font: {
+                                size: 13
+                            },
+                            padding: 15
+                        }
+                    },
+                    tooltip: { 
+                        enabled: true,
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleFont: {
+                            size: 14
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        padding: 12
+                    }
+                },
+                cutout: '60%'
             }
         });
 
+        // Destroy existing chart if it exists
+        if (productsChart) {
+            productsChart.destroy();
+        }
         productsChart = new Chart(ctxProducts, {
             type: 'bar',
-            data: { labels: [], datasets: [] },
+            data: { 
+                labels: [], 
+                datasets: [{
+                    label: 'Выручка',
+                    data: [],
+                    backgroundColor: [
+                        '#1a2a6c', '#2d378c', '#3e46ac', '#4f63d8', '#6070e8',
+                        '#7180f8', '#8290ff', '#93a0ff', '#a4b0ff', '#b5c0ff'
+                    ],
+                    borderColor: '#1a2a6c',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    borderSkipped: false
+                }]
+            },
             options: {
+                indexAxis: 'y',
                 responsive: true,
                 maintainAspectRatio: false,
-                indexAxis: 'y',
                 plugins: {
-                    legend: { display: false }
+                    legend: { display: false },
+                    tooltip: { 
+                        enabled: true,
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleFont: {
+                            size: 14
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        padding: 12,
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.x.toLocaleString('ru-RU') + ' ₽';
+                            }
+                        }
+                    }
                 },
                 scales: {
-                    x: { beginAtZero: true }
+                    x: { 
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            font: {
+                                size: 12
+                            },
+                            callback: function(value) {
+                                return value.toLocaleString('ru-RU') + ' ₽';
+                            }
+                        }
+                    },
+                    y: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    }
                 }
             }
         });
 
-        loadData(currentPeriod);
+        // Обновляем статические графики сразу
+        updateStatusChart();
+        updateProductsChart();
+        
+        if (initialDailyData.length) {
+            updateRevenueChart(initialDailyData);
+            updateOrdersChart(initialDailyData);
+        } else {
+            loadData(currentPeriod);
+        }
     }
 
     // Загрузка данных
@@ -208,11 +616,11 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('[DASHBOARD] Loading data for period:', period);
         const startTime = performance.now();
         
-        fetch(`{% url 'admin:dashboard-api' %}?period=${period}`)
+        fetch('/admin/dashboard/api/?period=' + period, { credentials: 'same-origin' })
             .then(response => {
                 console.log('[DASHBOARD] Response status:', response.status, response.statusText);
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error('HTTP error! status: ' + response.status);
                 }
                 return response.json();
             })
@@ -242,7 +650,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const loadTime = performance.now() - startTime;
                 console.error('[DASHBOARD] Error loading data after', loadTime.toFixed(2), 'ms:', error);
                 console.error('[DASHBOARD] Error stack:', error.stack);
-                alert('Ошибка загрузки данных: ' + error.message);
+                showDashboardError('Не удалось загрузить данные за выбранный период. Попробуйте обновить страницу.');
             });
     }
 
@@ -256,13 +664,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!data || data.length === 0) {
             console.warn('[CHART] Empty data for revenue chart');
             revenueChart.data.labels = [];
-            revenueChart.data.datasets = [{
-                label: '{% trans "Выручка" %}',
-                data: [],
-                borderColor: '#1a2a6c',
-                backgroundColor: 'rgba(26, 42, 108, 0.1)',
-                tension: 0.4
-            }];
+            revenueChart.data.datasets[0].data = [];
             revenueChart.update();
             return;
         }
@@ -271,14 +673,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('[CHART] Revenue chart labels count:', labels.length);
         console.log('[CHART] Revenue chart data sample:', revenues.slice(0, 5));
         revenueChart.data.labels = labels;
-        revenueChart.data.datasets = [{
-            label: '{% trans "Выручка" %}',
-            data: revenues,
-            borderColor: '#1a2a6c',
-            backgroundColor: 'rgba(26, 42, 108, 0.1)',
-            tension: 0.4,
-            fill: true
-        }];
+        revenueChart.data.datasets[0].data = revenues;
         revenueChart.update();
         console.log('[CHART] Revenue chart updated');
     }
@@ -293,11 +688,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!data || data.length === 0) {
             console.warn('[CHART] Empty data for orders chart');
             ordersChart.data.labels = [];
-            ordersChart.data.datasets = [{
-                label: '{% trans "Заказы" %}',
-                data: [],
-                backgroundColor: '#4f63d8'
-            }];
+            ordersChart.data.datasets[0].data = [];
             ordersChart.update();
             return;
         }
@@ -306,12 +697,8 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('[CHART] Orders chart labels count:', labels.length);
         console.log('[CHART] Orders chart data sample:', orders.slice(0, 5));
         ordersChart.data.labels = labels;
-        ordersChart.data.datasets = [{
-            label: '{% trans "Заказы" %}',
-            data: orders,
-            backgroundColor: '#4f63d8'
-        }];
-        ordersChart.update();
+        ordersChart.data.datasets[0].data = orders;
+        ordersChart.update('active');
         console.log('[CHART] Orders chart updated');
     }
 
@@ -326,49 +713,43 @@ document.addEventListener('DOMContentLoaded', function() {
             'cancelled': 'Отменён'
         };
 
-        const statusData = [
-            {% for status in orders_by_status %}
-            {status: '{{ status.status }}', count: {{ status.count }}},
-            {% endfor %}
-        ];
-        if (statusData.length > 0 && statusChart) {
-            statusChart.data.labels = statusData.map(s => statusLabels[s.status] || s.status);
-            statusChart.data.datasets = [{
-                data: statusData.map(s => s.count),
-                backgroundColor: [
-                    '#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'
-                ]
-            }];
+        if (ordersByStatus.length > 0 && statusChart) {
+            const labels = ordersByStatus.map(s => statusLabels[s.status] || s.status);
+            const data = ordersByStatus.map(s => s.count);
+            statusChart.data.labels = labels;
+            statusChart.data.datasets[0].data = data;
             statusChart.update();
         }
     }
 
     // Инициализация графика товаров
     function updateProductsChart() {
-        const productsData = [
-            {% for product in top_products %}
-            {name: '{{ product.product__name|default:"—"|escapejs }}', revenue: {{ product.revenue|default:0 }}},
-            {% endfor %}
-        ];
-        if (productsData.length > 0 && productsChart) {
-            productsChart.data.labels = productsData.slice(0, 10).map(p => p.name);
-            productsChart.data.datasets = [{
-                label: '{% trans "Выручка" %}',
-                data: productsData.slice(0, 10).map(p => parseFloat(p.revenue || 0)),
-                backgroundColor: '#4f63d8'
-            }];
+        if (topProducts.length > 0 && productsChart) {
+            // Ограничиваем длину названий товаров для лучшего отображения
+            const labels = topProducts.slice(0, 10).map(p => {
+                const name = p.product__name || '—';
+                return name.length > 20 ? name.substring(0, 17) + '...' : name;
+            });
+            const revenues = topProducts.slice(0, 10).map(p => parseFloat(p.revenue || 0));
+            productsChart.data.labels = labels;
+            productsChart.data.datasets[0].data = revenues;
             productsChart.update();
         }
     }
 
-    // СНАЧАЛА инициализируем графики
-    initCharts();
-    
-    // Затем обновляем статические графики
-    setTimeout(() => {
-        updateStatusChart();
-        updateProductsChart();
-    }, 100);
+    function showDashboardError(message) {
+        if (!alertsContainer) return;
+        alertsContainer.innerHTML = `
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert">×</button>
+            </div>
+        `;
+    }
+
+    // Инициализируем графики
+    // Добавляем небольшую задержку для гарантии загрузки Chart.js
+    setTimeout(initCharts, 100);
 
     // Обработчики периода
     document.querySelectorAll('.period-selector button').forEach(btn => {
@@ -380,221 +761,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Загружаем данные после инициализации
-    loadData(currentPeriod);
-
-    // Экспорт данных дашборда
-    document.getElementById('exportDashboard').addEventListener('click', function() {
-        fetch(`{% url 'admin:dashboard-api' %}?period=${currentPeriod}`)
-            .then(response => response.json())
-            .then(data => {
-                // Добавляем метаданные
-                const exportData = {
-                    export_date: new Date().toISOString(),
-                    period: currentPeriod,
-                    dashboard_data: data,
-                    statistics: {
-                        total_revenue: '{{ total_revenue|floatformat:2 }}',
-                        orders_total: {{ orders_total }},
-                        avg_order_value: '{{ avg_order_value|floatformat:2 }}',
-                        total_customers: {{ total_customers }}
-                    }
-                };
-                
-                const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `dashboard_export_${new Date().toISOString().split('T')[0]}.json`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                alert('{% trans "Данные экспортированы успешно" %}');
-            })
-            .catch(error => {
-                console.error('Export error:', error);
-                alert('{% trans "Ошибка экспорта данных" %}: ' + error.message);
-            });
-    });
-
-    // Импорт данных дашборда
-    document.getElementById('importDashboard').addEventListener('click', function() {
-        document.getElementById('importFile').click();
-    });
-
-    document.getElementById('importFile').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            try {
-                const importedData = JSON.parse(event.target.result);
-                
-                if (!importedData.dashboard_data) {
-                    alert('{% trans "Неверный формат файла. Ожидается объект с dashboard_data." %}');
-                    return;
-                }
-
-                // Сравниваем данные
-                compareData(importedData.dashboard_data, currentPeriod);
-                
-                // Очищаем input
-                e.target.value = '';
-            } catch (error) {
-                console.error('Import error:', error);
-                alert('{% trans "Ошибка чтения файла" %}: ' + error.message);
-            }
-        };
-        reader.readAsText(file);
-    });
-
-    // Функция сравнения данных
-    let comparisonData = null;
-    function compareData(importedData, currentPeriod) {
-        comparisonData = importedData;
-        
-        // Загружаем текущие данные для сравнения
-        fetch(`{% url 'admin:dashboard-api' %}?period=${currentPeriod}`)
-            .then(response => response.json())
-            .then(currentData => {
-                // Создаем сравнительный график
-                updateComparisonChart(currentData.daily, importedData.daily || []);
-                
-                // Показываем таблицу сравнения
-                showComparisonTable(currentData, importedData);
-                
-                // Показываем кнопку для скрытия сравнения
-                const hideBtn = document.createElement('button');
-                hideBtn.className = 'button';
-                hideBtn.textContent = '{% trans "Скрыть сравнение" %}';
-                hideBtn.onclick = function() {
-                    comparisonData = null;
-                    updateRevenueChart(currentData.daily);
-                    updateOrdersChart(currentData.daily);
-                    document.getElementById('comparisonTable').remove();
-                    this.remove();
-                };
-                document.querySelector('.dashboard-actions').appendChild(hideBtn);
-            })
-            .catch(error => {
-                console.error('Comparison error:', error);
-                alert('{% trans "Ошибка загрузки данных для сравнения" %}');
-            });
-    }
-
-    // Обновление графика с сравнением
-    function updateComparisonChart(currentData, importedData) {
-        if (!revenueChart) return;
-
-        const allDays = new Set();
-        currentData.forEach(d => allDays.add(d.day));
-        importedData.forEach(d => allDays.add(d.day));
-        const sortedDays = Array.from(allDays).sort();
-
-        const currentRevenue = {};
-        currentData.forEach(d => {
-            currentRevenue[d.day] = parseFloat(d.revenue || 0);
-        });
-
-        const importedRevenue = {};
-        importedData.forEach(d => {
-            importedRevenue[d.day] = parseFloat(d.revenue || 0);
-        });
-
-        revenueChart.data.labels = sortedDays;
-        revenueChart.data.datasets = [
-            {
-                label: '{% trans "Текущие данные" %}',
-                data: sortedDays.map(d => currentRevenue[d] || 0),
-                borderColor: '#1a2a6c',
-                backgroundColor: 'rgba(26, 42, 108, 0.1)',
-                tension: 0.4,
-                fill: false
-            },
-            {
-                label: '{% trans "Импортированные данные" %}',
-                data: sortedDays.map(d => importedRevenue[d] || 0),
-                borderColor: '#10b981',
-                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                tension: 0.4,
-                fill: false,
-                borderDash: [5, 5]
-            }
-        ];
-        revenueChart.update();
-    }
-
-    // Показ таблицы сравнения
-    function showComparisonTable(currentData, importedData) {
-        const comparisonDiv = document.createElement('div');
-        comparisonDiv.id = 'comparisonTable';
-        comparisonDiv.className = 'chart-card';
-        comparisonDiv.style.marginTop = '24px';
-        
-        const currentDaily = currentData.daily || [];
-        const importedDaily = importedData.daily || [];
-        
-        let html = '<h3>{% trans "Сравнение характеристик" %}</h3>';
-        html += '<table style="width:100%; border-collapse:collapse; margin-top:16px;">';
-        html += '<thead><tr style="background:#f0f4ff; border-bottom:2px solid #1a2a6c;">';
-        html += '<th style="padding:12px; text-align:left;">{% trans "Характеристика" %}</th>';
-        html += '<th style="padding:12px; text-align:right;">{% trans "Текущие" %}</th>';
-        html += '<th style="padding:12px; text-align:right;">{% trans "Импортированные" %}</th>';
-        html += '<th style="padding:12px; text-align:right;">{% trans "Изменение" %}</th>';
-        html += '</tr></thead><tbody>';
-
-        // Сравнение выручки
-        const currentRevenue = currentDaily.reduce((sum, d) => sum + parseFloat(d.revenue || 0), 0);
-        const importedRevenue = importedDaily.reduce((sum, d) => sum + parseFloat(d.revenue || 0), 0);
-        const revenueDiff = currentRevenue - importedRevenue;
-        const revenuePercent = importedRevenue > 0 ? ((revenueDiff / importedRevenue) * 100).toFixed(2) : 0;
-        
-        html += `<tr>
-            <td style="padding:12px;"><strong>{% trans "Общая выручка" %}</strong></td>
-            <td style="padding:12px; text-align:right;">${currentRevenue.toFixed(2)} ₽</td>
-            <td style="padding:12px; text-align:right;">${importedRevenue.toFixed(2)} ₽</td>
-            <td style="padding:12px; text-align:right; color:${revenueDiff >= 0 ? '#10b981' : '#ef4444'};">
-                ${revenueDiff >= 0 ? '+' : ''}${revenueDiff.toFixed(2)} ₽ (${revenuePercent}%)
-            </td>
-        </tr>`;
-
-        // Сравнение заказов
-        const currentOrders = currentDaily.reduce((sum, d) => sum + parseInt(d.orders || 0), 0);
-        const importedOrders = importedDaily.reduce((sum, d) => sum + parseInt(d.orders || 0), 0);
-        const ordersDiff = currentOrders - importedOrders;
-        const ordersPercent = importedOrders > 0 ? ((ordersDiff / importedOrders) * 100).toFixed(2) : 0;
-        
-        html += `<tr>
-            <td style="padding:12px;"><strong>{% trans "Всего заказов" %}</strong></td>
-            <td style="padding:12px; text-align:right;">${currentOrders}</td>
-            <td style="padding:12px; text-align:right;">${importedOrders}</td>
-            <td style="padding:12px; text-align:right; color:${ordersDiff >= 0 ? '#10b981' : '#ef4444'};">
-                ${ordersDiff >= 0 ? '+' : ''}${ordersDiff} (${ordersPercent}%)
-            </td>
-        </tr>`;
-
-        // Средний чек
-        const currentAvg = currentOrders > 0 ? (currentRevenue / currentOrders) : 0;
-        const importedAvg = importedOrders > 0 ? (importedRevenue / importedOrders) : 0;
-        const avgDiff = currentAvg - importedAvg;
-        const avgPercent = importedAvg > 0 ? ((avgDiff / importedAvg) * 100).toFixed(2) : 0;
-        
-        html += `<tr>
-            <td style="padding:12px;"><strong>{% trans "Средний чек" %}</strong></td>
-            <td style="padding:12px; text-align:right;">${currentAvg.toFixed(2)} ₽</td>
-            <td style="padding:12px; text-align:right;">${importedAvg.toFixed(2)} ₽</td>
-            <td style="padding:12px; text-align:right; color:${avgDiff >= 0 ? '#10b981' : '#ef4444'};">
-                ${avgDiff >= 0 ? '+' : ''}${avgDiff.toFixed(2)} ₽ (${avgPercent}%)
-            </td>
-        </tr>`;
-
-        html += '</tbody></table>';
-        comparisonDiv.innerHTML = html;
-        document.querySelector('.dashboard-container').appendChild(comparisonDiv);
-    }
 });
 </script>
 {% endblock %}
-

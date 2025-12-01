@@ -93,6 +93,29 @@
         </div>
     </div>
 
+    <!-- Оперативная сводка -->
+    <div class="stats-section" style="margin-bottom: 30px;">
+        <h2>{% trans "Текущее состояние заказов" %}</h2>
+        <div class="stats-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px;">
+            <div class="stat-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="font-size: 2em; font-weight: bold; color: #6b7280;">{{ pending_orders }}</div>
+                <div style="color: #666;">{% trans "Ожидают подтверждения" %}</div>
+            </div>
+            <div class="stat-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="font-size: 2em; font-weight: bold; color: #f59e0b;">{{ in_transit_orders }}</div>
+                <div style="color: #666;">{% trans "На комплектации / в пути" %}</div>
+            </div>
+            <div class="stat-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="font-size: 2em; font-weight: bold; color: #10b981;">{{ delivered_orders_count }}</div>
+                <div style="color: #666;">{% trans "Доставлено" %}</div>
+            </div>
+            <div class="stat-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="font-size: 2em; font-weight: bold; color: #ef4444;">{{ cancelled_orders }}</div>
+                <div style="color: #666;">{% trans "Отменено" %}</div>
+            </div>
+        </div>
+    </div>
+
     <!-- Статистика товаров -->
     <div class="products-section" style="margin-bottom: 30px;">
         <h2>{% trans "Статистика товаров" %}</h2>
@@ -132,6 +155,43 @@
                 <div style="font-size: 2em; font-weight: bold; color: #ef4444;">{{ expired_batches }}</div>
                 <div style="color: #666;">{% trans "Просроченные партии" %}</div>
             </div>
+        </div>
+    </div>
+
+    <!-- Магазины -->
+    <div class="stores-section" style="margin-bottom: 30px;">
+        <h2>{% trans "Магазины под управлением" %}</h2>
+        <div class="stats-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px;">
+            {% for store in store_statistics %}
+            <div class="stat-card" style="background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 12px 30px rgba(0,0,0,0.05);">
+                <h4 style="margin-top: 0;">{{ store.name }}</h4>
+                <p style="color: #6b7280; font-size: 0.9rem;">{{ store.address|default:"—" }}</p>
+                <div style="display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; margin-top: 15px;">
+                    <div>
+                        <div style="font-size: 1.4rem; font-weight: 700; color: #1a2a6c;">{{ store.orders_today }}</div>
+                        <div style="font-size: 0.85rem; color: #6b7280;">{% trans "Заказов сегодня" %}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 1.4rem; font-weight: 700; color: #10b981;">{{ store.revenue|floatformat:0 }} ₽</div>
+                        <div style="font-size: 0.85rem; color: #6b7280;">{% trans "Выручка" %}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 1.2rem; font-weight: 600; color: #f59e0b;">{{ store.pending }}</div>
+                        <div style="font-size: 0.85rem; color: #6b7280;">{% trans "В обработке" %}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 1.2rem; font-weight: 600; color: #3b82f6;">{{ store.in_transit }}</div>
+                        <div style="font-size: 0.85rem; color: #6b7280;">{% trans "На комплектации / доставке" %}</div>
+                    </div>
+                </div>
+                <div style="margin-top: 15px; display: flex; justify-content: space-between; font-size: 0.9rem;">
+                    <span>{% trans "Всего заказов" %}: <strong>{{ store.orders_total }}</strong></span>
+                    <span>{% trans "Доставлено" %}: <strong>{{ store.delivered }}</strong></span>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-muted">{% trans "Нет привязанных магазинов." %}</p>
+            {% endfor %}
         </div>
     </div>
 

@@ -17,8 +17,21 @@
         background-color: #E91E63; 
         border-color: #E91E63; 
     }
-    .mini-progress{width:120px;height:6px;background:#e9ecef;border-radius:4px;overflow:hidden;display:inline-block;vertical-align:middle;margin-left:8px}
+    .mini-progress{width:120px;height:6px;background:var(--border-color, #e9ecef);border-radius:4px;overflow:hidden;display:inline-block;vertical-align:middle;margin-left:8px}
     .mini-progress-fill{height:100%;background:linear-gradient(90deg,#FF6B9D,#4CAF50)}
+    
+    .card {
+        background-color: var(--card-bg, white) !important;
+        color: var(--text-color, var(--dark-gray)) !important;
+    }
+    
+    .table {
+        color: var(--text-color, var(--dark-gray)) !important;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(255, 107, 157, 0.1) !important;
+    }
 </style>
 {% endblock %}
 
@@ -155,7 +168,7 @@
                                             </span>
                                             <span class="mini-progress"><span class="mini-progress-fill" style="width: {{ order.progress|default:0 }}%"></span></span>
                                         </td>
-                                        <td>{{ order.total_amount }} ₽</td>
+                                        <td>{{ order.final_amount|default:order.total_amount|floatformat:2 }} ₽</td>
                                         <td>{{ order.get_delivery_type_display }}</td>
                                         <td>
                                             <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-outline-zhevzhik-pink">

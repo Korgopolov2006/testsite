@@ -44,13 +44,14 @@
     }
     
     .profile-card {
-        background: white;
+        background: var(--card-bg, white);
         border-radius: 20px;
         box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         padding: 30px;
         margin-bottom: 30px;
         border: 1px solid rgba(255, 107, 157, 0.1);
         transition: transform 0.3s ease, box-shadow 0.3s ease;
+        color: var(--text-color, var(--zhevzhik-dark-gray));
     }
     
     .profile-card:hover {
@@ -76,8 +77,9 @@
     .loyalty-vip { background: linear-gradient(45deg, #9c27b0, #e91e63); color: white; }
 
     .loyalty-progress-card {
-        background: linear-gradient(135deg, #ffffff, #fff4f8);
+        background: linear-gradient(135deg, var(--card-bg, #ffffff), rgba(255, 107, 157, 0.05));
         border: none;
+        color: var(--text-color, var(--zhevzhik-dark-gray));
     }
 
     .loyalty-progress-wrapper {
@@ -113,20 +115,22 @@
     }
 
     .progress-caption {
-        color: var(--zhevzhik-dark-gray);
+        color: var(--text-color, var(--zhevzhik-dark-gray));
         font-weight: 500;
     }
 
     .progress-points {
-        color: var(--zhevzhik-gray);
+        color: var(--text-color, var(--zhevzhik-gray));
         font-size: 0.9rem;
     }
 
     .address-form .form-control,
     .address-form textarea {
         border-radius: 12px;
-        border: 2px solid #f0f2f5;
+        border: 2px solid var(--border-color, #f0f2f5);
         transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        background-color: var(--input-bg, white);
+        color: var(--text-color, var(--zhevzhik-dark-gray));
     }
 
     .address-form .form-control:focus,
@@ -222,7 +226,7 @@
     }
     
     .category-card {
-        background: white;
+        background: var(--card-bg, white);
         border-radius: 15px;
         padding: 20px;
         text-align: center;
@@ -230,6 +234,7 @@
         transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
+        color: var(--text-color, var(--zhevzhik-dark-gray));
     }
     
     .category-card::before {
@@ -315,7 +320,7 @@
     }
     
     .section-title {
-        color: var(--zhevzhik-dark-gray);
+        color: var(--text-color, var(--zhevzhik-dark-gray));
         font-weight: 700;
         margin-bottom: 25px;
         position: relative;
@@ -482,7 +487,7 @@
                 </h3>
                 <div class="loyalty-progress-wrapper">
                     <div class="loyalty-progress-bar">
-                        <div class="loyalty-progress-fill" style="width: {{ loyalty_progress_percent }}%;"></div>
+                        <div class="loyalty-progress-fill" data-progress="{{ loyalty_progress_percent|default:0 }}"></div>
                     </div>
                     <div class="loyalty-progress-stats">
                         <div class="progress-percentage">{{ loyalty_progress_percent|floatformat:1 }}%</div>
@@ -521,8 +526,11 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Адрес *</label>
-                        <input type="text" class="form-control" name="address" value="{{ primary_address.address|default:'' }}" placeholder="Улица, дом, корпус" required />
+                        <input type="text" class="form-control" id="address-input" name="address" value="{{ primary_address.address|default:'' }}" placeholder="Улица, дом, корпус" required />
+                        <small class="text-muted">Начните вводить адрес, и мы поможем вам выбрать правильный</small>
+                        <div id="address-suggestions" class="list-group mt-2" style="display: none; position: absolute; z-index: 1000; max-height: 200px; overflow-y: auto; width: 100%;"></div>
                     </div>
+                    <div id="address-map" style="width: 100%; height: 300px; margin-top: 15px; display: none;"></div>
                     <div class="row g-3">
                         <div class="col-md-3">
                             <label class="form-label">Подъезд</label>
@@ -559,9 +567,15 @@
                 <h3 class="section-title">
                     <i class="fas fa-star me-2"></i>Любимые категории
                 </h3>
-                {% if user_categories %}
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <p class="mb-0 text-muted">Настройте персональные скидки на любимые категории.</p>
+                    <a href="{% url 'favorite_categories' %}" class="btn btn-outline-zhevzhik-pink btn-sm">
+                        <i class="fas fa-edit me-1"></i>Управлять
+                    </a>
+                </div>
+                {% if favorite_categories %}
                     <div class="favorite-categories">
-                        {% for favorite in user_categories %}
+                        {% for favorite in favorite_categories %}
                         <div class="category-card">
                             {% if favorite.discount_percent > 0 %}
                                 <div class="discount-badge">-{{ favorite.discount_percent }}%</div>
@@ -582,7 +596,6 @@
                                 {% endif %}
                             </div>
                             <h5>{{ favorite.category.name }}</h5>
-                            <p class="text-muted mb-2">Кешбэк: {{ favorite.cashback_multiplier }}x</p>
                             {% if favorite.discount_percent > 0 %}
                                 <p class="text-success fw-bold">Скидка: {{ favorite.discount_percent }}%</p>
                             {% endif %}
@@ -660,10 +673,10 @@
                 </h3>
                 {% if recent_orders %}
                     {% for order in recent_orders %}
-                    <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded">
+                    <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded" style="background: var(--light-gray, #f8f9fa); color: var(--text-color, var(--zhevzhik-dark-gray));">
                         <div>
                             <strong>#{{ order.id }}</strong><br>
-                            <small class="text-muted">{{ order.order_date|date:"d.m.Y" }}</small>
+                            <small style="color: var(--text-color, var(--zhevzhik-gray));">{{ order.order_date|date:"d.m.Y" }}</small>
                         </div>
                         <div class="text-end">
                             <span class="fw-bold">{{ order.total_amount }} ₽</span><br>
@@ -703,11 +716,11 @@
                         </div>
                     </div>
                     {% for payment in recent_payments %}
-                    <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded">
+                    <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded" style="background: var(--light-gray, #f8f9fa); color: var(--text-color, var(--zhevzhik-dark-gray));">
                         <div>
                             <strong>Заказ #{{ payment.order.id }}</strong><br>
-                            <small class="text-muted">{{ payment.payment_date|date:"d.m.Y H:i" }}</small><br>
-                            <small class="text-muted">
+                            <small style="color: var(--text-color, var(--zhevzhik-gray));">{{ payment.payment_date|date:"d.m.Y H:i" }}</small><br>
+                            <small style="color: var(--text-color, var(--zhevzhik-gray));">
                                 {% if payment.order.payment_method == 'sbp' %}
                                     <i class="fas fa-qrcode"></i> СБП
                                 {% elif payment.payment_method == 'online' or payment.order.payment_method == 'online' %}
@@ -737,4 +750,180 @@
         </div>
     </div>
 </div>
+
+<!-- Яндекс карты для валидации адреса -->
+<script src="https://api-maps.yandex.ru/2.1/?apikey=6d49cb7e-534d-490a-a004-1d58b904d2c8&lang=ru_RU" type="text/javascript"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.loyalty-progress-fill[data-progress]').forEach(function(fill){
+        const value = parseFloat(fill.dataset.progress || '0');
+        const normalized = Math.max(0, Math.min(100, value));
+        fill.style.width = normalized + '%';
+    });
+    const addressInput = document.getElementById('address-input');
+    const suggestionsDiv = document.getElementById('address-suggestions');
+    const mapDiv = document.getElementById('address-map');
+    let suggestTimeout;
+    let map;
+    let geocoder;
+    
+    if (!addressInput) return;
+    
+    // Инициализация Яндекс карт
+    if (typeof ymaps !== 'undefined') {
+        ymaps.ready(function() {
+            geocoder = ymaps.geocode;
+            
+            // Создаем карту
+            map = new ymaps.Map('address-map', {
+                center: [55.751574, 37.573856], // Москва по умолчанию
+                zoom: 10
+            });
+            
+            // Добавляем маркер
+            let placemark = new ymaps.Placemark([55.751574, 37.573856], {}, {
+                draggable: true
+            });
+            map.geoObjects.add(placemark);
+            
+            // При перемещении маркера обновляем адрес
+            placemark.events.add('dragend', function() {
+                const coords = placemark.geometry.getCoordinates();
+                geocoder(coords).then(function(res) {
+                    const firstGeoObject = res.geoObjects.get(0);
+                    if (firstGeoObject) {
+                        addressInput.value = firstGeoObject.getAddressLine();
+                    }
+                });
+            });
+        });
+    }
+    
+    // Список существующих адресов пользователя
+    const existingAddresses = JSON.parse('{{ address_suggestions_json|default:"[]"|escapejs }}');
+    
+    // Автодополнение адреса
+    addressInput.addEventListener('input', function() {
+        const query = this.value.trim().toLowerCase();
+        
+        clearTimeout(suggestTimeout);
+        
+        if (query.length < 2) {
+            suggestionsDiv.style.display = 'none';
+            return;
+        }
+        
+        suggestTimeout = setTimeout(function() {
+            suggestionsDiv.innerHTML = '';
+            let hasSuggestions = false;
+            
+            // Сначала показываем существующие адреса пользователя
+            existingAddresses.forEach(function(addr) {
+                if (addr.address.toLowerCase().includes(query)) {
+                    hasSuggestions = true;
+                    const suggestionItem = document.createElement('a');
+                    suggestionItem.href = '#';
+                    suggestionItem.className = 'list-group-item list-group-item-action';
+                    suggestionItem.innerHTML = `<strong>${addr.label}</strong> - ${addr.address}`;
+                    suggestionItem.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        addressInput.value = addr.address;
+                        // Заполняем дополнительные поля
+                        const entranceInput = document.querySelector('input[name="entrance"]');
+                        const floorInput = document.querySelector('input[name="floor"]');
+                        const apartmentInput = document.querySelector('input[name="apartment"]');
+                        const intercomInput = document.querySelector('input[name="intercom_code"]');
+                        if (entranceInput) entranceInput.value = addr.entrance;
+                        if (floorInput) floorInput.value = addr.floor;
+                        if (apartmentInput) apartmentInput.value = addr.apartment;
+                        if (intercomInput) intercomInput.value = addr.intercom_code;
+                        suggestionsDiv.style.display = 'none';
+                        
+                        // Показываем на карте
+                        if (geocoder) {
+                            geocoder(addr.address).then(function(res) {
+                                const firstGeoObject = res.geoObjects.get(0);
+                                if (firstGeoObject) {
+                                    const coords = firstGeoObject.geometry.getCoordinates();
+                                    map.setCenter(coords, 15);
+                                    map.geoObjects.removeAll();
+                                    const newPlacemark = new ymaps.Placemark(coords, {}, {
+                                        draggable: true
+                                    });
+                                    map.geoObjects.add(newPlacemark);
+                                    mapDiv.style.display = 'block';
+                                }
+                            });
+                        }
+                    });
+                    suggestionsDiv.appendChild(suggestionItem);
+                }
+            });
+            
+            // Затем добавляем предложения от Яндекс карт
+            if (typeof ymaps !== 'undefined' && ymaps.suggest) {
+                ymaps.suggest(query).then(function(items) {
+                    items.forEach(function(item) {
+                        // Проверяем, не дублируется ли адрес из существующих
+                        const isDuplicate = existingAddresses.some(function(addr) {
+                            return addr.address.toLowerCase() === item.value.toLowerCase();
+                        });
+                        
+                        if (!isDuplicate) {
+                            hasSuggestions = true;
+                            const suggestionItem = document.createElement('a');
+                            suggestionItem.href = '#';
+                            suggestionItem.className = 'list-group-item list-group-item-action';
+                            suggestionItem.innerHTML = `<i class="fas fa-map-marker-alt me-2"></i>${item.value}`;
+                            suggestionItem.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                addressInput.value = item.value;
+                                suggestionsDiv.style.display = 'none';
+                                
+                                // Геокодируем выбранный адрес и показываем на карте
+                                if (geocoder) {
+                                    geocoder(item.value).then(function(res) {
+                                        const firstGeoObject = res.geoObjects.get(0);
+                                        if (firstGeoObject) {
+                                            const coords = firstGeoObject.geometry.getCoordinates();
+                                            map.setCenter(coords, 15);
+                                            map.geoObjects.removeAll();
+                                            const newPlacemark = new ymaps.Placemark(coords, {}, {
+                                                draggable: true
+                                            });
+                                            map.geoObjects.add(newPlacemark);
+                                            mapDiv.style.display = 'block';
+                                        }
+                                    });
+                                }
+                            });
+                            suggestionsDiv.appendChild(suggestionItem);
+                        }
+                    });
+                    
+                    if (hasSuggestions) {
+                        suggestionsDiv.style.display = 'block';
+                    }
+                });
+            } else if (hasSuggestions) {
+                suggestionsDiv.style.display = 'block';
+            }
+        }, 300);
+    });
+    
+    // Скрываем подсказки при клике вне
+    document.addEventListener('click', function(e) {
+        if (!addressInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
+            suggestionsDiv.style.display = 'none';
+        }
+    });
+    
+    // При фокусе на поле адреса показываем карту
+    addressInput.addEventListener('focus', function() {
+        if (mapDiv && addressInput.value.trim().length > 0) {
+            mapDiv.style.display = 'block';
+        }
+    });
+});
+</script>
 {% endblock %}

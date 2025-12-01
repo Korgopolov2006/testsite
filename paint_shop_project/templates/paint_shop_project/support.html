@@ -23,15 +23,16 @@
     }
     
     .faq-section {
-        background: white;
+        background: var(--card-bg, white);
         border-radius: 15px;
         padding: 30px;
         box-shadow: 0 5px 20px rgba(0,0,0,0.1);
         margin-bottom: 30px;
+        color: var(--text-color, var(--zhevzhik-dark-gray));
     }
     
     .faq-item {
-        border-bottom: 1px solid #e9ecef;
+        border-bottom: 1px solid var(--border-color, #e9ecef);
         padding: 20px 0;
     }
     
@@ -54,7 +55,7 @@
     }
     
     .faq-answer {
-        color: var(--zhevzhik-dark-gray);
+        color: var(--text-color, var(--zhevzhik-dark-gray));
         margin-top: 10px;
         display: none;
     }
@@ -72,13 +73,14 @@
     }
     
     .help-card {
-        background: white;
+        background: var(--card-bg, white);
         border-radius: 15px;
         padding: 25px;
         box-shadow: 0 5px 20px rgba(0,0,0,0.1);
         transition: all 0.3s ease;
         margin-bottom: 20px;
         text-align: center;
+        color: var(--text-color, var(--zhevzhik-dark-gray));
     }
     
     .help-card:hover {
@@ -106,7 +108,7 @@
     }
     
     .help-description {
-        color: var(--zhevzhik-dark-gray);
+        color: var(--text-color, var(--zhevzhik-dark-gray));
         margin-bottom: 20px;
     }
     
@@ -146,10 +148,11 @@
     }
     
     .contact-info {
-        background: var(--zhevzhik-light-gray);
+        background: var(--light-gray, var(--zhevzhik-light-gray));
         border-radius: 10px;
         padding: 20px;
         margin-bottom: 20px;
+        color: var(--text-color, var(--zhevzhik-dark-gray));
     }
     
     .contact-item {
@@ -204,19 +207,6 @@
                 <p class="help-description">Быстрая помощь по телефону</p>
                 <a href="tel:+74951234567" class="btn-help">
                     <i class="fas fa-phone"></i>Позвонить
-                </a>
-            </div>
-        </div>
-        
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="help-card">
-                <div class="help-icon">
-                    <i class="fas fa-comments"></i>
-                </div>
-                <h4 class="help-title">Чат</h4>
-                <p class="help-description">Онлайн консультант</p>
-                <a href="#" class="btn-help">
-                    <i class="fas fa-comments"></i>Начать чат
                 </a>
             </div>
         </div>
@@ -281,34 +271,6 @@
             </div>
         </div>
         
-        <div class="col-lg-6">
-            <div class="faq-section">
-                <h3 class="section-title">
-                    <i class="fas fa-keyboard"></i>Горячие клавиши
-                </h3>
-                <div class="contact-info">
-                    <div class="row">
-                        <div class="col-sm-6">
-                            <ul>
-                                <li><kbd>g</kbd> + <kbd>h</kbd> — Главная</li>
-                                <li><kbd>g</kbd> + <kbd>c</kbd> — Корзина</li>
-                                <li><kbd>g</kbd> + <kbd>o</kbd> — Мои заказы</li>
-                                <li><kbd>g</kbd> + <kbd>p</kbd> — Профиль</li>
-                            </ul>
-                        </div>
-                        <div class="col-sm-6">
-                            <ul>
-                                <li><kbd>/</kbd> — Фокус поиска</li>
-                                <li><kbd>n</kbd> — Уведомления</li>
-                                <li><kbd>?</kbd> — Открыть справку по клавишам</li>
-                                <li><kbd>d</kbd> — Дашборд администратора (персонал)</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <small class="text-muted">Подсказка: нажмите «?» в любом месте сайта, чтобы открыть окно со списком клавиш.</small>
-                </div>
-            </div>
-        </div>
     </div>
     
     <!-- FAQ -->

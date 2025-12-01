@@ -53,6 +53,9 @@
                             {% if order.delivery_address %}
                                 <p><strong>Адрес доставки:</strong> {{ order.delivery_address }}</p>
                             {% endif %}
+                            {% if order.cashback_used and order.cashback_used > 0 %}
+                                <p><strong>Списано кешбэка:</strong> {{ order.cashback_used|floatformat:2 }} ₽</p>
+                            {% endif %}
                             {% if order.pickup_point %}
                                 <p><strong>Точка самовывоза:</strong> {{ order.pickup_point.name }}</p>
                             {% endif %}
@@ -134,9 +137,7 @@
                             <tfoot>
                                 <tr>
                                     <th colspan="3" class="text-end">Товары:</th>
-                                    <th>
-                                        {{ order.total_amount|add:order.delivery_cost|add:order.favorite_discount_amount|add:order.promotion_discount|floatformat:0 }} ₽
-                                    </th>
+                                    <th>{{ items_total|default:order.total_amount|floatformat:2 }} ₽</th>
                                 </tr>
                                 {% if order.favorite_discount_amount and order.favorite_discount_amount > 0 %}
                                 <tr>
@@ -154,9 +155,15 @@
                                     <th colspan="3" class="text-end">Доставка:</th>
                                     <th>{{ order.delivery_cost|floatformat:0 }} ₽</th>
                                 </tr>
+                                {% if order.cashback_used and order.cashback_used > 0 %}
+                                <tr>
+                                    <th colspan="3" class="text-end">Списано кешбэка:</th>
+                                    <th class="text-success">-{{ order.cashback_used|floatformat:2 }} ₽</th>
+                                </tr>
+                                {% endif %}
                                 <tr class="table-active">
                                     <th colspan="3">Итого к оплате:</th>
-                                    <th>{{ order.total_amount|floatformat:0 }} ₽</th>
+                                    <th>{{ order.amount_due|default:order.total_amount|floatformat:2 }} ₽</th>
                                 </tr>
                             </tfoot>
                         </table>
@@ -176,12 +183,6 @@
                         <a href="{% url 'order_history' %}" class="btn btn-outline-zhevzhik-pink">
                             <i class="fas fa-arrow-left"></i> Назад к заказам
                         </a>
-                        
-                        {% if order.status == 'created' %}
-                            <button class="btn btn-zhevzhik-pink" onclick="processPayment({{ order.id }})">
-                                <i class="fas fa-credit-card"></i> Оплатить заказ
-                            </button>
-                        {% endif %}
                         
                         {% if order.status in 'created,confirmed' %}
                             <button class="btn btn-outline-danger" onclick="cancelOrder({{ order.id }})">
@@ -225,85 +226,6 @@ function cancelOrder(orderId) {
         document.body.appendChild(form);
         form.submit();
     }
-}
-
-function processPayment(orderId) {
-    // Показываем модальное окно с выбором способа оплаты
-    const modal = document.createElement('div');
-    modal.className = 'modal fade';
-    modal.innerHTML = `
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Выберите способ оплаты</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="payment-form">
-                        <div class="form-check mb-3">
-                            <input class="form-check-input" type="radio" name="payment_method" id="card" value="card" checked>
-                            <label class="form-check-label" for="card">
-                                <i class="fas fa-credit-card me-2"></i>Банковская карта
-                            </label>
-                        </div>
-                        <div class="form-check mb-3">
-                            <input class="form-check-input" type="radio" name="payment_method" id="online" value="online">
-                            <label class="form-check-label" for="online">
-                                <i class="fas fa-mobile-alt me-2"></i>Онлайн-платеж
-                            </label>
-                        </div>
-                        <div class="form-check mb-3">
-                            <input class="form-check-input" type="radio" name="payment_method" id="cash" value="cash">
-                            <label class="form-check-label" for="cash">
-                                <i class="fas fa-money-bill me-2"></i>Наличные при получении
-                            </label>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="button" class="btn btn-zhevzhik-pink" onclick="submitPayment(${orderId})">
-                        <i class="fas fa-credit-card"></i> Оплатить
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
-    const bsModal = new bootstrap.Modal(modal);
-    bsModal.show();
-    
-    // Удаляем модальное окно после закрытия
-    modal.addEventListener('hidden.bs.modal', function() {
-        document.body.removeChild(modal);
-    });
-}
-
-function submitPayment(orderId) {
-    const form = document.getElementById('payment-form');
-    const formData = new FormData(form);
-    
-    // Создаем форму для отправки
-    const submitForm = document.createElement('form');
-    submitForm.method = 'POST';
-    submitForm.action = `/process-payment/${orderId}/`;
-    
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    const csrfInput = document.createElement('input');
-    csrfInput.type = 'hidden';
-    csrfInput.name = 'csrfmiddlewaretoken';
-    csrfInput.value = csrfToken;
-    submitForm.appendChild(csrfInput);
-    
-    const paymentMethodInput = document.createElement('input');
-    paymentMethodInput.type = 'hidden';
-    paymentMethodInput.name = 'payment_method';
-    paymentMethodInput.value = formData.get('payment_method');
-    submitForm.appendChild(paymentMethodInput);
-    
-    document.body.appendChild(submitForm);
-    submitForm.submit();
 }
 </script>
 {% endblock %}
